@@ -1,58 +1,104 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { motion, useSpring } from "framer-motion";
+import { motion, useSpring, useMotionValue } from "framer-motion";
 
 export default function Timeline({ milestones }) {
-  const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef(null);
+  const itemRefs = useRef([]);
+  const [activeIndex, setActiveIndex] = useState(-1);
 
-  // Smooth dot position
-  const dotTop = useSpring(0, { stiffness: 120, damping: 20 });
+  // Motion values for the dot/pill
+  const top = useSpring(0, { stiffness: 160, damping: 24 });
+  const left = useSpring(10, { stiffness: 160, damping: 24 });
+  const width = useSpring(12, { stiffness: 200, damping: 26 });
+  const height = useSpring(12, { stiffness: 200, damping: 26 });
+  const radius = useSpring(999, { stiffness: 180, damping: 24 });
+  const opacity = useSpring(1, { stiffness: 120, damping: 20 });
+
+  const DOT_SIZE = 12;
+  const LINE_X = 10;
+
+  const mergeProgress = useMotionValue(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (!containerRef.current) return;
+    const onScroll = () => {
+      const container = containerRef.current;
+      if (!container) return;
 
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const containerTop = containerRef.current.offsetTop;
-      const containerHeight = containerRef.current.offsetHeight;
+      const containerTop = container.getBoundingClientRect().top + window.scrollY;
+      const containerHeight = container.offsetHeight;
 
       const scrollMiddle = window.scrollY + window.innerHeight / 2;
+      let progress = (scrollMiddle - containerTop) / containerHeight;
+      progress = Math.max(0, Math.min(1, progress));
 
-      let currentIndex = 0;
-      milestones.forEach((_, i) => {
-        const milestoneEl = containerRef.current.children[i + 1]; // +1 because first child is the line
-        const milestoneTop = milestoneEl.offsetTop + containerTop + milestoneEl.offsetHeight / 2;
-        if (scrollMiddle >= milestoneTop - 50) {
-          currentIndex = i;
+      const els = itemRefs.current.filter(Boolean);
+      let idx = -1;
+      for (let i = 0; i < els.length; i++) {
+        const el = els[i];
+        const r = el.getBoundingClientRect();
+        const mid = r.top + window.scrollY + r.height / 2;
+        if (Math.abs(mid - scrollMiddle) <= r.height * 0.6) {
+          idx = i;
+          break;
         }
-      });
+      }
 
-      setActiveIndex(currentIndex);
+      if (idx === -1) {
+        setActiveIndex(-1);
+        mergeProgress.set(0);
+        top.set(progress * containerHeight - DOT_SIZE / 2);
+        left.set(LINE_X);
+        width.set(DOT_SIZE);
+        height.set(DOT_SIZE);
+        radius.set(999);
+        opacity.set(1);
+        return;
+      }
 
-      // Smooth dot animation: top in px relative to container
-      const progress = currentIndex / (milestones.length - 1);
-      dotTop.set(progress * containerHeight);
+      setActiveIndex(idx);
+
+      const activeEl = els[idx];
+      const r = activeEl.getBoundingClientRect();
+      const pillTop = r.top + window.scrollY - containerTop;
+      const pillHeight = r.height;
+      const pillLeftCenter = r.left + window.scrollX - containerRef.current.getBoundingClientRect().left + r.width / 2;
+      const pillWidth = r.width;
+
+      top.set(pillTop);
+      height.set(pillHeight);
+      left.set(pillLeftCenter);
+      width.set(pillWidth);
+      radius.set(12);
+      opacity.set(0.18);
+
+      const dist = Math.abs(scrollMiddle - (r.top + window.scrollY + r.height / 2));
+      mergeProgress.set(Math.max(0, 1 - dist / (r.height * 0.6)));
     };
 
-    window.addEventListener("scroll", handleScroll);
-    handleScroll(); // initialize
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [dotTop, milestones]);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [DOT_SIZE, LINE_X, top, left, width, height, radius, opacity, mergeProgress]);
 
   return (
-    <div className="flex w-full max-w-6xl">
-      {/* Timeline */}
-      <div ref={containerRef} className="relative flex flex-col items-center w-1/2 py-12">
-        <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-foreground/30 dark:bg-foreground/20"></div>
+    <div className="flex w-full max-w-6xl mx-auto">
+      <div ref={containerRef} className="relative flex flex-col w-1/2 py-12">
+        {/* Vertical line */}
+        <div className="absolute left-10 top-0 w-1 h-full bg-indigo-600/80 rounded" />
 
-        {/* Floating Active Dot */}
+        {/* Dot / Pill */}
         <motion.div
-          className="absolute w-5 h-5 rounded-full bg-blue-500 shadow-lg"
+          className="absolute pointer-events-none bg-indigo-600"
           style={{
-            top: dotTop,
-            left: "50%",
+            top,
+            left,
+            width,
+            height,
+            borderRadius: radius,
+            opacity,
             transform: "translateX(-50%)",
+            zIndex: 0,
           }}
         />
 
@@ -60,22 +106,71 @@ export default function Timeline({ milestones }) {
         {milestones.map((m, i) => (
           <div
             key={i}
-            className="milestone relative mb-24 flex flex-col items-center text-center"
+            ref={(el) => (itemRefs.current[i] = el)}
+            className="milestone relative mb-28 ml-16 px-3 py-4 z-10 transition-colors"
+            style={{
+              borderRadius: 12,
+              backgroundColor: activeIndex === i ? `rgba(99,102,241,${mergeProgress.get() * 0.15})` : "transparent",
+            }}
           >
-            <div className="w-4 h-4 rounded-full bg-foreground mb-4"></div>
-            <h3 className="font-bold text-lg">{m.title}</h3>
-            <p className="text-sm text-foreground/70">{m.year}</p>
+            <h3
+              className={`font-bold text-lg transition-colors ${
+                activeIndex === i ? "text-indigo-600" : "text-foreground"
+              }`}
+            >
+              {m.title}
+            </h3>
+            <p
+              className={`text-sm transition-colors ${
+                activeIndex === i ? "text-indigo-500" : "text-foreground/70"
+              }`}
+            >
+              {m.year}
+            </p>
           </div>
         ))}
+
+        {/* Timeline End Halo */}
+        <div
+          className="absolute bottom-0"
+          style={{
+            left: `${LINE_X}px`,
+            transform: "translateX(-50%)",
+            width: "80px",
+            height: "40px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 0,
+          }}
+        >
+          {/* Glowing oval */}
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle at center, rgba(99,102,200,0.30) 10%, rgba(99,102,241,0) 80%)",
+              transform: "scaleX(2)",
+              boxShadow: "0 0 60px rgba(99,102,241,0.4)",
+            }}
+          />
+        </div>
       </div>
 
-      {/* Image Display */}
       <div className="w-1/2 flex justify-center items-center">
-        <img
-          src={milestones[activeIndex].image}
-          alt={milestones[activeIndex].title}
-          className="w-80 h-80 object-cover rounded-lg shadow-xl transition-all duration-500"
-        />
+        {activeIndex > -1 && (
+          <motion.img
+            key={activeIndex}
+            src={milestones[activeIndex].image}
+            alt={milestones[activeIndex].title}
+            className="w-80 h-80 object-cover rounded-lg shadow-xl"
+            initial={{ opacity: 0.0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.45 }}
+          />
+        )}
       </div>
     </div>
   );

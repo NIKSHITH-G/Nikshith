@@ -27,7 +27,7 @@ export default function About() {
       <Navbar />
       <SideNavbar />
 
-      <main className="bg-background dark:bg-gray-900 text-foreground px-6">
+      <main className="text-foreground px-6">
         <section id="about" className="min-h-screen flex flex-col items-center justify-center text-center py-12">
           <h2 className="text-4xl font-bold mb-6">About Me</h2>
           <p className="max-w-2xl text-lg mb-8">

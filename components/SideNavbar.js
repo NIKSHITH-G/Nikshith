@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 
 export default function SideNavbar() {
-  const sections = ["about", "experience", "devices", "projects", "tools"];
+  const sections = ["about", "education", "devices", "projects", "tools"];
   const [active, setActive] = useState("about");
 
   useEffect(() => {
