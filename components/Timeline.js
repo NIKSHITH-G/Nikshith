@@ -6,34 +6,42 @@ export default function Timeline({ milestones }) {
   const containerRef = useRef(null);
   const itemRefs = useRef([]);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [isClient, setIsClient] = useState(false);
 
-  // Motion values for the dot/pill
+  // Track client-side mount
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Motion values
   const top = useSpring(0, { stiffness: 160, damping: 24 });
   const left = useSpring(10, { stiffness: 160, damping: 24 });
   const width = useSpring(12, { stiffness: 200, damping: 26 });
   const height = useSpring(12, { stiffness: 200, damping: 26 });
-  const radius = useSpring(999, { stiffness: 180, damping: 24 });
+  const radius = useSpring(4, { stiffness: 180, damping: 24 });
   const opacity = useSpring(1, { stiffness: 120, damping: 20 });
+  const mergeProgress = useMotionValue(0);
 
   const DOT_SIZE = 12;
   const LINE_X = 10;
 
-  const mergeProgress = useMotionValue(0);
-
   useEffect(() => {
+    if (!isClient) return;
+
     const onScroll = () => {
       const container = containerRef.current;
       if (!container) return;
 
       const containerTop = container.getBoundingClientRect().top + window.scrollY;
       const containerHeight = container.offsetHeight;
-
       const scrollMiddle = window.scrollY + window.innerHeight / 2;
+
       let progress = (scrollMiddle - containerTop) / containerHeight;
       progress = Math.max(0, Math.min(1, progress));
 
       const els = itemRefs.current.filter(Boolean);
       let idx = -1;
+
       for (let i = 0; i < els.length; i++) {
         const el = els[i];
         const r = el.getBoundingClientRect();
@@ -51,7 +59,7 @@ export default function Timeline({ milestones }) {
         left.set(LINE_X);
         width.set(DOT_SIZE);
         height.set(DOT_SIZE);
-        radius.set(999);
+        radius.set(4);
         opacity.set(1);
         return;
       }
@@ -62,47 +70,51 @@ export default function Timeline({ milestones }) {
       const r = activeEl.getBoundingClientRect();
       const pillTop = r.top + window.scrollY - containerTop;
       const pillHeight = r.height;
-      const pillLeftCenter = r.left + window.scrollX - containerRef.current.getBoundingClientRect().left + r.width / 2;
-      const pillWidth = r.width;
+      const pillLeftCenter =
+        r.left + window.scrollX - containerRef.current.getBoundingClientRect().left + r.width / 2;
 
-      top.set(pillTop);
-      height.set(pillHeight);
-      left.set(pillLeftCenter);
-      width.set(pillWidth);
-      radius.set(12);
-      opacity.set(0.18);
-
+      // Smooth merge
       const dist = Math.abs(scrollMiddle - (r.top + window.scrollY + r.height / 2));
-      mergeProgress.set(Math.max(0, 1 - dist / (r.height * 0.6)));
+      const merge = Math.max(0, 1 - dist / (r.height * 0.6));
+      mergeProgress.set(merge);
+
+      top.set(pillTop + (DOT_SIZE / 2) * (1 - merge));
+      height.set(DOT_SIZE + pillHeight * merge);
+      width.set(DOT_SIZE + r.width * 0.4 * merge);
+      left.set(pillLeftCenter);
+      radius.set(4);
+      opacity.set(0.2 + 0.8 * merge);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
-  }, [DOT_SIZE, LINE_X, top, left, width, height, radius, opacity, mergeProgress]);
+  }, [isClient]);
+
+  if (!isClient) return null;
 
   return (
-    <div className="flex w-full max-w-6xl mx-auto">
+    <div className="flex w-full max-w-7xl mx-auto">
+      {/* Timeline left */}
       <div ref={containerRef} className="relative flex flex-col w-1/2 py-12">
-        {/* Vertical line */}
         <div className="absolute left-10 top-0 w-1 h-full bg-indigo-600/80 rounded" />
 
         {/* Dot / Pill */}
         <motion.div
-          className="absolute pointer-events-none bg-indigo-600"
-          style={{
-            top,
-            left,
-            width,
-            height,
-            borderRadius: radius,
-            opacity,
-            transform: "translateX(-50%)",
-            zIndex: 0,
-          }}
+        className="absolute pointer-events-none bg-indigo-600"
+        style={{
+          top,
+          left,
+          width,
+          height,
+          opacity,
+          transform: "translateX(-50%) rotate(180deg)", // rotation makes it diamond
+          borderRadius: 4, // small radius for smoother edges (not full circle)
+          zIndex: 0,
+        }}
         />
 
-        {/* Milestones */}
+
         {milestones.map((m, i) => (
           <div
             key={i}
@@ -110,7 +122,10 @@ export default function Timeline({ milestones }) {
             className="milestone relative mb-28 ml-16 px-3 py-4 z-10 transition-colors"
             style={{
               borderRadius: 12,
-              backgroundColor: activeIndex === i ? `rgba(99,102,241,${mergeProgress.get() * 0.15})` : "transparent",
+              backgroundColor:
+                activeIndex === i
+                  ? `rgba(99,102,241,${mergeProgress.get() * 0.15})`
+                  : "transparent",
             }}
           >
             <h3
@@ -130,7 +145,7 @@ export default function Timeline({ milestones }) {
           </div>
         ))}
 
-        {/* Timeline End Halo */}
+        {/* Timeline end glow */}
         <div
           className="absolute bottom-0"
           style={{
@@ -144,7 +159,6 @@ export default function Timeline({ milestones }) {
             zIndex: 0,
           }}
         >
-          {/* Glowing oval */}
           <div
             style={{
               width: "100%",
@@ -159,17 +173,23 @@ export default function Timeline({ milestones }) {
         </div>
       </div>
 
+      {/* Right image */}
       <div className="w-1/2 flex justify-center items-center">
         {activeIndex > -1 && (
-          <motion.img
+          <motion.div
             key={activeIndex}
-            src={milestones[activeIndex].image}
-            alt={milestones[activeIndex].title}
-            className="w-80 h-80 object-cover rounded-lg shadow-xl"
-            initial={{ opacity: 0.0, scale: 0.96 }}
+            initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.45 }}
-          />
+            className="relative group"
+          >
+            <motion.img
+              src={milestones[activeIndex].image}
+              alt={milestones[activeIndex].title}
+              className="w-[500px] h-[500px] object-cover rounded-2xl shadow-2xl transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 blur-3xl -z-10" />
+          </motion.div>
         )}
       </div>
     </div>
