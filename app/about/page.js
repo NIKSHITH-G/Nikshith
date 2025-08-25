@@ -21,7 +21,7 @@ export default function About() {
       image: "/images/Timeline/step3.png",
     },
   ];
-
+                       
   return (
     <>
       <Navbar />
