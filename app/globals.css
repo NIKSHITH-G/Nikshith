@@ -17,11 +17,34 @@ body {
 /* Sheen slide across (skill chips) */
 @keyframes sheen {
   0%   { transform: translateX(-150%); }
-  100% { transform: translateX(150%); }
+  100% { transform: translateX(350%); }
 }
 
 /* Floating preview fade/scale (cert preview) */
 @keyframes previewIn {
-  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+  from { opacity: 0; transform: translateY(4px) scale(0.5); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
+/* Lightbox arrows */
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  height: 40px;
+  width: 40px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(17,17,20,.6);
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  transition: all .2s ease;
+}
+.nav-arrow:hover {
+  background: rgba(99,102,241,.35);
+  border-color: rgba(99,102,241,.6);
+  box-shadow: 0 6px 20px -10px rgba(99,102,241,.6);
+}
+
