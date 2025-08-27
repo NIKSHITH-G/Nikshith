@@ -69,17 +69,20 @@ export default function About() {
 
   // Map cert titles -> image paths (replace with your actual images)
   const certImages = {
-    "AWS Certified Cloud Practitioner — AWS": "images/certificates/AWS CLOUD PARTIONEER.jpg",
+    "AWS Certified Cloud Practitioner — AWS": "/images/certificates/AWS CLOUD PARTIONEER.jpg",
     "Artificial Intelligence (Google Developers) — Externship (SMART INTERNZ)":
-      "images/certificates/SmartBridge_AI.png",
-    "Web Developer Intern — AR BRANDS": "images/certificates/AR-BRANDS.png",
-    "Full-Stack Web Developer (MERN) — PREGRAD": "images/certificates/PREGRAD.jpg",
+      "/images/certificates/SmartBridge_AI.png",
+    "Web Developer Intern — AR BRANDS": "/images/certificates/AR-BRANDS.png",
+    "Full-Stack Web Developer (MERN) — PREGRAD": "/images/certificates/PREGRAD.jpg",
   };
 
   // === Skills wave interaction (position + color) ===
   const skillsContainerRef = useRef(null);
   const skillRefs = useRef([]);
   const skillsRaf = useRef(0);
+
+  // (optional) soft glow under the cursor in the skills grid
+  const glowRef = useRef(null);
 
   const handleSkillsMove = (e) => {
     const wrap = skillsContainerRef.current;
@@ -88,10 +91,17 @@ export default function About() {
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
+    // move glow
+    if (glowRef.current) {
+      glowRef.current.style.left = `${mx}px`;
+      glowRef.current.style.top  = `${my}px`;
+      glowRef.current.style.opacity = 1;
+    }
+
     cancelAnimationFrame(skillsRaf.current);
     skillsRaf.current = requestAnimationFrame(() => {
-      const AMPLITUDE = 14;
-      const RADIUS = 180;
+      const AMPLITUDE = 14; // px lift
+      const RADIUS = 180;   // px influence
 
       for (const el of skillRefs.current) {
         if (!el) continue;
@@ -102,30 +112,33 @@ export default function About() {
         const dy = my - cy;
         const d = Math.hypot(dx, dy);
 
-        const t = Math.max(0, 1 - d / RADIUS);
+        const t = Math.max(0, 1 - d / RADIUS); // 0..1 proximity
         const lift = AMPLITUDE * t * t;
         const scale = 1 + 0.06 * t;
 
-        const alphaBg = 0.05 + 0.25 * t;
-        const alphaBorder = 0.4 + 0.6 * t;
+        // Color shift with proximity
+        const alphaBg = 0.05 + 0.25 * t;   // 0.05 → 0.30
+        const alphaBorder = 0.4 + 0.6 * t; // 0.40 → 1.00
 
         el.style.transform = `translateY(${-lift}px) scale(${scale})`;
         el.style.border = `1px solid rgba(99,102,241,${alphaBorder})`;
         el.style.backgroundColor = `rgba(99,102,241,${alphaBg})`;
-        el.style.transition =
-          "transform 120ms ease-out, background-color 150ms ease, border-color 150ms ease";
-        el.style.willChange = "transform, background-color, border-color";
+        el.style.boxShadow = `0 10px 24px -12px rgba(99,102,241,${0.35 * t})`;
+        el.style.transition = "transform 120ms ease-out, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease";
+        el.style.willChange = "transform, background-color, border-color, box-shadow";
       }
     });
   };
 
   const handleSkillsLeave = () => {
     cancelAnimationFrame(skillsRaf.current);
+    if (glowRef.current) glowRef.current.style.opacity = 0;
     for (const el of skillRefs.current) {
       if (!el) continue;
       el.style.transform = "translateY(0) scale(1)";
       el.style.border = "1px solid rgba(99,102,241,0.4)";
       el.style.backgroundColor = "rgba(99,102,241,0.05)";
+      el.style.boxShadow = "0 0 0 0 rgba(99,102,241,0)";
       el.style.transition = "all 300ms ease";
     }
   };
@@ -165,7 +178,7 @@ export default function About() {
       <Navbar />
 
       <main className="text-foreground">
-        {/* ===== EXPERIENCE ===== */}
+        {/* ===== EXPERIENCE (FIRST) ===== */}
         <section className="mx-auto max-w-6xl px-6 pt-24 pb-12">
           <h2 className="text-2xl font-bold mb-6">Experience</h2>
           <div className="rounded-2xl border-2 border-white/30 p-6 space-y-6">
@@ -190,7 +203,7 @@ export default function About() {
           </div>
         </section>
 
-        {/* ===== EDUCATION ===== */}
+        {/* ===== EDUCATION (TIMELINE, SINGLE OUTER OUTLINE ONLY) ===== */}
         <section id="education" className="mx-auto max-w-6xl px-6 pb-12">
           <h2 className="text-2xl font-bold mb-6">Education</h2>
           <div className="rounded-2xl border-2 border-white/30 p-6">
@@ -236,13 +249,30 @@ export default function About() {
         <section className="mx-auto max-w-6xl px-6 pb-20">
           <h2 className="text-2xl font-bold mb-6">Skills & Certifications</h2>
 
-          <div className="rounded-2xl border-2 border-white/30 p-6 grid gap-10 md:grid-cols-2">
+          {/* Outer outline + subtle conic ring */}
+          <div className="
+            relative rounded-2xl border-2 border-white/30 p-6 grid gap-10 md:grid-cols-2
+            before:content-[''] before:absolute before:inset-0 before:rounded-2xl
+            before:bg-[conic-gradient(from_180deg,rgba(99,102,241,0.16),transparent,rgba(168,85,247,0.14),transparent)]
+            before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500
+            before:blur-[20px] before:pointer-events-none
+          ">
             {/* Skills */}
             <div
               ref={skillsContainerRef}
               onMouseMove={handleSkillsMove}
               onMouseLeave={handleSkillsLeave}
+              className="relative"
             >
+              {/* cursor-follow glow */}
+              <div
+                ref={glowRef}
+                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2
+                           w-[280px] h-[180px] rounded-full opacity-0 transition-opacity duration-300
+                           bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.12),transparent_70%)]
+                           blur-2xl"
+                style={{ left: 0, top: 0 }}
+              />
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {skills.map((s, i) => (
                   <motion.div
@@ -252,13 +282,21 @@ export default function About() {
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true, amount: 0.3 }}
                     transition={{ duration: 0.3, delay: i * 0.05 }}
-                    className="rounded-lg px-3 py-2 text-sm text-center select-none"
+                    className="
+                      relative group overflow-hidden rounded-lg px-3 py-2 text-sm text-center select-none
+                    "
                     style={{
                       transform: "translateY(0) scale(1)",
                       border: "1px solid rgba(99,102,241,0.4)",
                       backgroundColor: "rgba(99,102,241,0.05)",
+                      boxShadow: "0 0 0 0 rgba(99,102,241,0)",
                     }}
                   >
+                    {/* Sheen pass */}
+                    <span
+                      className="pointer-events-none absolute -inset-1 translate-x-[-150%] group-hover:animate-[sheen_700ms_ease]
+                                 bg-[linear-gradient(115deg,transparent,rgba(255,255,255,0.28),transparent)] w-1/2"
+                    />
                     {s}
                   </motion.div>
                 ))}
@@ -275,7 +313,12 @@ export default function About() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true, amount: 0.3 }}
                     transition={{ duration: 0.35, delay: i * 0.1 }}
-                    className="rounded-lg border border-indigo-500/40 px-4 py-3 text-sm bg-background/60"
+                    className="
+                      relative overflow-hidden rounded-lg border border-indigo-500/40 px-4 py-3 text-sm bg-background/60
+                      transition-all hover:translate-x-[2px]
+                      before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0
+                      hover:before:w-[6px] before:bg-indigo-500/70 before:transition-[width] before:duration-200
+                    "
                     onMouseEnter={(e) => showCertPreview(e, c)}
                     onMouseMove={moveCertPreview}
                     onMouseLeave={hideCertPreview}
@@ -285,10 +328,11 @@ export default function About() {
                 ))}
               </div>
 
-              {/* Floating preview window */}
+              {/* Floating preview window with fade/scale */}
               {preview.show && (
                 <div
-                  className="fixed z-[60] pointer-events-none rounded-xl border border-white/20 bg-background/80 backdrop-blur-md shadow-2xl p-2"
+                  className="fixed z-[60] pointer-events-none rounded-xl border border-white/20 bg-background/80 backdrop-blur-md shadow-2xl p-2
+                             animate-[previewIn_140ms_ease-out]"
                   style={{
                     left: preview.x,
                     top: preview.y,
