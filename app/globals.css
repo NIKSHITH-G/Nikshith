@@ -48,3 +48,48 @@ body {
   box-shadow: 0 6px 20px -10px rgba(99,102,241,.6);
 }
 
+/* ========== Certificates scroll styling ========== */
+/* Hook: .certs-scroll */
+
+.certs-scroll {
+  /* ensure a stable gutter in browsers that support this (prevents overlap) */
+  scrollbar-gutter: stable both-edges;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* WebKit (Chrome, Safari) */
+.certs-scroll::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.certs-scroll::-webkit-scrollbar-track {
+  background: transparent; /* keep track subtle */
+  border-radius: 999px;
+}
+
+.certs-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(124,58,237,0.95), rgba(93,95,240,0.95));
+  border-radius: 999px;
+  border: 3px solid rgba(0,0,0,0.08); /* small outer border to lift the thumb */
+  min-height: 32px;
+}
+
+/* Hover state for the thumb for better affordance */
+.certs-scroll::-webkit-scrollbar-thumb:hover {
+  transform: scale(1.02);
+  background: linear-gradient(180deg, rgba(124,58,237,1), rgba(93,95,240,1));
+}
+
+/* Firefox */
+.certs-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124,58,237,0.9) transparent;
+}
+
+/* Optional: when focused (keyboard dragging), slightly widen and increase contrast */
+.certs-scroll:focus::-webkit-scrollbar-thumb,
+.certs-scroll:hover::-webkit-scrollbar-thumb {
+  border-color: rgba(0,0,0,0.12);
+  min-height: 40px;
+}

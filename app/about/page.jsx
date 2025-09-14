@@ -10,9 +10,21 @@ import ProjectCard from "../../components/ProjectCard";
 export default function About() {
   // ---- DATA ----
   const milestones = [
-    { title: "Vellore Institute Of Technology", year: "2020-2024", image: "/images/Timeline/step1.png" },
-    { title: "Narayana Saraswathi Pati",        year: "2018-2020", image: "/images/Timeline/step2.png" },
-    { title: "Narayana E-Techno School",        year: "2016-2018", image: "/images/Timeline/step3.png" },
+    {
+      title: "Vellore Institute Of Technology",
+      year: "2020-2024",
+      image: "/images/Timeline/step1.png",
+    },
+    {
+      title: "Narayana Saraswathi Pati",
+      year: "2018-2020",
+      image: "/images/Timeline/step2.png",
+    },
+    {
+      title: "Narayana E-Techno School",
+      year: "2016-2018",
+      image: "/images/Timeline/step3.png",
+    },
   ];
 
   const experience = [
@@ -45,7 +57,14 @@ export default function About() {
         "Smart contracts for secondary verification & access control.",
         "Compared MD5, SHA-1, SHA-256, SHA-512 for security vs performance.",
       ],
-      stack: ["Blockchain (Private/Public)", "AES", "SHA-512", "MySQL", "HTML", "CSS"],
+      stack: [
+        "Blockchain (Private/Public)",
+        "AES",
+        "SHA-512",
+        "MySQL",
+        "HTML",
+        "CSS",
+      ],
       images: [
         "/images/projects/blockchain2.jpeg",
         "/images/projects/blockchain1.jpeg",
@@ -81,8 +100,21 @@ export default function About() {
   ];
 
   const skills = [
-    "Python", "Java", "React", "Next.js", "TypeScript", "HTML", "CSS", "PHP", "SQL", "Git",
-    "OOP", "DBMS", "Blockchain", "AI", "ML",
+    "Python",
+    "Java",
+    "React",
+    "Next.js",
+    "TypeScript",
+    "HTML",
+    "CSS",
+    "PHP",
+    "SQL",
+    "Git",
+    "OOP",
+    "DBMS",
+    "Blockchain",
+    "AI",
+    "ML",
   ];
 
   const certs = [
@@ -90,15 +122,20 @@ export default function About() {
     "Artificial Intelligence (Google Developers) — Externship (SMART INTERNZ)",
     "Web Developer Intern — AR BRANDS",
     "Full-Stack Web Developer (MERN) — PREGRAD",
+    "Graduate Record Examination (GRE) — 322/340",
   ];
 
   // Map cert titles -> image paths (replace with your actual images)
   const certImages = {
-    "AWS Certified Cloud Practitioner — AWS": "/images/certificates/AWS CLOUD PARTIONEER.jpg",
+    "AWS Certified Cloud Practitioner — AWS":
+      "/images/certificates/AWS CLOUD PARTIONEER.jpg",
     "Artificial Intelligence (Google Developers) — Externship (SMART INTERNZ)":
       "/images/certificates/SmartBridge_AI.png",
     "Web Developer Intern — AR BRANDS": "/images/certificates/AR-BRANDS.png",
-    "Full-Stack Web Developer (MERN) — PREGRAD": "/images/certificates/PREGRAD.jpg",
+    "Full-Stack Web Developer (MERN) — PREGRAD":
+      "/images/certificates/PREGRAD.jpg",
+    "Graduate Record Examination (GRE) — 322/340":
+      "/images/certificates/GRE.jpg",
   };
 
   // === Skills wave interaction (position + color) ===
@@ -147,7 +184,8 @@ export default function About() {
         el.style.boxShadow = `0 10px 24px -12px rgba(99,102,241,${0.35 * t})`;
         el.style.transition =
           "transform 120ms ease-out, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease";
-        el.style.willChange = "transform, background-color, border-color, box-shadow";
+        el.style.willChange =
+          "transform, background-color, border-color, box-shadow";
       }
     });
   };
@@ -181,7 +219,11 @@ export default function About() {
     certRaf.current = requestAnimationFrame(() => {
       const OFFSET_X = 16;
       const OFFSET_Y = 16;
-      setPreview((p) => ({ ...p, x: clientX + OFFSET_X, y: clientY + OFFSET_Y }));
+      setPreview((p) => ({
+        ...p,
+        x: clientX + OFFSET_X,
+        y: clientY + OFFSET_Y,
+      }));
     });
   };
 
@@ -209,7 +251,9 @@ export default function About() {
                 className="rounded-xl border border-indigo-500/40 p-5"
               >
                 <div className="font-semibold">{exp.title}</div>
-                <div className="text-sm text-foreground/70 mb-3">{exp.period}</div>
+                <div className="text-sm text-foreground/70 mb-3">
+                  {exp.period}
+                </div>
                 <ul className="space-y-2 text-sm list-disc pl-5">
                   {exp.bullets.map((b, j) => (
                     <li key={`exp-${i}-b-${j}`}>{b}</li>
@@ -231,27 +275,23 @@ export default function About() {
         {/* ===== PROJECTS ===== */}
         <section className="mx-auto max-w-6xl px-6 pb-12">
           <h2 className="text-2xl font-bold mb-6">Featured Projects</h2>
-          <div className="grid gap-6 md:grid-cols-2">
-            {projects.map((p, i) => (
-              <ProjectCard key={`proj-${p.name}-${i}`} project={p} idx={i} />
-            ))}
-          </div>
+          <ProjectsGridWrapper projects={projects} />
         </section>
 
-        {/* ===== SKILLS & CERTIFICATIONS ===== */}
+        {/* ===== SKILLS & CERTIFICATIONS (updated: certificates scroll independently) ===== */}
         <section className="mx-auto max-w-6xl px-6 pb-20">
           <h2 className="text-2xl font-bold mb-6">Skills & Certifications</h2>
 
           <div
             className="
-              relative rounded-2xl border-2 border-white/30 p-6 grid gap-10 md:grid-cols-2
-              before:content-[''] before:absolute before:inset-0 before:rounded-2xl
-              before:bg-[conic-gradient(from_180deg,rgba(99,102,241,0.16),transparent,rgba(168,85,247,0.14),transparent)]
-              before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500
-              before:blur-[20px] before:pointer-events-none
-            "
+      relative rounded-2xl border-2 border-white/30 p-6 grid items-start gap-10 md:grid-cols-2
+      before:content-[''] before:absolute before:inset-0 before:rounded-2xl
+      before:bg-[conic-gradient(from_180deg,rgba(99,102,241,0.16),transparent,rgba(168,85,247,0.14),transparent)]
+      before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500
+      before:blur-[20px] before:pointer-events-none
+    "
           >
-            {/* Skills */}
+            {/* Skills (left) */}
             <div
               ref={skillsContainerRef}
               onMouseMove={handleSkillsMove}
@@ -261,9 +301,9 @@ export default function About() {
               <div
                 ref={glowRef}
                 className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2
-                           w-[280px] h-[180px] rounded-full opacity-0 transition-opacity duration-300
-                           bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.12),transparent_70%)]
-                           blur-2xl"
+                   w-[280px] h-[180px] rounded-full opacity-0 transition-opacity duration-300
+                   bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.12),transparent_70%)]
+                   blur-2xl"
                 style={{ left: 0, top: 0 }}
               />
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -285,7 +325,7 @@ export default function About() {
                   >
                     <span
                       className="pointer-events-none absolute -inset-1 translate-x-[-150%] group-hover:animate-[sheen_700ms_ease]
-                                 bg-[linear-gradient(115deg,transparent,rgba(255,255,255,0.28),transparent)] w-1/2"
+                         bg-[linear-gradient(115deg,transparent,rgba(255,255,255,0.28),transparent)] w-1/2"
                     />
                     {s}
                   </motion.div>
@@ -293,9 +333,19 @@ export default function About() {
               </div>
             </div>
 
-            {/* Certifications */}
-            <div>
-              <div className="space-y-3">
+            {/* Certifications (right) — scrollable independently */}
+            <div className="relative">
+              {/* make only this column scrollable when content grows */}
+              <div
+                className="space-y-3 overflow-y-auto pr-6 certs-scroll"
+                style={{
+                  maxHeight: "260px",
+                  scrollbarGutter: "stable both-edges",
+                }}
+              >
+                {/* responsive: larger max height on medium screens */}
+                <div className="md:max-h-[420px]" />
+
                 {certs.map((c, i) => (
                   <motion.div
                     key={`cert-${i}`}
@@ -304,11 +354,11 @@ export default function About() {
                     viewport={{ once: true, amount: 0.3 }}
                     transition={{ duration: 0.35, delay: i * 0.1 }}
                     className="
-                      relative overflow-hidden rounded-lg border border-indigo-500/40 px-4 py-3 text-sm bg-background/60
-                      transition-all hover:translate-x-[2px]
-                      before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0
-                      hover:before:w-[6px] before:bg-indigo-500/70 before:transition-[width] before:duration-200
-                    "
+        relative overflow-hidden rounded-lg border border-indigo-500/40 px-4 py-3 text-sm bg-background/60
+        transition-all hover:translate-x-[2px]
+        before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0
+        hover:before:w-[6px] before:bg-indigo-500/70 before:transition-[width] before:duration-200
+      "
                     onMouseEnter={(e) => showCertPreview(e, c)}
                     onMouseMove={moveCertPreview}
                     onMouseLeave={hideCertPreview}
@@ -321,11 +371,20 @@ export default function About() {
               {preview.show && (
                 <div
                   className="fixed z-[60] pointer-events-none rounded-xl border border-white/20 bg-background/80 backdrop-blur-md shadow-2xl p-2
-                             animate-[previewIn_140ms_ease-out]"
-                  style={{ left: preview.x, top: preview.y, width: 260, height: 160 }}
+                     animate-[previewIn_140ms_ease-out]"
+                  style={{
+                    left: preview.x,
+                    top: preview.y,
+                    width: 260,
+                    height: 160,
+                  }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={preview.src} alt="" className="h-full w-full object-contain rounded-md" />
+                  <img
+                    src={preview.src}
+                    alt=""
+                    className="h-full w-full object-contain rounded-md"
+                  />
                 </div>
               )}
             </div>
@@ -333,5 +392,33 @@ export default function About() {
         </section>
       </main>
     </>
+  );
+}
+
+/* ---------------------------
+  ProjectsGridWrapper
+  - manages `expandAll` and passes it to each ProjectCard
+  - hovering (or focusing) the grid expands all previews
+----------------------------*/
+function ProjectsGridWrapper({ projects }) {
+  const [expandAll, setExpandAll] = useState(false);
+
+  return (
+    <div
+      className="grid gap-6 md:grid-cols-2"
+      onMouseEnter={() => setExpandAll(true)}
+      onMouseLeave={() => setExpandAll(false)}
+      onFocus={() => setExpandAll(true)}
+      onBlur={() => setExpandAll(false)}
+    >
+      {projects.map((p, i) => (
+        <ProjectCard
+          key={`proj-${p.name}-${i}`}
+          project={p}
+          idx={i}
+          expandAll={expandAll}
+        />
+      ))}
+    </div>
   );
 }
