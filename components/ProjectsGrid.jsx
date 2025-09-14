@@ -1,11 +1,17 @@
+// components/ProjectsGrid.jsx
 "use client";
-import { useState, useCallback, useEffect } from "react";
+
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 function ProjectsGrid({ projects }) {
   const [open, setOpen] = useState(false);
-  const [pIdx, setPIdx]   = useState(0);
-  const [sIdx, setSIdx]   = useState(0);
+  const [pIdx, setPIdx] = useState(0);
+  const [sIdx, setSIdx] = useState(0);
+
+  // NEW: hovered state (true when any project is hovered)
+  const [hovered, setHovered] = useState(false);
+  const hoveredRef = useRef(false);
 
   const openLightbox = (idx) => {
     setPIdx(idx);
@@ -36,11 +42,30 @@ function ProjectsGrid({ projects }) {
     const onKey = (e) => {
       if (e.key === "Escape") closeLightbox();
       if (e.key === "ArrowRight") nextSlide();
-      if (e.key === "ArrowLeft")  prevSlide();
+      if (e.key === "ArrowLeft") prevSlide();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, nextSlide, prevSlide]);
+
+  // helpers to manage hover state so small mouse jitter doesn't flicker
+  let hoverTimeout = useRef(null);
+  const onCardEnter = (idx) => {
+    if (hoverTimeout.current) {
+      clearTimeout(hoverTimeout.current);
+      hoverTimeout.current = null;
+    }
+    hoveredRef.current = true;
+    setHovered(true);
+  };
+  const onCardLeave = () => {
+    // small delay before collapsing (smoother UX)
+    hoverTimeout.current = setTimeout(() => {
+      hoveredRef.current = false;
+      setHovered(false);
+      hoverTimeout.current = null;
+    }, 140);
+  };
 
   return (
     <>
@@ -53,6 +78,8 @@ function ProjectsGrid({ projects }) {
             viewport={{ once: true, amount: 0.25 }}
             transition={{ duration: 0.45, ease: "easeOut" }}
             onClick={() => openLightbox(i)}
+            onMouseEnter={() => onCardEnter(i)}
+            onMouseLeave={() => onCardLeave()}
             className="
               group cursor-pointer relative overflow-hidden rounded-2xl
               border-2 border-white/15 bg-white/[0.03] backdrop-blur
@@ -61,7 +88,7 @@ function ProjectsGrid({ projects }) {
             "
           >
             {/* Inner frame */}
-            <div className="m-3 rounded-xl border border-indigo-500/40 p-5">
+            <div className="m-3 rounded-xl border border-indigo-500/40 p-5 flex flex-col min-h-[280px]">
               <div className="flex items-start justify-between gap-4">
                 <h3 className="font-semibold text-xl">{p.name}</h3>
                 {/* small preview count */}
@@ -72,7 +99,7 @@ function ProjectsGrid({ projects }) {
                 ) : null}
               </div>
 
-              <ul className="space-y-2 text-sm list-disc pl-5 my-4">
+              <ul className="space-y-2 text-sm list-disc pl-5 my-4 flex-1">
                 {p.points.map((pt, j) => (
                   <li key={j}>{pt}</li>
                 ))}
@@ -89,22 +116,51 @@ function ProjectsGrid({ projects }) {
                 ))}
               </div>
 
-              {/* faint preview banner */}
-              {p.slides?.[0] && (
-                <div className="mt-4 overflow-hidden rounded-lg border border-white/10">
-                  <img
-                    src={p.slides[0]}
-                    alt={`${p.name} preview`}
-                    className="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                  />
-                </div>
-              )}
+              {/* faint preview banner area (keeps layout stable) */}
+              <div className="mt-4 overflow-hidden rounded-lg border border-white/10">
+                {/* THIS IMAGE AREA will expand/collapse for all cards when hovered */}
+                <AnimatePresence>
+                  {hovered ? (
+                    <motion.div
+                      key={`preview-${i}`}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 160, opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.28 }}
+                      className="relative w-full"
+                    >
+                      <img
+                        src={p.slides?.[0] || "/images/projects/placeholder.png"}
+                        alt={`${p.name} preview`}
+                        className="w-full h-full object-cover rounded-b-md"
+                        style={{ height: "160px" }}
+                      />
+                    </motion.div>
+                  ) : (
+                    // keep a thin visible preview area when collapsed (or zero)
+                    <motion.div
+                      key={`preview-empty-${i}`}
+                      initial={{ height: 0 }}
+                      animate={{ height: 0 }}
+                      exit={{ height: 0 }}
+                    />
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* preview footer row */}
+              <div className="mt-3 flex items-center justify-between">
+                <div className="text-sm text-white/70 px-3">Preview</div>
+                <button className="rounded-md bg-white/5 px-3 py-1 text-sm hover:bg-white/6">
+                  View
+                </button>
+              </div>
             </div>
           </motion.article>
         ))}
       </div>
 
-      {/* Lightbox / slideshow */}
+      {/* Lightbox / slideshow (unchanged) */}
       <AnimatePresence>
         {open && (
           <motion.div

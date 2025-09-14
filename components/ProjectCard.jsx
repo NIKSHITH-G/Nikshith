@@ -1,10 +1,16 @@
 // components/ProjectCard.jsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function ProjectCard({ project, idx, expandAll = false }) {
+export default function ProjectCard({
+  project,
+  idx,
+  globalHover = false,
+  onGlobalHoverEnter = () => {},
+  onGlobalHoverLeave = () => {},
+}) {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState(0);
 
@@ -22,7 +28,7 @@ export default function ProjectCard({ project, idx, expandAll = false }) {
     setCurrent((c) => (c - 1 + images.length) % images.length);
   };
 
-  // Keyboard controls when lightbox is open
+  // keyboard controls for lightbox
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => {
@@ -34,12 +40,45 @@ export default function ProjectCard({ project, idx, expandAll = false }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, images.length]);
 
+  // local hover state + combined showPreview
+  const [localHover, setLocalHover] = useState(false);
+  const showPreview = localHover || globalHover;
+
+  // Auto-slide while preview is visible
+  const slideTimerRef = useRef(null);
+  const SLIDE_INTERVAL_MS = 2200;
+
+  useEffect(() => {
+    // start auto-slide only when preview visible and there are multiple images
+    if (showPreview && images.length > 1) {
+      // clear any previous
+      clearInterval(slideTimerRef.current);
+      slideTimerRef.current = setInterval(() => {
+        setCurrent((c) => (c + 1) % images.length);
+      }, SLIDE_INTERVAL_MS);
+    } else {
+      clearInterval(slideTimerRef.current);
+      slideTimerRef.current = null;
+    }
+
+    return () => {
+      clearInterval(slideTimerRef.current);
+    };
+  }, [showPreview, images.length]);
+
   return (
     <>
-      {/* group used to trigger hover reveal for the preview area */}
-      <article
+      <div
+        onMouseEnter={() => {
+          setLocalHover(true);
+          onGlobalHoverEnter();
+        }}
+        onMouseLeave={() => {
+          setLocalHover(false);
+          onGlobalHoverLeave();
+        }}
         className="
-          group relative cursor-default overflow-hidden rounded-2xl border-2 border-white/10 bg-black/30
+          group relative overflow-hidden rounded-2xl border border-white/10 bg-black/30
           ring-1 ring-white/5 p-5 sm:p-6 backdrop-blur
           shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]
         "
@@ -47,7 +86,9 @@ export default function ProjectCard({ project, idx, expandAll = false }) {
         <div className="flex h-full flex-col">
           {/* Header */}
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-lg sm:text-xl font-semibold tracking-tight">{name}</h3>
+            <h3 className="text-lg sm:text-xl font-semibold tracking-tight">
+              {name}
+            </h3>
             {images?.length > 0 && (
               <span className="rounded-full border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] sm:text-xs text-indigo-300">
                 {images.length} shots
@@ -66,7 +107,7 @@ export default function ProjectCard({ project, idx, expandAll = false }) {
 
           {/* Tech stack */}
           {stack?.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-6">
               {stack.map((s, i) => (
                 <span
                   key={`stack-${idx}-${s}-${i}`}
@@ -80,54 +121,52 @@ export default function ProjectCard({ project, idx, expandAll = false }) {
 
           <div className="mt-auto" />
 
-          {/* Preview area (collapsed by default; expands on hover for md+ screens or when expandAll true) */}
+          {/* Preview box */}
           <div
-            className="
-              relative w-full overflow-hidden rounded-xl border border-white/10 bg-black/40
-              ring-1 ring-white/5 transition-colors hover:bg-white/[0.02]
-            "
+            aria-hidden
+            className="relative w-full overflow-hidden rounded-xl border border-white/10 bg-black/40
+              ring-1 ring-white/5 transition-colors h-[60px] md:h-[60px]"
           >
-            {/* Collapsible container: expands on hover (md+) OR if expandAll is true */}
-            <div
-              className={`
-                transition-[max-height,opacity] duration-300 ease-out overflow-hidden
-                md:motion-safe:group-hover:transition-[max-height,opacity]
-                ${expandAll ? "max-h-[300px] opacity-100" : "max-h-0 md:group-hover:max-h-[300px] md:group-hover:opacity-100"}
-              `}
-              style={{ willChange: "max-height,opacity" }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={previewSrc}
-                alt={`${name} preview`}
-                className="h-[300px] w-full object-cover md:rounded-b-xl"
-                draggable={false}
-              />
-              {/* faint radial overlay on hover */}
-              <span className="pointer-events-none absolute inset-0 rounded-b-xl opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(70%_60%_at_50%_-10%,rgba(99,102,241,.06),transparent)]" />
-            </div>
+            <AnimatePresence>
+              {showPreview && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 260, opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.28 }}
+                  className="absolute inset-0"
+                >
+                  {/* sliding image (driven by current index) */}
+                  <img
+                    src={images[current] || previewSrc}
+                    alt={`${name} preview ${current + 1}`}
+                    className="h-full w-full object-cover rounded-md"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {/* Always-visible footer row with the "open lightbox" button so touch users can still open */}
-            <div className="p-3 md:p-4 flex items-center justify-between">
-              <div className="text-xs text-foreground/80">Preview</div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (!images.length) return;
-                  setOpen(true);
-                  setCurrent(0);
-                }}
-                className="inline-flex items-center gap-2 rounded-md bg-indigo-500/10 px-3 py-1 text-sm text-indigo-300 hover:bg-indigo-500/15"
-                aria-label={`Open ${name} gallery`}
-              >
-                View
-              </button>
+            <div className="absolute left-0 right-0 bottom-0 p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-white/70">Preview</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!images.length) return;
+                    setOpen(true);
+                    setCurrent(0);
+                  }}
+                  className="rounded-md bg-white/5 px-3 py-1 text-sm hover:bg-white/6"
+                >
+                  View
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </article>
+      </div>
 
-      {/* Lightbox slideshow (unchanged) */}
+      {/* Lightbox: unchanged */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -149,72 +188,32 @@ export default function ProjectCard({ project, idx, expandAll = false }) {
               exit={{ y: 18, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Decorative soft ring */}
               <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-40 blur-2xl [mask-image:radial-gradient(100%_90%_at_50%_10%,#000_40%,transparent)] bg-[conic-gradient(from_200deg,rgba(99,102,241,.25),rgba(168,85,247,.2),transparent,rgba(99,102,241,.25))]" />
 
-              {/* Close button */}
               <button
                 onClick={() => setOpen(false)}
                 className="absolute right-3 top-3 z-10 inline-grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white/10 text-white/80 hover:bg-white/15"
                 aria-label="Close"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M6 6l12 12M18 6L6 18"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
+                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </button>
 
-              {/* Image area */}
               <div className="relative grid place-items-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={images[current]}
-                  alt={`${name} screenshot ${current + 1}`}
-                  className="max-h-[76vh] w-full object-contain"
-                />
-
-                {/* Prev / Next */}
+                <img src={images[current]} alt={`${name} screenshot ${current + 1}`} className="max-h-[76vh] w-full object-contain" />
                 {images.length > 1 && (
                   <>
-                    <button
-                      onClick={prevImage}
-                      className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 inline-grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-white/10 text-white/90 hover:bg-white/15 backdrop-blur"
-                      aria-label="Previous"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                        <path
-                          d="M15 6l-6 6 6 6"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                    <button onClick={() => { setCurrent((c) => (c - 1 + images.length) % images.length); }} className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 inline-grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-white/10 text-white/90 hover:bg-white/15 backdrop-blur" aria-label="Previous">
+                      ‹
                     </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 inline-grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-white/10 text-white/90 hover:bg-white/15 backdrop-blur"
-                      aria-label="Next"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                        <path
-                          d="M9 6l6 6-6 6"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                    <button onClick={() => { setCurrent((c) => (c + 1) % images.length); }} className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 inline-grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-white/10 text-white/90 hover:bg-white/15 backdrop-blur" aria-label="Next">
+                      ›
                     </button>
                   </>
                 )}
               </div>
 
-              {/* Caption + dots */}
               <div className="flex items-center justify-between gap-4 px-4 pb-4 pt-2 md:px-5">
                 <div className="truncate text-xs sm:text-sm text-white/70">
                   {name} — <span className="text-white/60">shot {current + 1} of {images.length}</span>
@@ -222,15 +221,7 @@ export default function ProjectCard({ project, idx, expandAll = false }) {
                 {images.length > 1 && (
                   <div className="flex items-center gap-2">
                     {images.map((_, i) => (
-                      <button
-                        key={`dot-${i}`}
-                        onClick={() => setCurrent(i)}
-                        aria-label={`Go to slide ${i + 1}`}
-                        className={[
-                          "h-2.5 w-2.5 rounded-full transition",
-                          i === current ? "bg-white" : "bg-white/35 hover:bg-white/60",
-                        ].join(" ")}
-                      />
+                      <button key={`dot-${i}`} onClick={() => setCurrent(i)} aria-label={`Go to slide ${i + 1}`} className={`h-2.5 w-2.5 rounded-full transition ${i === current ? "bg-white" : "bg-white/35 hover:bg-white/60"}`} />
                     ))}
                   </div>
                 )}

@@ -2,7 +2,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../../components/Navbar";
 import Timeline from "../../components/Timeline";
 import ProjectCard from "../../components/ProjectCard";
@@ -35,6 +35,7 @@ export default function About() {
         "BFSI unit: core software development & maintenance in agile teams.",
         "Real-time issue resolution, RCA, and system enhancements.",
         "Deployments, monitoring, and automation with internal tooling.",
+        "Worked on backend services, incident triage and CI/CD improvements.",
       ],
     },
     {
@@ -44,6 +45,7 @@ export default function About() {
         "Gathered requirements and aligned dev with project goals.",
         "Built custom HTML/JS solutions and performed site testing.",
         "Shipped a smooth, bug-free user experience.",
+        "Implemented responsive fixes and QA automation checks.",
       ],
     },
   ];
@@ -232,6 +234,16 @@ export default function About() {
     setPreview((p) => ({ ...p, show: false }));
   };
 
+  // === Experience expand state ===
+  const [openExpIndex, setOpenExpIndex] = useState(-1);
+
+  const toggleExp = (i) => {
+    setOpenExpIndex((cur) => (cur === i ? -1 : i));
+  };
+
+  // helper to detect current job
+  const isPresent = (period) => /present/i.test(period);
+
   return (
     <>
       <Navbar />
@@ -240,27 +252,105 @@ export default function About() {
         {/* ===== EXPERIENCE ===== */}
         <section className="mx-auto max-w-6xl px-6 pt-24 pb-12">
           <h2 className="text-2xl font-bold mb-6">Experience</h2>
-          <div className="rounded-2xl border-2 border-white/30 p-6 space-y-6">
-            {experience.map((exp, i) => (
-              <motion.div
-                key={`exp-${i}`}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="rounded-xl border border-indigo-500/40 p-5"
-              >
-                <div className="font-semibold">{exp.title}</div>
-                <div className="text-sm text-foreground/70 mb-3">
-                  {exp.period}
-                </div>
-                <ul className="space-y-2 text-sm list-disc pl-5">
-                  {exp.bullets.map((b, j) => (
-                    <li key={`exp-${i}-b-${j}`}>{b}</li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
+
+          <div className="relative rounded-2xl border-2 border-white/30 p-6">
+            {/* Scrollable list */}
+            <div
+              className="space-y-6 overflow-y-auto pr-6"
+              style={{ maxHeight: "420px", scrollbarGutter: "stable both-edges" }}
+            >
+              {experience.map((exp, i) => {
+                const expanded = openExpIndex === i;
+                const showPreviewBullets = 2; // number of bullets shown when collapsed
+
+                return (
+                  <motion.div
+                    key={`exp-${i}`}
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.36, delay: i * 0.06 }}
+                    className="relative rounded-xl border border-indigo-500/40 p-5 bg-[rgba(255,255,255,0.02)] backdrop-blur-sm"
+                    // glass + hover glow
+                    style={{ WebkitBackdropFilter: "blur(6px)" }}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-3">
+                          <h3 className="font-semibold text-lg tracking-tight">{exp.title}</h3>
+
+                          {isPresent(exp.period) && (
+                            <span
+                              className="ml-1 inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-xs font-medium bg-gradient-to-r from-indigo-500/30 to-violet-500/20 text-indigo-200 ring-1 ring-indigo-400/10 shadow-[0_6px_20px_-12px_rgba(99,102,241,0.45)]"
+                              aria-hidden
+                            >
+                              Present
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="text-sm text-foreground/70 mt-1">{exp.period}</div>
+                      </div>
+
+                      <div className="ml-auto flex items-center gap-2">
+                        <button
+                          onClick={() => toggleExp(i)}
+                          aria-expanded={expanded}
+                          className="text-sm rounded-md px-3 py-1 bg-white/5 hover:bg-white/6 transition"
+                        >
+                          {expanded ? "Collapse" : "Read more"}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* bullets: collapsed preview + expand animation */}
+                    <div className="mt-4">
+                      <ul className="list-disc pl-5 text-sm space-y-2 text-foreground/90">
+                        {exp.bullets.slice(0, showPreviewBullets).map((b, j) => (
+                          <li key={`exp-${i}-b-${j}`}>{b}</li>
+                        ))}
+                      </ul>
+
+                      <AnimatePresence initial={false}>
+                        {expanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.28 }}
+                            className="overflow-hidden"
+                          >
+                            <ul className="list-disc pl-5 text-sm mt-3 space-y-2 text-foreground/90">
+                              {exp.bullets.slice(showPreviewBullets).map((b, j) => (
+                                <li key={`exp-${i}-more-${j}`}>{b}</li>
+                              ))}
+                            </ul>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Hover glow effect layer — using absolute pseudo like effect */}
+                    <div
+                      className="pointer-events-none absolute -inset-[1px] rounded-xl opacity-0 transition-all duration-300"
+                      style={{
+                        boxShadow: "0 10px 30px -18px rgba(99,102,241,0.6)",
+                      }}
+                    />
+                    {/* add hover styles via tailwind classes directly on container */}
+                    <style jsx>{`
+                      /* local hover polish: slightly stronger border + glow */
+                      div[class*="rounded-xl"][class*="bg-[rgba(255,255,255,0.02)]"]:hover {
+                        box-shadow: 0 10px 30px -12px rgba(99,102,241,0.28);
+                        transform: translateY(-4px);
+                        transition: all 220ms ease;
+                        border-color: rgba(124,58,237,0.45);
+                      }
+                    `}</style>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
         </section>
 
@@ -275,10 +365,14 @@ export default function About() {
         {/* ===== PROJECTS ===== */}
         <section className="mx-auto max-w-6xl px-6 pb-12">
           <h2 className="text-2xl font-bold mb-6">Featured Projects</h2>
-          <ProjectsGridWrapper projects={projects} />
+          <div className="grid gap-6 md:grid-cols-2">
+            {projects.map((p, i) => (
+              <ProjectCard key={`proj-${p.name}-${i}`} project={p} idx={i} />
+            ))}
+          </div>
         </section>
 
-        {/* ===== SKILLS & CERTIFICATIONS (updated: certificates scroll independently) ===== */}
+        {/* ===== SKILLS & CERTIFICATIONS (unchanged) ===== */}
         <section className="mx-auto max-w-6xl px-6 pb-20">
           <h2 className="text-2xl font-bold mb-6">Skills & Certifications</h2>
 
@@ -392,33 +486,5 @@ export default function About() {
         </section>
       </main>
     </>
-  );
-}
-
-/* ---------------------------
-  ProjectsGridWrapper
-  - manages `expandAll` and passes it to each ProjectCard
-  - hovering (or focusing) the grid expands all previews
-----------------------------*/
-function ProjectsGridWrapper({ projects }) {
-  const [expandAll, setExpandAll] = useState(false);
-
-  return (
-    <div
-      className="grid gap-6 md:grid-cols-2"
-      onMouseEnter={() => setExpandAll(true)}
-      onMouseLeave={() => setExpandAll(false)}
-      onFocus={() => setExpandAll(true)}
-      onBlur={() => setExpandAll(false)}
-    >
-      {projects.map((p, i) => (
-        <ProjectCard
-          key={`proj-${p.name}-${i}`}
-          project={p}
-          idx={i}
-          expandAll={expandAll}
-        />
-      ))}
-    </div>
   );
 }
