@@ -1,7 +1,7 @@
 // app/about/page.js
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../../components/Navbar";
 import Timeline from "../../components/Timeline";
@@ -73,8 +73,6 @@ export default function About() {
         "/images/projects/blockchain3.jpeg",
       ],
     },
-
-    // NEW PROJECT
     {
       name: "Smart Mathematics Tutor — AI Project",
       points: [
@@ -236,28 +234,162 @@ export default function About() {
 
   // === Experience expand state ===
   const [openExpIndex, setOpenExpIndex] = useState(-1);
-
   const toggleExp = (i) => {
     setOpenExpIndex((cur) => (cur === i ? -1 : i));
   };
-
-  // helper to detect current job
   const isPresent = (period) => /present/i.test(period);
+
+  // === Animated Stats Counter ===
+  // NOTE: we now use a manually configurable constant for Projects count
+  const PROJECTS_DISPLAY_COUNT = 10; // <--- change this to any number (not derived from projects.length)
+
+  const statsRef = useRef(null);
+  const [statsStarted, setStatsStarted] = useState(false);
+  const [years, setYears] = useState(0);
+  const [certCount, setCertCount] = useState(0);
+  const [projectsNum, setProjectsNum] = useState(0);
+
+  useEffect(() => {
+    const el = statsRef.current;
+    if (!el) return;
+
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setStatsStarted(true);
+            obs.disconnect();
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  // animate numbers when statsStarted becomes true
+  useEffect(() => {
+    if (!statsStarted) return;
+
+    // target values (you asked for those exact displays)
+    const targetYears = 1;
+    const targetCerts = 15;
+    const targetProjects = PROJECTS_DISPLAY_COUNT;
+    const duration = 1000; // ms
+
+    let start = null;
+    let rafId = 0;
+
+    function step(ts) {
+      if (!start) start = ts;
+      const t = Math.min(1, (ts - start) / duration);
+
+      const ease = (v) => 1 - Math.pow(1 - v, 3); // smooth ease-out
+
+      setYears(Math.floor(ease(t) * targetYears));
+      setCertCount(Math.floor(ease(t) * targetCerts));
+      setProjectsNum(Math.floor(ease(t) * targetProjects));
+
+      if (t < 1) {
+        rafId = requestAnimationFrame(step);
+      } else {
+        // ensure exact at the end
+        setYears(targetYears);
+        setCertCount(targetCerts);
+        setProjectsNum(targetProjects);
+      }
+    }
+
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
+  }, [statsStarted, PROJECTS_DISPLAY_COUNT]);
 
   return (
     <>
       <Navbar />
 
       <main className="text-foreground">
+        {/* ===== INTRO / STATS (new) ===== */}
+        <section className="mx-auto max-w-6xl px-6 pt-20 pb-8">
+          <div className="relative rounded-2xl p-6 border-2 border-white/6 bg-black/20 backdrop-blur-sm overflow-hidden">
+            {/* Decorative soft gradient behind */}
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                inset: 0,
+                pointerEvents: "none",
+                background:
+                  "radial-gradient(ellipse at 10% 20%, rgba(99,102,241,0.06), transparent 15%), radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.04), transparent 20%)",
+              }}
+            />
+
+            {/* Inspirational sentence */}
+            <div className="relative z-10 text-center mb-6">
+              <h2 className="mx-auto max-w-3xl text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight">
+                <span className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
+                  There Are Miles To Go Before We Sleep
+                </span>
+              </h2>
+              <p className="mt-3 text-sm text-foreground/70">
+                A short reminder to keep building — one step at a time.
+              </p>
+            </div>
+
+            {/* Stats row */}
+            <div
+              ref={statsRef}
+              className="relative z-10 mt-6 grid grid-cols-3 gap-4 text-center items-center"
+            >
+              <div className="rounded-lg p-4 bg-white/3 border border-white/6">
+                <div className="text-3xl sm:text-4xl font-bold">
+                  {years}
+                  <span className="text-lg ml-1">+</span>
+                </div>
+                <div className="mt-1 text-sm text-foreground/70">
+                  Years Experience
+                </div>
+              </div>
+
+              <div className="rounded-lg p-4 bg-white/3 border border-white/6">
+                <div className="text-3xl sm:text-4xl font-bold">
+                  {certCount}+
+                </div>
+                <div className="mt-1 text-sm text-foreground/70">
+                  Certifications
+                </div>
+              </div>
+
+              {/* Projects → clickable GitHub (uses PROJECTS_DISPLAY_COUNT, not projects.length) */}
+              <a
+                href="https://github.com/NIKSHITH-G"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg p-4 bg-white/3 border border-white/6 hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <div className="text-3xl sm:text-4xl font-bold">
+                  {projectsNum}
+                </div>
+                <div className="mt-1 text-sm text-foreground/70">Projects</div>
+              </a>
+            </div>
+          </div>
+        </section>
+
         {/* ===== EXPERIENCE ===== */}
-        <section className="mx-auto max-w-6xl px-6 pt-24 pb-12">
+        <section className="mx-auto max-w-6xl px-6 pb-12">
           <h2 className="text-2xl font-bold mb-6">Experience</h2>
 
           <div className="relative rounded-2xl border-2 border-white/30 p-6">
             {/* Scrollable list */}
             <div
               className="space-y-6 overflow-y-auto pr-6"
-              style={{ maxHeight: "420px", scrollbarGutter: "stable both-edges" }}
+              style={{
+                maxHeight: "420px",
+                scrollbarGutter: "stable both-edges",
+              }}
             >
               {experience.map((exp, i) => {
                 const expanded = openExpIndex === i;
@@ -270,14 +402,15 @@ export default function About() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.3 }}
                     transition={{ duration: 0.36, delay: i * 0.06 }}
-                    className="relative rounded-xl border border-indigo-500/40 p-5 bg-[rgba(255,255,255,0.02)] backdrop-blur-sm"
-                    // glass + hover glow
+                    className="relative rounded-xl border border-indigo-500/40 p-5 bg-[rgba(255,255,255,0.02)] backdrop-blur-sm group"
                     style={{ WebkitBackdropFilter: "blur(6px)" }}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-3">
-                          <h3 className="font-semibold text-lg tracking-tight">{exp.title}</h3>
+                          <h3 className="font-semibold text-lg tracking-tight">
+                            {exp.title}
+                          </h3>
 
                           {isPresent(exp.period) && (
                             <span
@@ -289,7 +422,9 @@ export default function About() {
                           )}
                         </div>
 
-                        <div className="text-sm text-foreground/70 mt-1">{exp.period}</div>
+                        <div className="text-sm text-foreground/70 mt-1">
+                          {exp.period}
+                        </div>
                       </div>
 
                       <div className="ml-auto flex items-center gap-2">
@@ -306,9 +441,11 @@ export default function About() {
                     {/* bullets: collapsed preview + expand animation */}
                     <div className="mt-4">
                       <ul className="list-disc pl-5 text-sm space-y-2 text-foreground/90">
-                        {exp.bullets.slice(0, showPreviewBullets).map((b, j) => (
-                          <li key={`exp-${i}-b-${j}`}>{b}</li>
-                        ))}
+                        {exp.bullets
+                          .slice(0, showPreviewBullets)
+                          .map((b, j) => (
+                            <li key={`exp-${i}-b-${j}`}>{b}</li>
+                          ))}
                       </ul>
 
                       <AnimatePresence initial={false}>
@@ -321,32 +458,16 @@ export default function About() {
                             className="overflow-hidden"
                           >
                             <ul className="list-disc pl-5 text-sm mt-3 space-y-2 text-foreground/90">
-                              {exp.bullets.slice(showPreviewBullets).map((b, j) => (
-                                <li key={`exp-${i}-more-${j}`}>{b}</li>
-                              ))}
+                              {exp.bullets
+                                .slice(showPreviewBullets)
+                                .map((b, j) => (
+                                  <li key={`exp-${i}-more-${j}`}>{b}</li>
+                                ))}
                             </ul>
                           </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
-
-                    {/* Hover glow effect layer — using absolute pseudo like effect */}
-                    <div
-                      className="pointer-events-none absolute -inset-[1px] rounded-xl opacity-0 transition-all duration-300"
-                      style={{
-                        boxShadow: "0 10px 30px -18px rgba(99,102,241,0.6)",
-                      }}
-                    />
-                    {/* add hover styles via tailwind classes directly on container */}
-                    <style jsx>{`
-                      /* local hover polish: slightly stronger border + glow */
-                      div[class*="rounded-xl"][class*="bg-[rgba(255,255,255,0.02)]"]:hover {
-                        box-shadow: 0 10px 30px -12px rgba(99,102,241,0.28);
-                        transform: translateY(-4px);
-                        transition: all 220ms ease;
-                        border-color: rgba(124,58,237,0.45);
-                      }
-                    `}</style>
                   </motion.div>
                 );
               })}
@@ -394,10 +515,7 @@ export default function About() {
             >
               <div
                 ref={glowRef}
-                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2
-                   w-[280px] h-[180px] rounded-full opacity-0 transition-opacity duration-300
-                   bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.12),transparent_70%)]
-                   blur-2xl"
+                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 w-[280px] h-[180px] rounded-full opacity-0 transition-opacity duration-300 bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.12),transparent_70%)] blur-2xl"
                 style={{ left: 0, top: 0 }}
               />
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -417,10 +535,7 @@ export default function About() {
                       boxShadow: "0 0 0 0 rgba(99,102,241,0)",
                     }}
                   >
-                    <span
-                      className="pointer-events-none absolute -inset-1 translate-x-[-150%] group-hover:animate-[sheen_700ms_ease]
-                         bg-[linear-gradient(115deg,transparent,rgba(255,255,255,0.28),transparent)] w-1/2"
-                    />
+                    <span className="pointer-events-none absolute -inset-1 translate-x-[-150%] group-hover:animate-[sheen_700ms_ease] bg-[linear-gradient(115deg,transparent,rgba(255,255,255,0.28),transparent)] w-1/2" />
                     {s}
                   </motion.div>
                 ))}
@@ -429,7 +544,6 @@ export default function About() {
 
             {/* Certifications (right) — scrollable independently */}
             <div className="relative">
-              {/* make only this column scrollable when content grows */}
               <div
                 className="space-y-3 overflow-y-auto pr-6 certs-scroll"
                 style={{
@@ -437,7 +551,6 @@ export default function About() {
                   scrollbarGutter: "stable both-edges",
                 }}
               >
-                {/* responsive: larger max height on medium screens */}
                 <div className="md:max-h-[420px]" />
 
                 {certs.map((c, i) => (
@@ -447,12 +560,7 @@ export default function About() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true, amount: 0.3 }}
                     transition={{ duration: 0.35, delay: i * 0.1 }}
-                    className="
-        relative overflow-hidden rounded-lg border border-indigo-500/40 px-4 py-3 text-sm bg-background/60
-        transition-all hover:translate-x-[2px]
-        before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0
-        hover:before:w-[6px] before:bg-indigo-500/70 before:transition-[width] before:duration-200
-      "
+                    className="relative overflow-hidden rounded-lg border border-indigo-500/40 px-4 py-3 text-sm bg-background/60 transition-all hover:translate-x-[2px] before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0 hover:before:w-[6px] before:bg-indigo-500/70 before:transition-[width] before:duration-200"
                     onMouseEnter={(e) => showCertPreview(e, c)}
                     onMouseMove={moveCertPreview}
                     onMouseLeave={hideCertPreview}
@@ -464,8 +572,7 @@ export default function About() {
 
               {preview.show && (
                 <div
-                  className="fixed z-[60] pointer-events-none rounded-xl border border-white/20 bg-background/80 backdrop-blur-md shadow-2xl p-2
-                     animate-[previewIn_140ms_ease-out]"
+                  className="fixed z-[60] pointer-events-none rounded-xl border border-white/20 bg-background/80 backdrop-blur-md shadow-2xl p-2 animate-[previewIn_140ms_ease-out]"
                   style={{
                     left: preview.x,
                     top: preview.y,
