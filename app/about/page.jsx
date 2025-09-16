@@ -240,14 +240,10 @@ export default function About() {
   const isPresent = (period) => /present/i.test(period);
 
   // === Animated Stats Counter ===
-  // NOTE: we now use a manually configurable constant for Projects count
-  const PROJECTS_DISPLAY_COUNT = 10; // <--- change this to any number (not derived from projects.length)
-
   const statsRef = useRef(null);
   const [statsStarted, setStatsStarted] = useState(false);
   const [years, setYears] = useState(0);
   const [certCount, setCertCount] = useState(0);
-  const [projectsNum, setProjectsNum] = useState(0);
 
   useEffect(() => {
     const el = statsRef.current;
@@ -276,7 +272,6 @@ export default function About() {
     // target values (you asked for those exact displays)
     const targetYears = 1;
     const targetCerts = 15;
-    const targetProjects = PROJECTS_DISPLAY_COUNT;
     const duration = 1000; // ms
 
     let start = null;
@@ -290,7 +285,6 @@ export default function About() {
 
       setYears(Math.floor(ease(t) * targetYears));
       setCertCount(Math.floor(ease(t) * targetCerts));
-      setProjectsNum(Math.floor(ease(t) * targetProjects));
 
       if (t < 1) {
         rafId = requestAnimationFrame(step);
@@ -298,13 +292,12 @@ export default function About() {
         // ensure exact at the end
         setYears(targetYears);
         setCertCount(targetCerts);
-        setProjectsNum(targetProjects);
       }
     }
 
     rafId = requestAnimationFrame(step);
     return () => cancelAnimationFrame(rafId);
-  }, [statsStarted, PROJECTS_DISPLAY_COUNT]);
+  }, [statsStarted]);
 
   return (
     <>
@@ -343,7 +336,7 @@ export default function About() {
               ref={statsRef}
               className="relative z-10 mt-6 grid grid-cols-3 gap-4 text-center items-center"
             >
-              <div className="rounded-lg p-4 bg-white/3 border border-white/6">
+              <div className="rounded-lg p-4 bg-white/3 border border-white/6 transition-transform duration-200 transform">
                 <div className="text-3xl sm:text-4xl font-bold">
                   {years}
                   <span className="text-lg ml-1">+</span>
@@ -353,7 +346,7 @@ export default function About() {
                 </div>
               </div>
 
-              <div className="rounded-lg p-4 bg-white/3 border border-white/6">
+              <div className="rounded-lg p-4 bg-white/3 border border-white/6 transition-transform duration-200 transform">
                 <div className="text-3xl sm:text-4xl font-bold">
                   {certCount}+
                 </div>
@@ -362,16 +355,15 @@ export default function About() {
                 </div>
               </div>
 
-              {/* Projects → clickable GitHub (uses PROJECTS_DISPLAY_COUNT, not projects.length) */}
+              {/* Projects → clickable GitHub (fixed display: 10+) */}
               <a
                 href="https://github.com/NIKSHITH-G"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg p-4 bg-white/3 border border-white/6 hover:bg-white/5 transition-colors cursor-pointer"
+                className="rounded-lg p-4 bg-white/3 border border-white/6 hover:bg-white/5 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                aria-label="Open my GitHub profile in a new tab"
               >
-                <div className="text-3xl sm:text-4xl font-bold">
-                  {projectsNum}
-                </div>
+                <div className="text-3xl sm:text-4xl font-bold">10+</div>
                 <div className="mt-1 text-sm text-foreground/70">Projects</div>
               </a>
             </div>
@@ -402,7 +394,7 @@ export default function About() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.3 }}
                     transition={{ duration: 0.36, delay: i * 0.06 }}
-                    className="relative rounded-xl border border-indigo-500/40 p-5 bg-[rgba(255,255,255,0.02)] backdrop-blur-sm group"
+                    className="relative rounded-xl border border-indigo-500/40 p-5 bg-[rgba(255,255,255,0.02)] backdrop-blur-sm group transform transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_12px_40px_-18px_rgba(99,102,241,0.25)]"
                     style={{ WebkitBackdropFilter: "blur(6px)" }}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -431,7 +423,8 @@ export default function About() {
                         <button
                           onClick={() => toggleExp(i)}
                           aria-expanded={expanded}
-                          className="text-sm rounded-md px-3 py-1 bg-white/5 hover:bg-white/6 transition"
+                          aria-controls={`exp-details-${i}`}
+                          className="text-sm rounded-md px-3 py-1 bg-white/5 hover:bg-white/6 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                         >
                           {expanded ? "Collapse" : "Read more"}
                         </button>
@@ -439,7 +432,7 @@ export default function About() {
                     </div>
 
                     {/* bullets: collapsed preview + expand animation */}
-                    <div className="mt-4">
+                    <div className="mt-4" id={`exp-details-${i}`}>
                       <ul className="list-disc pl-5 text-sm space-y-2 text-foreground/90">
                         {exp.bullets
                           .slice(0, showPreviewBullets)
@@ -564,6 +557,11 @@ export default function About() {
                     onMouseEnter={(e) => showCertPreview(e, c)}
                     onMouseMove={moveCertPreview}
                     onMouseLeave={hideCertPreview}
+                    tabIndex={0}
+                    onFocus={(e) => showCertPreview(e, c)}
+                    onBlur={hideCertPreview}
+                    role="button"
+                    aria-label={`Preview ${c}`}
                   >
                     {c}
                   </motion.div>
@@ -585,6 +583,7 @@ export default function About() {
                     src={preview.src}
                     alt=""
                     className="h-full w-full object-contain rounded-md"
+                    loading="lazy"
                   />
                 </div>
               )}
