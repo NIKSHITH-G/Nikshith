@@ -74,6 +74,27 @@ export default function About() {
       ],
     },
     {
+      name: "Blockchain-Based Secure Data Storage",
+      points: [
+        "AES for encryption + SHA-512 for hashing; privacy-preserving scheme.",
+        "Smart contracts for secondary verification & access control.",
+        "Compared MD5, SHA-1, SHA-256, SHA-512 for security vs performance.",
+      ],
+      stack: [
+        "Blockchain (Private/Public)",
+        "AES",
+        "SHA-512",
+        "MySQL",
+        "HTML",
+        "CSS",
+      ],
+      images: [
+        "/images/projects/blockchain2.jpeg",
+        "/images/projects/blockchain1.jpeg",
+        "/images/projects/blockchain3.jpeg",
+      ],
+    },
+    {
       name: "Smart Mathematics Tutor — AI Project",
       points: [
         "Web-based GUI where users draw shapes and get related formulas.",
@@ -487,7 +508,7 @@ export default function About() {
         </section>
 
         {/* ===== SKILLS & CERTIFICATIONS (unchanged) ===== */}
-        <section className="mx-auto max-w-6xl px-6 pb-20">
+        <section className="mx-auto max-w-6xl px-6 pb-12 pt-8">
           <h2 className="text-2xl font-bold mb-6">Skills & Certifications</h2>
 
           <div

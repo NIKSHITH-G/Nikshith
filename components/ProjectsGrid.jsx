@@ -69,7 +69,16 @@ function ProjectsGrid({ projects }) {
 
   return (
     <>
-      <div className="grid gap-6 md:grid-cols-2">
+      {/* Horizontal scrolling container */}
+      <div
+        className="
+          flex gap-6 overflow-x-auto pb-4
+          scrollbar-thin scrollbar-thumb-indigo-500/60 scrollbar-track-transparent
+        "
+        style={{
+          scrollbarGutter: "stable both-edges",
+        }}
+      >
         {projects.map((p, i) => (
           <motion.article
             key={p.name}
@@ -85,6 +94,7 @@ function ProjectsGrid({ projects }) {
               border-2 border-white/15 bg-white/[0.03] backdrop-blur
               hover:border-indigo-500/40 transition-[border,transform,box-shadow]
               hover:-translate-y-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,.04)]
+              min-w-[340px] sm:min-w-[400px]   /* 👈 fixed card width for horizontal scroll */
             "
           >
             {/* Inner frame */}
@@ -116,9 +126,8 @@ function ProjectsGrid({ projects }) {
                 ))}
               </div>
 
-              {/* faint preview banner area (keeps layout stable) */}
+              {/* faint preview banner area */}
               <div className="mt-4 overflow-hidden rounded-lg border border-white/10">
-                {/* THIS IMAGE AREA will expand/collapse for all cards when hovered */}
                 <AnimatePresence>
                   {hovered ? (
                     <motion.div
@@ -137,7 +146,6 @@ function ProjectsGrid({ projects }) {
                       />
                     </motion.div>
                   ) : (
-                    // keep a thin visible preview area when collapsed (or zero)
                     <motion.div
                       key={`preview-empty-${i}`}
                       initial={{ height: 0 }}
@@ -160,7 +168,7 @@ function ProjectsGrid({ projects }) {
         ))}
       </div>
 
-      {/* Lightbox / slideshow (unchanged) */}
+      {/* Lightbox / slideshow */}
       <AnimatePresence>
         {open && (
           <motion.div

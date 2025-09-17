@@ -7,8 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function ProjectCard({ project, idx }) {
   const [open, setOpen] = useState(false); // lightbox open
   const [current, setCurrent] = useState(0); // current slide in lightbox/preview
-  const [showPreviews, setShowPreviews] = useState(false); // global reveal flag (set by event)
-  const leaveTimer = useRef(null);
+  const [showPreviews, setShowPreviews] = useState(false); // driven by global event
   const cycleTimer = useRef(null);
 
   const { name, points = [], stack = [], images = [] } = project;
@@ -35,19 +34,15 @@ export default function ProjectCard({ project, idx }) {
 
   // Auto-cycle while previews are visible AND lightbox isn't open
   useEffect(() => {
-    // clear any previous timer
     if (cycleTimer.current) {
       clearInterval(cycleTimer.current);
       cycleTimer.current = null;
     }
-
-    // only auto-cycle when previews are shown, multiple images exist, and lightbox is closed
     if (showPreviews && images.length > 1 && !open) {
       cycleTimer.current = setInterval(() => {
         setCurrent((c) => (c + 1) % images.length);
-      }, 1500); // cycle every 2.5s (tweakable)
+      }, 1500);
     }
-
     return () => {
       if (cycleTimer.current) {
         clearInterval(cycleTimer.current);
@@ -71,23 +66,28 @@ export default function ProjectCard({ project, idx }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, images.length]);
 
-  // Dispatch global hover events (mouseenter / mouseleave)
+  // Use a single globally-shared leave timer so different cards don't fight
+  // window.__projectsHoverLeaveTimer is used to debounce the "leave" across all cards
   const handleMouseEnter = () => {
-    // cancel any pending leave timers (prevents flicker when moving between cards)
-    if (leaveTimer.current) {
-      clearTimeout(leaveTimer.current);
-      leaveTimer.current = null;
+    // Clear any pending global leave timer (prevents the preview turning off while moving between cards)
+    if (window.__projectsHoverLeaveTimer) {
+      clearTimeout(window.__projectsHoverLeaveTimer);
+      window.__projectsHoverLeaveTimer = null;
     }
+    // Immediately broadcast "show previews"
     window.dispatchEvent(new CustomEvent("projects-hover", { detail: true }));
   };
 
   const handleMouseLeave = () => {
-    // small delay so moving between cards doesn't cause brief hide
-    if (leaveTimer.current) clearTimeout(leaveTimer.current);
-    leaveTimer.current = setTimeout(() => {
+    // small global delay so moving between cards doesn't collapse previews
+    if (window.__projectsHoverLeaveTimer) {
+      clearTimeout(window.__projectsHoverLeaveTimer);
+      window.__projectsHoverLeaveTimer = null;
+    }
+    window.__projectsHoverLeaveTimer = setTimeout(() => {
       window.dispatchEvent(new CustomEvent("projects-hover", { detail: false }));
-      leaveTimer.current = null;
-    }, 80);
+      window.__projectsHoverLeaveTimer = null;
+    }, 100); // 100ms debounce — tweakable
   };
 
   return (
@@ -219,7 +219,7 @@ export default function ProjectCard({ project, idx }) {
         </div>
       </div>
 
-      {/* Lightbox slideshow (unchanged aside from using current state) */}
+      {/* Lightbox slideshow */}
       <AnimatePresence>
         {open && (
           <motion.div
