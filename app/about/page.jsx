@@ -1,4 +1,4 @@
-// app/about/page.js
+// app/about/page.jsx
 "use client";
 
 import { useRef, useState, useEffect } from "react";
@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../../components/Navbar";
 import Timeline from "../../components/Timeline";
 import ProjectCard from "../../components/ProjectCard";
+import ProjectsGrid from "../../components/ProjectsGrid";
 
 export default function About() {
   // ---- DATA ----
@@ -51,6 +52,8 @@ export default function About() {
   ];
 
   // ===== PROJECTS =====
+  // NOTE: ProjectsGrid expects each project to have: name, points, stack, slides (array of image urls)
+  // Your previous code used "images" for ProjectCard; ProjectsGrid uses slides — we keep both below
   const projects = [
     {
       name: "Blockchain-Based Secure Data Storage",
@@ -67,26 +70,10 @@ export default function About() {
         "HTML",
         "CSS",
       ],
-      images: [
+      slides: [
         "/images/projects/blockchain2.jpeg",
         "/images/projects/blockchain1.jpeg",
         "/images/projects/blockchain3.jpeg",
-      ],
-    },
-    {
-      name: "Blockchain-Based Secure Data Storage",
-      points: [
-        "AES for encryption + SHA-512 for hashing; privacy-preserving scheme.",
-        "Smart contracts for secondary verification & access control.",
-        "Compared MD5, SHA-1, SHA-256, SHA-512 for security vs performance.",
-      ],
-      stack: [
-        "Blockchain (Private/Public)",
-        "AES",
-        "SHA-512",
-        "MySQL",
-        "HTML",
-        "CSS",
       ],
       images: [
         "/images/projects/blockchain2.jpeg",
@@ -94,6 +81,7 @@ export default function About() {
         "/images/projects/blockchain3.jpeg",
       ],
     },
+    
     {
       name: "Smart Mathematics Tutor — AI Project",
       points: [
@@ -112,12 +100,19 @@ export default function About() {
         "IBM Cloud",
         "Watson Studio",
       ],
+      slides: [
+        "/images/projects/AI1.png",
+        "/images/projects/AI2.png",
+        "/images/projects/AI3.png",
+      ],
       images: [
         "/images/projects/AI1.png",
         "/images/projects/AI2.png",
         "/images/projects/AI3.png",
       ],
     },
+
+    // Add more projects here — keep the same shape (name, points, stack, slides, images)
   ];
 
   const skills = [
@@ -500,11 +495,10 @@ export default function About() {
         {/* ===== PROJECTS ===== */}
         <section className="mx-auto max-w-6xl px-6 pb-12">
           <h2 className="text-2xl font-bold mb-6">Featured Projects</h2>
-          <div className="grid gap-6 md:grid-cols-2">
-            {projects.map((p, i) => (
-              <ProjectCard key={`proj-${p.name}-${i}`} project={p} idx={i} />
-            ))}
-          </div>
+
+          {/* Use your ProjectsGrid component: it already implements the horizontal scroller + snap.
+              ProjectsGrid uses the `projects` array (with slides) so pass that in. */}
+          <ProjectsGrid projects={projects} />
         </section>
 
         {/* ===== SKILLS & CERTIFICATIONS (unchanged) ===== */}
