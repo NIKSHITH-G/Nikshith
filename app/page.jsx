@@ -5,31 +5,37 @@ import Navbar from "../components/Navbar";
 
 export default function Home() {
   const heroRef = useRef(null);
+  const animeRef = useRef(null);
 
   useEffect(() => {
-    // Dynamically import Anime.js from CDN
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js";
-    script.onload = () => {
-      if (window.anime && heroRef.current) {
-        const anime = window.anime;
+    let mounted = true;
 
-        // Timeline for headline and paragraph
-        anime.timeline({ easing: "easeOutExpo", duration: 1000 })
-          .add({
-            targets: ".hero-headline",
-            opacity: [0, 1],
-            translateY: [50, 0],
-            delay: 200,
-          })
-          .add({
-            targets: ".hero-paragraph",
-            opacity: [0, 1],
-            translateY: [50, 0],
-            delay: 100,
-          });
+    // dynamically import animejs (bundle-friendly)
+    import("animejs").then((mod) => {
+      if (!mounted) return;
+      const anime = mod.default || mod;
+      animeRef.current = anime;
 
-        // Waving emoji animation
+      if (!heroRef.current) return;
+
+      // Timeline for headline and paragraph
+      anime.timeline({ easing: "easeOutExpo", duration: 1000 })
+        .add({
+          targets: ".hero-headline",
+          opacity: [0, 1],
+          translateY: [50, 0],
+          delay: 200,
+        })
+        .add({
+          targets: ".hero-paragraph",
+          opacity: [0, 1],
+          translateY: [50, 0],
+          delay: 100,
+        });
+
+      // Waving emoji animation (respect reduced motion)
+      const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!prefersReduced) {
         anime({
           targets: ".wave-emoji",
           rotate: [0, 20, -20, 20, -20, 0],
@@ -39,12 +45,14 @@ export default function Home() {
           delay: 500,
         });
       }
-    };
-    document.body.appendChild(script);
+    }).catch(() => {
+      // graceful degrade if the import fails — don't crash
+    });
 
-    // Cleanup
     return () => {
-      document.body.removeChild(script);
+      mounted = false;
+      // no explicit unload necessary for anime, but clear the ref
+      animeRef.current = null;
     };
   }, []);
 

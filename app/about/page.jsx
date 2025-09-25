@@ -55,6 +55,7 @@ export default function About() {
   // NOTE: ProjectsGrid expects each project to have: name, points, stack, slides (array of image urls)
   // Your previous code used "images" for ProjectCard; ProjectsGrid uses slides — we keep both below
   const projects = [
+    
     {
       name: "Blockchain-Based Secure Data Storage",
       points: [
@@ -81,6 +82,7 @@ export default function About() {
         "/images/projects/blockchain3.jpeg",
       ],
     },
+    
     
     {
       name: "Smart Mathematics Tutor — AI Project",

@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 
 const NAV = [
   { href: "/", label: "Home" },
@@ -19,19 +19,20 @@ export default function Navbar() {
   );
 
   const [hidden, setHidden] = useState(false);
-  const [lastY, setLastY] = useState(0);
+  const lastYRef = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY;
-      if (y > lastY && y > 80) setHidden(true); // scroll down → hide
-      else setHidden(false); // scroll up → show
-      setLastY(y);
+      // scroll down => hide when passed a threshold, otherwise show
+      if (y > lastYRef.current && y > 80) setHidden(true);
+      else setHidden(false);
+      lastYRef.current = y;
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastY]);
+  }, []);
 
   return (
     <header
@@ -46,6 +47,7 @@ export default function Navbar() {
             backdrop-blur-xl border border-white/10 bg-black/40
             transition-colors
           "
+          aria-label="Primary"
         >
           {/* subtle conic ring */}
           <div className="pointer-events-none absolute inset-0 rounded-2xl overflow-hidden">
@@ -78,14 +80,16 @@ export default function Navbar() {
                 before:absolute before:inset-0 before:rounded-full before:pointer-events-none
                 before:bg-[radial-gradient(120%_200%_at_10%_-40%,rgba(99,102,241,.18),transparent_60%)]
               "
+              role="menubar"
             >
               {NAV.map((item, i) => {
                 const active = i === activeIndex;
                 return (
                   <Fragment key={item.href}>
-                    <li className="relative">
+                    <li className="relative" role="none">
                       <Link
                         href={item.href}
+                        role="menuitem"
                         className={[
                           "relative z-10 inline-flex h-10 items-center rounded-full px-4 sm:px-5 text-sm font-medium transition",
                           active
@@ -106,6 +110,7 @@ export default function Navbar() {
                               after:bg-[radial-gradient(70%_60%_at_50%_120%,rgba(99,102,241,.45),transparent)]
                               after:opacity-60 after:blur-[10px]
                             "
+                            aria-hidden
                           />
                         )}
                         <span className="relative z-10">{item.label}</span>

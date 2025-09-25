@@ -1,7 +1,7 @@
 // components/ProjectCard.jsx
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ProjectCard({ project, idx }) {
@@ -13,6 +13,16 @@ export default function ProjectCard({ project, idx }) {
 
   const { name, points = [], stack = [], images = [] } = project;
   const previewSrc = images?.[0] || "/images/projects/placeholder.png";
+
+  // prefers-reduced-motion guard
+  const prefersReducedMotionRef = useRef(false);
+  useEffect(() => {
+    try {
+      prefersReducedMotionRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch {
+      prefersReducedMotionRef.current = false;
+    }
+  }, []);
 
   const nextImage = () => {
     if (!images.length) return;
@@ -42,7 +52,7 @@ export default function ProjectCard({ project, idx }) {
     }
 
     // only auto-cycle when previews are shown, multiple images exist, and lightbox is closed
-    if (showPreviews && images.length > 1 && !open) {
+    if (!prefersReducedMotionRef.current && showPreviews && images.length > 1 && !open) {
       cycleTimer.current = setInterval(() => {
         setCurrent((c) => (c + 1) % images.length);
       }, 1500); // cycle every 1.5s (tweakable)
@@ -89,6 +99,31 @@ export default function ProjectCard({ project, idx }) {
       leaveTimer.current = null;
     }, 80);
   };
+
+  // Ensure timers are cleaned up on unmount
+  useEffect(() => {
+    return () => {
+      if (leaveTimer.current) {
+        clearTimeout(leaveTimer.current);
+        leaveTimer.current = null;
+      }
+      if (cycleTimer.current) {
+        clearInterval(cycleTimer.current);
+        cycleTimer.current = null;
+      }
+    };
+  }, []);
+
+  // Centralized overflow management for this card's lightbox:
+  useEffect(() => {
+    if (open) {
+      document.documentElement.style.overflow = "hidden";
+      return () => {
+        document.documentElement.style.overflow = "";
+      };
+    }
+    return undefined;
+  }, [open]);
 
   return (
     <>
@@ -155,7 +190,6 @@ export default function ProjectCard({ project, idx }) {
                   if (!images.length) return;
                   setOpen(true);
                   setCurrent(0);
-                  document.documentElement.style.overflow = "hidden";
                 }}
                 className="rounded-md bg-indigo-700/10 px-3 py-1 text-sm text-indigo-200 hover:bg-indigo-700/20 transition"
               >
@@ -190,6 +224,7 @@ export default function ProjectCard({ project, idx }) {
               {images.length > 1 && showPreviews && (
                 <div className="mt-2 flex items-center justify-center gap-3">
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       prevImage();
@@ -203,6 +238,7 @@ export default function ProjectCard({ project, idx }) {
                     {current + 1} / {images.length}
                   </div>
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       nextImage();
@@ -227,10 +263,10 @@ export default function ProjectCard({ project, idx }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => {
-              setOpen(false);
-              document.documentElement.style.overflow = "";
-            }}
+            onClick={() => setOpen(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${name} slideshow`}
           >
             <motion.div
               className="
@@ -247,14 +283,12 @@ export default function ProjectCard({ project, idx }) {
               <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-40 blur-2xl [mask-image:radial-gradient(100%_90%_at_50%_10%,#000_40%,transparent)] bg-[conic-gradient(from_200deg,rgba(99,102,241,.25),rgba(168,85,247,.2),transparent,rgba(99,102,241,.25))]" />
 
               <button
-                onClick={() => {
-                  setOpen(false);
-                  document.documentElement.style.overflow = "";
-                }}
+                type="button"
+                onClick={() => setOpen(false)}
                 className="absolute right-3 top-3 z-10 inline-grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white/10 text-white/80 hover:bg-white/15"
                 aria-label="Close"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                   <path
                     d="M6 6l12 12M18 6L6 18"
                     stroke="currentColor"
@@ -275,20 +309,28 @@ export default function ProjectCard({ project, idx }) {
                 {images.length > 1 && (
                   <>
                     <button
-                      onClick={prevImage}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        prevImage();
+                      }}
                       className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 inline-grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-white/10 text-white/90 hover:bg-white/15 backdrop-blur"
                       aria-label="Previous"
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
                         <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </button>
                     <button
-                      onClick={nextImage}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        nextImage();
+                      }}
                       className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 inline-grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-white/10 text-white/90 hover:bg-white/15 backdrop-blur"
                       aria-label="Next"
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
                         <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </button>
@@ -305,6 +347,7 @@ export default function ProjectCard({ project, idx }) {
                     {images.map((_, i) => (
                       <button
                         key={`dot-${i}`}
+                        type="button"
                         onClick={() => setCurrent(i)}
                         aria-label={`Go to slide ${i + 1}`}
                         className={[
