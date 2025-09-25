@@ -11,8 +11,6 @@ function ProjectsGrid({ projects }) {
 
   // SINGLE boolean: when true -> every card shows its preview area.
   const [hovered, setHovered] = useState(false);
-  const hoveredRef = useRef(false);
-
   const hoverTimeout = useRef(null);
 
   const openLightbox = (idx) => {
@@ -50,13 +48,13 @@ function ProjectsGrid({ projects }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, nextSlide, prevSlide]);
 
-  // Hover-intent helpers (single boolean)
+  // hover-intent (single boolean controlling all cards)
   const onCardEnter = () => {
     if (hoverTimeout.current) {
       clearTimeout(hoverTimeout.current);
       hoverTimeout.current = null;
     }
-    hoveredRef.current = true;
+    // small enter delay to avoid accidental hover
     hoverTimeout.current = setTimeout(() => {
       setHovered(true);
       hoverTimeout.current = null;
@@ -68,13 +66,14 @@ function ProjectsGrid({ projects }) {
       clearTimeout(hoverTimeout.current);
       hoverTimeout.current = null;
     }
+    // small leave delay so moving between cards doesn't instantly hide
     hoverTimeout.current = setTimeout(() => {
-      hoveredRef.current = false;
       setHovered(false);
       hoverTimeout.current = null;
     }, 120);
   };
 
+  // clear timer on unmount
   useEffect(() => {
     return () => {
       if (hoverTimeout.current) {
@@ -113,91 +112,107 @@ function ProjectsGrid({ projects }) {
             role="button"
             aria-label={`Open ${p.name} project slideshow`}
           >
-            {/* Blue inset border */}
-            <div className="relative">
+            {/* Outer margin + rounded white inner card (this keeps your white border) */}
+            <div className="relative m-3 rounded-xl">
+              {/* Blue decorative frame - absolutely fills the interior of the white card.
+                  pointer-events-none so it doesn't block clicks. */}
               <div
                 aria-hidden="true"
                 className="absolute inset-0 rounded-xl border border-indigo-500/40 pointer-events-none"
-                style={{
-                  top: "24px",   // 1 cm gap top
-                  left: "24px",  // 1 cm gap left
-                  right: "24px", // 1 cm gap right
-                  bottom: "24px" // 1 cm gap bottom
-                }}
+                style={{ boxSizing: "border-box" }}
               />
 
-              {/* Inner frame (content) */}
-              <div className="relative rounded-xl p-5 flex flex-col min-h-[280px]">
-                <div className="flex items-start justify-between gap-4">
-                  <h3 className="font-semibold text-xl">{p.name}</h3>
-                  {p.slides?.length ? (
-                    <span className="text-[11px] px-2 py-1 rounded-md border border-indigo-500/30 bg-indigo-500/10">
-                      {p.slides.length} shots
-                    </span>
-                  ) : null}
-                </div>
+              {/* CONTENT: positioned relative above the blue frame.
+                  We set an explicit padding of 1cm (user requested) so the blue frame
+                  appears inset by 1cm on all sides.
+                  The layout is flex column with justify-between so the preview row sits at the bottom. */}
+              <div
+                className="relative flex flex-col min-h-[280px] z-10"
+                style={{ padding: "1cm" }} // exact 1cm gap inside the blue border
+              >
+                {/* Top + middle content. Put these into a growable area so preview stays at bottom */}
+                <div className="flex-1">
+                  <div className="flex items-start justify-between gap-4">
+                    <h3 className="font-semibold text-xl">{p.name}</h3>
 
-                <ul className="space-y-2 text-sm list-disc pl-5 my-4 flex-1">
-                  {p.points.map((pt, j) => (
-                    <li key={j}>{pt}</li>
-                  ))}
-                </ul>
+                    {p.slides?.length ? (
+                      <span className="text-[11px] px-2 py-1 rounded-md border border-indigo-500/30 bg-indigo-500/10">
+                        {p.slides.length} shots
+                      </span>
+                    ) : null}
+                  </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {p.stack.map((s) => (
-                    <span
-                      key={s}
-                      className="text-xs rounded-md border border-indigo-500/40 bg-indigo-500/10 px-2.5 py-1"
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </div>
+                  <ul className="space-y-2 text-sm list-disc pl-5 my-4">
+                    {p.points.map((pt, j) => (
+                      <li key={j}>{pt}</li>
+                    ))}
+                  </ul>
 
-                {/* Preview area */}
-                <div className="mt-4 overflow-hidden rounded-lg border border-white/10">
-                  <AnimatePresence>
-                    {hovered ? (
-                      <motion.div
-                        key={`preview-${i}`}
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 160, opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.28 }}
-                        className="relative w-full"
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {p.stack.map((s) => (
+                      <span
+                        key={s}
+                        className="text-xs rounded-md border border-indigo-500/40 bg-indigo-500/10 px-2.5 py-1"
                       >
-                        <img
-                          src={p.slides?.[0] || "/images/projects/placeholder.png"}
-                          alt={`${p.name} preview`}
-                          className="w-full h-full object-cover rounded-b-md"
-                          style={{ height: "160px" }}
-                          draggable={false}
-                        />
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key={`preview-empty-${i}`}
-                        initial={{ height: 0 }}
-                        animate={{ height: 0 }}
-                        exit={{ height: 0 }}
-                      />
-                    )}
-                  </AnimatePresence>
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+
+                  <hr className="my-4 border-white/10" />
                 </div>
 
-                {/* Footer */}
-                <div className="mt-3 flex items-center justify-between">
-                  <div className="text-sm text-white/70 px-3">Preview</div>
-                  <button
-                    type="button"
-                    className="rounded-md bg-white/5 px-3 py-1 text-sm hover:bg-white/6"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openLightbox(i);
-                    }}
-                  >
-                    View
-                  </button>
+                {/* BOTTOM AREA (preview container + footer row).
+                    Because the parent is flex-col + has a flex-1 top area, this bottom area
+                    will always sit at the bottom of the card before and after hover. */}
+                <div className="flex flex-col gap-3">
+                  {/* Preview "banner" area that expands/collapses.
+                      When collapsed it has height: 0 (no extra space).
+                      On-hover it animates to a fixed height (160px). */}
+                  <div className="overflow-hidden rounded-lg border border-white/10">
+                    <AnimatePresence>
+                      {hovered ? (
+                        <motion.div
+                          key={`preview-${i}`}
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 160, opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.28 }}
+                          className="relative w-full"
+                        >
+                          <img
+                            src={p.slides?.[0] || "/images/projects/placeholder.png"}
+                            alt={`${p.name} preview`}
+                            className="w-full h-full object-cover rounded-b-md"
+                            style={{ height: "160px" }}
+                            draggable={false}
+                          />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key={`preview-empty-${i}`}
+                          initial={{ height: 0 }}
+                          animate={{ height: 0 }}
+                          exit={{ height: 0 }}
+                        />
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* preview footer row (label + view button) */}
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-white/70">Preview</div>
+                    <button
+                      type="button"
+                      className="rounded-md bg-white/5 px-3 py-1 text-sm hover:bg-white/6"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openLightbox(i);
+                      }}
+                    >
+                      View
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -217,6 +232,7 @@ function ProjectsGrid({ projects }) {
             role="dialog"
             aria-label={`${projects[pIdx]?.name} slideshow`}
           >
+            {/* Dim/blur backdrop */}
             <motion.div
               className="absolute inset-0 bg-black/70 backdrop-blur-sm"
               onClick={closeLightbox}
@@ -224,6 +240,7 @@ function ProjectsGrid({ projects }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             />
+            {/* Modal content */}
             <motion.div
               initial={{ y: 20, opacity: 0, scale: 0.98 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
@@ -235,6 +252,7 @@ function ProjectsGrid({ projects }) {
                 p-4 md:p-5 flex flex-col gap-3
               "
             >
+              {/* Header */}
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-sm text-white/60">Project</div>
@@ -249,6 +267,7 @@ function ProjectsGrid({ projects }) {
                 </button>
               </div>
 
+              {/* Image area */}
               <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-white/10">
                 <AnimatePresence mode="wait">
                   <motion.img
@@ -263,14 +282,30 @@ function ProjectsGrid({ projects }) {
                   />
                 </AnimatePresence>
 
+                {/* Arrows */}
                 {slides.length > 1 && (
                   <>
-                    <button type="button" onClick={prevSlide} className="nav-arrow left-3">‹</button>
-                    <button type="button" onClick={nextSlide} className="nav-arrow right-3">›</button>
+                    <button
+                      type="button"
+                      onClick={prevSlide}
+                      className="nav-arrow left-3"
+                      aria-label="Previous slide"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      onClick={nextSlide}
+                      className="nav-arrow right-3"
+                      aria-label="Next slide"
+                    >
+                      ›
+                    </button>
                   </>
                 )}
               </div>
 
+              {/* Dots */}
               {slides.length > 1 && (
                 <div className="flex items-center justify-center gap-2 pt-1">
                   {slides.map((_, i) => (
@@ -281,6 +316,7 @@ function ProjectsGrid({ projects }) {
                       className={`h-2.5 rounded-full transition-all ${
                         i === sIdx ? "w-6 bg-indigo-400" : "w-2.5 bg-white/25 hover:bg-white/40"
                       }`}
+                      aria-label={`Go to slide ${i + 1}`}
                     />
                   ))}
                 </div>
