@@ -126,3 +126,73 @@ body {
   scrollbar-color: rgba(124,58,237,0.9) transparent;
 }
 
+/* ========== Projects scroller styling ========== */
+/* Horizontal scroller wrapper */
+.projects-scroller {
+  display: flex;
+  gap: 24px;                 /* space between cards */
+  overflow-x: auto;          /* bottom scrollbar appears */
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-snap-stop: always;  /* stronger snap */
+  -webkit-overflow-scrolling: touch;
+  padding-left: 0;           /* align left card flush with container */
+  /* optional small right padding so last card doesn't touch edge */
+  padding-right: 12px;
+  scroll-behavior: smooth;
+  align-items: stretch;      /* make cards stretch vertically if we set heights */
+}
+
+/* Each article layout inside the scroller */
+.project-card {
+  flex: 0 0 calc(50% - 12px); /* two cards per viewport; subtract half the gap */
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  min-width: 320px;          /* optional floor for very narrow screens */
+  align-self: stretch;
+  /* NOTE: heights are set programmatically by the component to match tallest card */
+}
+
+/* On small screens fall back to single card per view */
+@media (max-width: 900px) {
+  .project-card { flex: 0 0 100%; min-width: auto; }
+  .projects-scroller { gap: 16px; padding-right: 8px; }
+}
+
+/* Custom scroller styling (webkit) - optional, tweak to match theme */
+.projects-scroller::-webkit-scrollbar { height: 10px; }
+.projects-scroller::-webkit-scrollbar-thumb {
+  border-radius: 6px;
+  background: rgba(200,200,255,0.08);
+  border: 2px solid rgba(0,0,0,0.2);
+}
+.projects-scroller::-webkit-scrollbar-track { background: transparent; }
+
+/* Ensure card internals stretch to the card height, so footer aligns across cards */
+.project-card {
+  display: flex;          /* make article a flex container */
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Outer inner wrapper (m-3 rounded-xl) stretches to fill the article */
+.project-card > .project-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* The content area (with padding:1cm) becomes the main column that stretches,
+   and uses space-between so the footer (preview row) sits at the bottom. */
+.project-card .project-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+/* ensure the top area keeps growing as previously intended */
+.project-card .project-content > .flex-1 {
+  flex: 1 1 auto;
+}
+

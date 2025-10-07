@@ -82,6 +82,33 @@ export default function About() {
         "/images/projects/blockchain3.jpeg",
       ],
     },
+
+    {
+      name: "Blockchain-Based Secure Data Storage",
+      points: [
+        "AES for encryption + SHA-512 for hashing; privacy-preserving scheme.",
+        "Smart contracts for secondary verification & access control.",
+        "Compared MD5, SHA-1, SHA-256, SHA-512 for security vs performance.",
+      ],
+      stack: [
+        "Blockchain (Private/Public)",
+        "AES",
+        "SHA-512",
+        "MySQL",
+        "HTML",
+        "CSS",
+      ],
+      slides: [
+        "/images/projects/blockchain2.jpeg",
+        "/images/projects/blockchain1.jpeg",
+        "/images/projects/blockchain3.jpeg",
+      ],
+      images: [
+        "/images/projects/blockchain2.jpeg",
+        "/images/projects/blockchain1.jpeg",
+        "/images/projects/blockchain3.jpeg",
+      ],
+    },
     
     
     {
