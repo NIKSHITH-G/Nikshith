@@ -1,12 +1,19 @@
 // app/about/page.jsx
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../../components/Navbar";
 import Timeline from "../../components/Timeline";
 import ProjectCard from "../../components/ProjectCard";
 import ProjectsGrid from "../../components/ProjectsGrid";
+
+// Load wallpaper client-side only to avoid SSR / chunk-eval issues
+const InteractiveWallpaper = dynamic(
+  () => import("../../components/InteractiveWallpaper"),
+  { ssr: false }
+);
 
 export default function About() {
   // ---- DATA ----
@@ -55,9 +62,8 @@ export default function About() {
   // NOTE: ProjectsGrid expects each project to have: name, points, stack, slides (array of image urls)
   // Your previous code used "images" for ProjectCard; ProjectsGrid uses slides — we keep both below
   const projects = [
-    
     {
-      name: "Blockchain-Based Secure Data Storage",
+      name: " Peer to Peer Encrypted File Sharing Using Blockchain ",
       points: [
         "AES for encryption + SHA-512 for hashing; privacy-preserving scheme.",
         "Smart contracts for secondary verification & access control.",
@@ -84,35 +90,7 @@ export default function About() {
     },
 
     {
-      name: "Blockchain-Based Secure Data Storage",
-      points: [
-        "AES for encryption + SHA-512 for hashing; privacy-preserving scheme.",
-        "Smart contracts for secondary verification & access control.",
-        "Compared MD5, SHA-1, SHA-256, SHA-512 for security vs performance.",
-      ],
-      stack: [
-        "Blockchain (Private/Public)",
-        "AES",
-        "SHA-512",
-        "MySQL",
-        "HTML",
-        "CSS",
-      ],
-      slides: [
-        "/images/projects/blockchain2.jpeg",
-        "/images/projects/blockchain1.jpeg",
-        "/images/projects/blockchain3.jpeg",
-      ],
-      images: [
-        "/images/projects/blockchain2.jpeg",
-        "/images/projects/blockchain1.jpeg",
-        "/images/projects/blockchain3.jpeg",
-      ],
-    },
-    
-    
-    {
-      name: "Smart Mathematics Tutor — AI Project",
+      name: "Smart Mathematics Tutor",
       points: [
         "Web-based GUI where users draw shapes and get related formulas.",
         "increases interactive learning and reduces unproductive screen time.",
@@ -347,8 +325,10 @@ export default function About() {
   return (
     <>
       <Navbar />
+      {/* Interactive live wallpaper sits behind content */}
+      <InteractiveWallpaper />
 
-      <main className="text-foreground">
+      <main className="text-foreground relative z-10">
         {/* ===== INTRO / STATS (new) ===== */}
         <section className="mx-auto max-w-6xl px-6 pt-20 pb-8">
           <div className="relative rounded-2xl p-6 border-2 border-white/6 bg-black/20 backdrop-blur-sm overflow-hidden">

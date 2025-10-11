@@ -126,7 +126,10 @@ function ProjectsGrid({ projects }) {
                     <div className="flex items-start justify-between gap-4">
                       <h3 className="font-semibold text-xl">{p.name}</h3>
                       {p.slides?.length ? (
-                        <span className="text-[11px] px-2 py-1 rounded-md border border-indigo-500/30 bg-indigo-500/10">
+                        <span
+                          className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium border border-indigo-500/30 bg-indigo-500/10 text-indigo-200"
+                          style={{ minWidth: 56 }}
+                        >
                           {p.slides.length} shots
                         </span>
                       ) : null}
@@ -161,7 +164,6 @@ function ProjectsGrid({ projects }) {
                   </div>
 
                   <div className="flex flex-col gap-3">
-                    {/* --- Updated preview animation area --- */}
                     <div
                       className="overflow-hidden rounded-lg border border-white/10"
                       style={{
@@ -220,7 +222,7 @@ function ProjectsGrid({ projects }) {
         </div>
       </div>
 
-      {/* Lightbox remains unchanged */}
+      {/* Lightbox (ProjectsGrid) with Prev/Next in footer for visibility */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -267,6 +269,48 @@ function ProjectsGrid({ projects }) {
                     className="absolute inset-0 w-full h-full object-contain bg-black"
                   />
                 </AnimatePresence>
+              </div>
+
+              {/* Footer: shot indicator, Prev/Next buttons and dots */}
+              <div className="flex items-center justify-between gap-4 px-6 pb-5 pt-3 md:px-8">
+                <div className="truncate text-sm text-white/70">
+                  {projects[pIdx]?.name} — <span className="text-white/60">shot {sIdx + 1} of {slides.length}</span>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); prevSlide(); }}
+                    className="rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm text-white/90 hover:bg-white/10 transition"
+                    aria-label="Previous"
+                  >
+                    Previous
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    {slides.map((_, i) => (
+                      <button
+                        key={`dot-${i}`}
+                        type="button"
+                        onClick={() => setSIdx(i)}
+                        aria-label={`Go to slide ${i + 1}`}
+                        className={[
+                          "h-2.5 w-2.5 rounded-full transition",
+                          i === sIdx ? "bg-white" : "bg-white/35 hover:bg-white/60",
+                        ].join(" ")}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); nextSlide(); }}
+                    className="rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm text-white/90 hover:bg-white/10 transition"
+                    aria-label="Next"
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>

@@ -18,7 +18,9 @@ export default function ProjectCard({ project, idx }) {
   const prefersReducedMotionRef = useRef(false);
   useEffect(() => {
     try {
-      prefersReducedMotionRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      prefersReducedMotionRef.current = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
     } catch {
       prefersReducedMotionRef.current = false;
     }
@@ -52,10 +54,20 @@ export default function ProjectCard({ project, idx }) {
     }
 
     // only auto-cycle when previews are shown, multiple images exist, and lightbox is closed
-    if (!prefersReducedMotionRef.current && showPreviews && images.length > 1 && !open) {
+    if (
+      !prefersReducedMotionRef.current &&
+      showPreviews &&
+      images.length > 1 &&
+      !open
+    ) {
       cycleTimer.current = setInterval(() => {
         setCurrent((c) => (c + 1) % images.length);
       }, 1500); // cycle every 1.5s (tweakable)
+    }
+
+    // when previews are hidden, reset to initial image
+    if (!showPreviews) {
+      setCurrent(0);
     }
 
     return () => {
@@ -132,6 +144,8 @@ export default function ProjectCard({ project, idx }) {
           group relative overflow-hidden rounded-2xl border border-white/10 bg-black/30
           ring-1 ring-white/5 p-5 sm:p-6 backdrop-blur
           shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]
+          hover:ring-2 hover:ring-indigo-500/30 hover:border-indigo-500/40
+          hover:ring-offset-2 hover:ring-offset-black hover:z-20 hover:shadow-[0_8px_32px_-16px_rgba(99,102,241,0.18)]
         "
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -143,7 +157,11 @@ export default function ProjectCard({ project, idx }) {
               {name}
             </h3>
             {images?.length > 0 && (
-              <span className="rounded-full border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] sm:text-xs text-indigo-300">
+              // compact, single-line badge that doesn't wrap
+              <span
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium border border-indigo-500/30 bg-indigo-500/10 text-indigo-200"
+                style={{ minWidth: 56 }}
+              >
                 {images.length} shots
               </span>
             )}
@@ -314,12 +332,10 @@ export default function ProjectCard({ project, idx }) {
                         e.stopPropagation();
                         prevImage();
                       }}
-                      className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 inline-grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-white/10 text-white/90 hover:bg-white/15 backdrop-blur"
+                      className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 inline-flex h-11 px-3 items-center rounded-full border border-white/20 bg-white/6 text-white/90 hover:bg-white/10 backdrop-blur"
                       aria-label="Previous"
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-                        <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      Previous
                     </button>
                     <button
                       type="button"
@@ -327,12 +343,10 @@ export default function ProjectCard({ project, idx }) {
                         e.stopPropagation();
                         nextImage();
                       }}
-                      className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 inline-grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-white/10 text-white/90 hover:bg-white/15 backdrop-blur"
+                      className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 inline-flex h-11 px-3 items-center rounded-full border border-white/20 bg-white/6 text-white/90 hover:bg-white/10 backdrop-blur"
                       aria-label="Next"
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-                        <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      Next
                     </button>
                   </>
                 )}

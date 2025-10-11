@@ -196,3 +196,54 @@ body {
   flex: 1 1 auto;
 }
 
+/* Interactive wallpaper: ensures canvas is behind content and visually subtle */
+.interactive-wallpaper {
+  mix-blend-mode: screen; /* subtle brighten effect on dark background */
+  will-change: transform; /* hint for performance */
+  transition: opacity 300ms ease;
+  opacity: 1;
+  /* pointer-events none is important so the canvas doesn't block clicks */
+  pointer-events: none;
+}
+
+/* If a user prefers reduced motion, lower visibility */
+@media (prefers-reduced-motion: reduce) {
+  .interactive-wallpaper {
+    opacity: 0.9;
+  }
+}
+
+/* Interactive Wallpaper: Waves + Constellation */
+
+/* Waves underlay — overlay blend so it gently colors background without overpowering text */
+.interactive-waves {
+  mix-blend-mode: overlay;
+  opacity: 0.95;
+  will-change: transform, opacity;
+  transition: opacity 240ms ease;
+  pointer-events: none; /* must not block UI */
+}
+
+/* Constellation overlay — sits slightly above the waves */
+.interactive-dots {
+  mix-blend-mode: screen;
+  opacity: 0.95;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+/* On prefers-reduced-motion we tone down visuals */
+@media (prefers-reduced-motion: reduce) {
+  .interactive-waves,
+  .interactive-dots {
+    opacity: 0.85;
+  }
+}
+
+/* Optional: hide heavy backgrounds on very small screens */
+@media (max-width: 480px) {
+  .interactive-waves,
+  .interactive-dots {
+    display: none;
+  }
+}
