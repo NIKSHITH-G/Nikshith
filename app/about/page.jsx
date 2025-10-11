@@ -72,9 +72,9 @@ export default function About() {
         "CSS",
       ],
       slides: [
-        "/images/projects/blockchain2.jpeg",
-        "/images/projects/blockchain1.jpeg",
-        "/images/projects/blockchain3.jpeg",
+        "/images/Projects/blockchain2.jpeg",
+        "/images/Projects/blockchain1.jpeg",
+        "/images/Projects/blockchain3.jpeg",
       ],
       images: [
         "/images/Projects/blockchain2.jpeg",
