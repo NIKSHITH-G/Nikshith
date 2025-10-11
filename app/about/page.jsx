@@ -7,7 +7,8 @@ import Navbar from "../../components/Navbar";
 import Timeline from "../../components/Timeline";
 import ProjectCard from "../../components/ProjectCard";
 import ProjectsGrid from "../../components/ProjectsGrid";
-import InteractiveWallpaper from "../../components/InteractiveWallpaper";
+// interactive mesh grid (replace component file with the updated mesh implementation)
+import InteractiveMeshGrid from "../../components/InteractiveMeshGrid";
 
 export default function About() {
   // ---- DATA ----
@@ -53,8 +54,6 @@ export default function About() {
   ];
 
   // ===== PROJECTS =====
-  // NOTE: ProjectsGrid expects each project to have: name, points, stack, slides (array of image urls)
-  // Your previous code used "images" for ProjectCard; ProjectsGrid uses slides — we keep both below
   const projects = [
     {
       name: " Peer to Peer Encrypted File Sharing Using Blockchain ",
@@ -112,8 +111,6 @@ export default function About() {
         "/images/Projects/AI3.png",
       ],
     },
-
-    // Add more projects here — keep the same shape (name, points, stack, slides, images)
   ];
 
   const skills = [
@@ -142,7 +139,6 @@ export default function About() {
     "Graduate Record Examination (GRE) — 322/340",
   ];
 
-  // Map cert titles -> image paths (replace with your actual images)
   const certImages = {
     "AWS Certified Cloud Practitioner — AWS":
       "/images/certificates/AWS CLOUD PARTIONEER.jpg",
@@ -155,7 +151,7 @@ export default function About() {
       "/images/certificates/GRE.jpg",
   };
 
-  // === Skills wave interaction (position + color) ===
+  // === Skills interaction helpers ===
   const skillsContainerRef = useRef(null);
   const skillRefs = useRef([]);
   const skillsRaf = useRef(0);
@@ -168,7 +164,6 @@ export default function About() {
     const wrap = skillsContainerRef.current;
     if (!wrap) return;
 
-    // guard getBoundingClientRect
     let rect;
     try {
       rect = wrap.getBoundingClientRect();
@@ -191,9 +186,7 @@ export default function About() {
         glowRef.current.style.left = `${mx}px`;
         glowRef.current.style.top = `${my}px`;
         glowRef.current.style.opacity = "1";
-      } catch {
-        /* ignore style write errors */
-      }
+      } catch {}
     }
 
     cancelAnimationFrame(skillsRaf.current);
@@ -230,7 +223,6 @@ export default function About() {
         const alphaBorderRaw = 0.4 + 0.6 * t;
         const alphaBorder = safeNum(alphaBorderRaw, 0.4);
 
-        // apply styles with guards
         try {
           el.style.transform = `translateY(${-safeNum(lift, 0)}px) scale(${scale})`;
           el.style.border = `1px solid rgba(99,102,241,${alphaBorder})`;
@@ -240,9 +232,7 @@ export default function About() {
             "transform 120ms ease-out, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease";
           el.style.willChange =
             "transform, background-color, border-color, box-shadow";
-        } catch {
-          // ignore style assignment errors in strange browsers/environments
-        }
+        } catch {}
       }
     });
   };
@@ -279,7 +269,6 @@ export default function About() {
   const moveCertPreview = (e) => {
     cancelAnimationFrame(certRaf.current);
 
-    // support touch events safely
     const px = (e.touches && e.touches[0]) ? e.touches[0].clientX : (e.clientX ?? null);
     const py = (e.touches && e.touches[0]) ? e.touches[0].clientY : (e.clientY ?? null);
 
@@ -293,7 +282,6 @@ export default function About() {
       const left = Number.isFinite(leftRaw) ? leftRaw : -9999;
       const top = Number.isFinite(topRaw) ? topRaw : -9999;
 
-      // store finite numbers only
       setPreview((p) => ({
         ...p,
         x: left,
@@ -340,14 +328,12 @@ export default function About() {
     return () => obs.disconnect();
   }, []);
 
-  // animate numbers when statsStarted becomes true
   useEffect(() => {
     if (!statsStarted) return;
 
-    // target values (you asked for those exact displays)
     const targetYears = 1;
     const targetCerts = 15;
-    const duration = 1000; // ms
+    const duration = 1000;
 
     let start = null;
     let rafId = 0;
@@ -355,8 +341,7 @@ export default function About() {
     function step(ts) {
       if (!start) start = ts;
       const t = Math.min(1, (ts - start) / duration);
-
-      const ease = (v) => 1 - Math.pow(1 - v, 3); // smooth ease-out
+      const ease = (v) => 1 - Math.pow(1 - v, 3);
 
       setYears(Math.floor(ease(t) * targetYears));
       setCertCount(Math.floor(ease(t) * targetCerts));
@@ -364,7 +349,6 @@ export default function About() {
       if (t < 1) {
         rafId = requestAnimationFrame(step);
       } else {
-        // ensure exact at the end
         setYears(targetYears);
         setCertCount(targetCerts);
       }
@@ -377,14 +361,26 @@ export default function About() {
   return (
     <>
       <Navbar />
-      {/* Interactive live wallpaper sits behind content */}
-      <InteractiveWallpaper />
+
+      {/* Mesh grid behind content. Tweak props to change density/behavior */}
+      <InteractiveMeshGrid
+        spacing={96}         // smaller => more squares
+        density={0.78}       // 0.6..1.0 (lower = denser)
+        lineColor="rgba(255,255,255,0.03)"
+        pointColor="rgba(168,85,247,0.95)"
+        pointSize={1.6}
+        warp={0.16}
+        pointerSmoothing={0.16}
+        spring={0.10}
+        damping={0.84}
+        disableBelow={420}   // hides mesh on very small screens
+        maxPoints={1600}
+      />
 
       <main className="text-foreground relative z-10">
         {/* ===== INTRO / STATS (new) ===== */}
         <section className="mx-auto max-w-6xl px-6 pt-20 pb-8">
           <div className="relative rounded-2xl p-6 border-2 border-white/6 bg-black/20 backdrop-blur-sm overflow-hidden">
-            {/* Decorative soft gradient behind */}
             <div
               aria-hidden
               style={{
@@ -396,7 +392,6 @@ export default function About() {
               }}
             />
 
-            {/* Inspirational sentence */}
             <div className="relative z-10 text-center mb-6">
               <h2 className="mx-auto max-w-3xl text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight">
                 <span className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
@@ -408,7 +403,6 @@ export default function About() {
               </p>
             </div>
 
-            {/* Stats row */}
             <div
               ref={statsRef}
               className="relative z-10 mt-6 grid grid-cols-3 gap-4 text-center items-center"
@@ -432,7 +426,6 @@ export default function About() {
                 </div>
               </div>
 
-              {/* Projects → clickable GitHub (fixed display: 10+) */}
               <a
                 href="https://github.com/NIKSHITH-G"
                 target="_blank"
@@ -452,7 +445,6 @@ export default function About() {
           <h2 className="text-2xl font-bold mb-6">Experience</h2>
 
           <div className="relative rounded-2xl border-2 border-white/30 p-6">
-            {/* Scrollable list */}
             <div
               className="space-y-6 overflow-y-auto pr-6"
               style={{
@@ -462,7 +454,7 @@ export default function About() {
             >
               {experience.map((exp, i) => {
                 const expanded = openExpIndex === i;
-                const showPreviewBullets = 2; // number of bullets shown when collapsed
+                const showPreviewBullets = 2;
 
                 return (
                   <motion.div
@@ -508,7 +500,6 @@ export default function About() {
                       </div>
                     </div>
 
-                    {/* bullets: collapsed preview + expand animation */}
                     <div className="mt-4" id={`exp-details-${i}`}>
                       <ul className="list-disc pl-5 text-sm space-y-2 text-foreground/90">
                         {exp.bullets
@@ -556,9 +547,6 @@ export default function About() {
         {/* ===== PROJECTS ===== */}
         <section className="mx-auto max-w-6xl px-6 pb-12">
           <h2 className="text-2xl font-bold mb-6">Featured Projects</h2>
-
-          {/* Use your ProjectsGrid component: it already implements the horizontal scroller + snap.
-              ProjectsGrid uses the `projects` array (with slides) so pass that in. */}
           <ProjectsGrid projects={projects} />
         </section>
 
@@ -575,7 +563,6 @@ export default function About() {
       before:blur-[20px] before:pointer-events-none
     "
           >
-            {/* Skills (left) */}
             <div
               ref={skillsContainerRef}
               onMouseMove={handleSkillsMove}
@@ -611,7 +598,6 @@ export default function About() {
               </div>
             </div>
 
-            {/* Certifications (right) — scrollable independently */}
             <div className="relative">
               <div
                 className="space-y-3 overflow-y-auto pr-6 certs-scroll"
