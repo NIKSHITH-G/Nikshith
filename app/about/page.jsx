@@ -1,19 +1,13 @@
 // app/about/page.jsx
 "use client";
 
-import dynamic from "next/dynamic";
 import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../../components/Navbar";
 import Timeline from "../../components/Timeline";
 import ProjectCard from "../../components/ProjectCard";
 import ProjectsGrid from "../../components/ProjectsGrid";
-
-// Load wallpaper client-side only to avoid SSR / chunk-eval issues
-const InteractiveWallpaper = dynamic(
-  () => import("../../components/InteractiveWallpaper"),
-  { ssr: false }
-);
+import InteractiveWallpaper from "../../components/InteractiveWallpaper";
 
 export default function About() {
   // ---- DATA ----
@@ -83,9 +77,9 @@ export default function About() {
         "/images/projects/blockchain3.jpeg",
       ],
       images: [
-        "/images/projects/blockchain2.jpeg",
-        "/images/projects/blockchain1.jpeg",
-        "/images/projects/blockchain3.jpeg",
+        "/images/Projects/blockchain2.jpeg",
+        "/images/Projects/blockchain1.jpeg",
+        "/images/Projects/blockchain3.jpeg",
       ],
     },
 
@@ -108,14 +102,14 @@ export default function About() {
         "Watson Studio",
       ],
       slides: [
-        "/images/projects/AI1.png",
-        "/images/projects/AI2.png",
-        "/images/projects/AI3.png",
+        "/images/Projects/AI1.png",
+        "/images/Projects/AI2.png",
+        "/images/Projects/AI3.png",
       ],
       images: [
-        "/images/projects/AI1.png",
-        "/images/projects/AI2.png",
-        "/images/projects/AI3.png",
+        "/images/Projects/AI1.png",
+        "/images/Projects/AI2.png",
+        "/images/Projects/AI3.png",
       ],
     },
 
@@ -167,17 +161,39 @@ export default function About() {
   const skillsRaf = useRef(0);
   const glowRef = useRef(null);
 
+  const safeNum = (n, fallback = 0) =>
+    Number.isFinite(n) ? n : fallback;
+
   const handleSkillsMove = (e) => {
     const wrap = skillsContainerRef.current;
     if (!wrap) return;
-    const rect = wrap.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
+
+    // guard getBoundingClientRect
+    let rect;
+    try {
+      rect = wrap.getBoundingClientRect();
+    } catch {
+      return;
+    }
+    if (!rect) return;
+
+    const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : (e.clientX ?? null);
+    const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : (e.clientY ?? null);
+    if (clientX === null || clientY === null) return;
+
+    const mxRaw = clientX - rect.left;
+    const myRaw = clientY - rect.top;
+    const mx = safeNum(mxRaw, 0);
+    const my = safeNum(myRaw, 0);
 
     if (glowRef.current) {
-      glowRef.current.style.left = `${mx}px`;
-      glowRef.current.style.top = `${my}px`;
-      glowRef.current.style.opacity = 1;
+      try {
+        glowRef.current.style.left = `${mx}px`;
+        glowRef.current.style.top = `${my}px`;
+        glowRef.current.style.opacity = "1";
+      } catch {
+        /* ignore style write errors */
+      }
     }
 
     cancelAnimationFrame(skillsRaf.current);
@@ -187,42 +203,66 @@ export default function About() {
 
       for (const el of skillRefs.current) {
         if (!el) continue;
-        const r = el.getBoundingClientRect();
-        const cx = r.left - rect.left + r.width / 2;
-        const cy = r.top - rect.top + r.height / 2;
+        let r;
+        try {
+          r = el.getBoundingClientRect();
+        } catch {
+          continue;
+        }
+        if (!r) continue;
+
+        const cxRaw = r.left - rect.left + r.width / 2;
+        const cyRaw = r.top - rect.top + r.height / 2;
+        const cx = safeNum(cxRaw, 0);
+        const cy = safeNum(cyRaw, 0);
+
         const dx = mx - cx;
         const dy = my - cy;
         const d = Math.hypot(dx, dy);
 
         const t = Math.max(0, 1 - d / RADIUS);
         const lift = AMPLITUDE * t * t;
-        const scale = 1 + 0.06 * t;
+        const scaleRaw = 1 + 0.06 * t;
+        const scale = safeNum(scaleRaw, 1);
 
-        const alphaBg = 0.05 + 0.25 * t;
-        const alphaBorder = 0.4 + 0.6 * t;
+        const alphaBgRaw = 0.05 + 0.25 * t;
+        const alphaBg = safeNum(alphaBgRaw, 0.05);
+        const alphaBorderRaw = 0.4 + 0.6 * t;
+        const alphaBorder = safeNum(alphaBorderRaw, 0.4);
 
-        el.style.transform = `translateY(${-lift}px) scale(${scale})`;
-        el.style.border = `1px solid rgba(99,102,241,${alphaBorder})`;
-        el.style.backgroundColor = `rgba(99,102,241,${alphaBg})`;
-        el.style.boxShadow = `0 10px 24px -12px rgba(99,102,241,${0.35 * t})`;
-        el.style.transition =
-          "transform 120ms ease-out, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease";
-        el.style.willChange =
-          "transform, background-color, border-color, box-shadow";
+        // apply styles with guards
+        try {
+          el.style.transform = `translateY(${-safeNum(lift, 0)}px) scale(${scale})`;
+          el.style.border = `1px solid rgba(99,102,241,${alphaBorder})`;
+          el.style.backgroundColor = `rgba(99,102,241,${alphaBg})`;
+          el.style.boxShadow = `0 10px 24px -12px rgba(99,102,241,${safeNum(0.35 * t, 0)})`;
+          el.style.transition =
+            "transform 120ms ease-out, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease";
+          el.style.willChange =
+            "transform, background-color, border-color, box-shadow";
+        } catch {
+          // ignore style assignment errors in strange browsers/environments
+        }
       }
     });
   };
 
   const handleSkillsLeave = () => {
     cancelAnimationFrame(skillsRaf.current);
-    if (glowRef.current) glowRef.current.style.opacity = 0;
+    if (glowRef.current) {
+      try {
+        glowRef.current.style.opacity = "0";
+      } catch {}
+    }
     for (const el of skillRefs.current) {
       if (!el) continue;
-      el.style.transform = "translateY(0) scale(1)";
-      el.style.border = "1px solid rgba(99,102,241,0.4)";
-      el.style.backgroundColor = "rgba(99,102,241,0.05)";
-      el.style.boxShadow = "0 0 0 0 rgba(99,102,241,0)";
-      el.style.transition = "all 300ms ease";
+      try {
+        el.style.transform = "translateY(0) scale(1)";
+        el.style.border = "1px solid rgba(99,102,241,0.4)";
+        el.style.backgroundColor = "rgba(99,102,241,0.05)";
+        el.style.boxShadow = "0 0 0 0 rgba(99,102,241,0)";
+        el.style.transition = "all 300ms ease";
+      } catch {}
     }
   };
 
@@ -238,14 +278,26 @@ export default function About() {
 
   const moveCertPreview = (e) => {
     cancelAnimationFrame(certRaf.current);
-    const { clientX, clientY } = e;
+
+    // support touch events safely
+    const px = (e.touches && e.touches[0]) ? e.touches[0].clientX : (e.clientX ?? null);
+    const py = (e.touches && e.touches[0]) ? e.touches[0].clientY : (e.clientY ?? null);
+
     certRaf.current = requestAnimationFrame(() => {
       const OFFSET_X = 16;
       const OFFSET_Y = 16;
+
+      const leftRaw = px !== null ? px + OFFSET_X : undefined;
+      const topRaw = py !== null ? py + OFFSET_Y : undefined;
+
+      const left = Number.isFinite(leftRaw) ? leftRaw : -9999;
+      const top = Number.isFinite(topRaw) ? topRaw : -9999;
+
+      // store finite numbers only
       setPreview((p) => ({
         ...p,
-        x: clientX + OFFSET_X,
-        y: clientY + OFFSET_Y,
+        x: left,
+        y: top,
       }));
     });
   };
@@ -592,25 +644,29 @@ export default function About() {
                 ))}
               </div>
 
-              {preview.show && (
-                <div
-                  className="fixed z-[60] pointer-events-none rounded-xl border border-white/20 bg-background/80 backdrop-blur-md shadow-2xl p-2 animate-[previewIn_140ms_ease-out]"
-                  style={{
-                    left: preview.x,
-                    top: preview.y,
-                    width: 260,
-                    height: 160,
-                  }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={preview.src}
-                    alt=""
-                    className="h-full w-full object-contain rounded-md"
-                    loading="lazy"
-                  />
-                </div>
-              )}
+              {preview.show && (() => {
+                const safeLeft = Number.isFinite(preview.x) ? preview.x : -9999;
+                const safeTop = Number.isFinite(preview.y) ? preview.y : -9999;
+                return (
+                  <div
+                    className="fixed z-[60] pointer-events-none rounded-xl border border-white/20 bg-background/80 backdrop-blur-md shadow-2xl p-2 animate-[previewIn_140ms_ease-out]"
+                    style={{
+                      left: `${safeLeft}px`,
+                      top: `${safeTop}px`,
+                      width: 260,
+                      height: 160,
+                    }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={preview.src}
+                      alt=""
+                      className="h-full w-full object-contain rounded-md"
+                      loading="lazy"
+                    />
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </section>
