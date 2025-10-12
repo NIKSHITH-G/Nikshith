@@ -62,14 +62,7 @@ export default function Home() {
 
         {/* Centered bordered div (frame) */}
         <div
-          className="absolute top-[54%] left-1/2 -translate-x-1/2 -translate-y-1/2
-                     w-[92vw] h-[82vh] rounded-2xl
-                     border border-[#635b72]
-                     bg-[#0b0014]/95
-                     shadow-[0_0_44px_rgba(99,91,114,0.35)]
-                     transition-all duration-500
-                     hover:shadow-[0_0_70px_rgba(99,91,114,0.5)]
-                     overflow-hidden"
+          className="absolute top-[54%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] h-[82vh] rounded-2xl border border-[#635b72] bg-[#0b0014]/95 shadow-[0_0_44px_rgba(99,91,114,0.35)] transition-all duration-500 hover:shadow-[0_0_70px_rgba(99,91,114,0.5)] overflow-hidden"
           ref={frameRef}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
@@ -79,8 +72,7 @@ export default function Home() {
             {/* soft halo behind the profile (absolute so it won't shift layout) */}
             <div
               aria-hidden
-              className="absolute left-8 bottom-8 md:left-8 md:bottom-0 w-[360px] h-[420px] rounded-[14px]
-                         blur-[34px] opacity-60 pointer-events-none"
+              className="absolute left-8 bottom-8 md:left-8 md:bottom-0 w-[360px] h-[420px] rounded-[14px] blur-[34px] opacity-60 pointer-events-none"
               style={{
                 background:
                   "radial-gradient(closest-side, rgba(168,85,247,0.62), rgba(99,91,114,0.08) 55%, rgba(11,0,20,0) 80%)",
