@@ -1,136 +1,118 @@
+// app/page.jsx
 "use client";
 
-import { useState } from "react";
-import Navbar from "../../components/Navbar";
+import { useRef, useState } from "react";
+import Image from "next/image";
+import Navbar from "../components/Navbar";
+import InteractiveMeshGrid from "../components/InteractiveMeshGrid";
+import DigitalHive from "../components/DigitalHive";
 
-const FORM_ENDPOINT = "https://formspree.io/f/your-form-id"; // <- replace with your Formspree endpoint or your API
+export default function Home() {
+  const frameRef = useRef(null);
+  const [imgStyle, setImgStyle] = useState({
+    transform: "translate3d(0,0,0) rotateX(0deg) rotateY(0deg) scale(1)",
+  });
 
-export default function Contact() {
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const [status, setStatus] = useState({ loading: false, ok: null, msg: "" });
+  function handleMouseMove(e) {
+    const el = frameRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
 
-  const update = (k) => (e) => setForm((s) => ({ ...s, [k]: e.target.value }));
+    const rx = (dy / rect.height) * -6;
+    const ry = (dx / rect.width) * 8;
+    const tx = (dx / rect.width) * -8;
+    const ty = (dy / rect.height) * -6;
 
-  const validate = () => {
-    if (!form.name.trim()) return "Please enter your name.";
-    if (!form.email.trim()) return "Please enter your email.";
-    // basic email regex
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return "Please enter a valid email.";
-    if (!form.message.trim()) return "Please enter a message.";
-    if (form.message.length < 10) return "Message should be at least 10 characters.";
-    return null;
-  };
+    const transform = `translate3d(${tx}px, ${ty}px, 0px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.02)`;
+    setImgStyle({ transform });
+  }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const err = validate();
-    if (err) {
-      setStatus({ loading: false, ok: false, msg: err });
-      return;
-    }
-
-    setStatus({ loading: true, ok: null, msg: "" });
-
-    try {
-      const res = await fetch(FORM_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      if (res.ok) {
-        setStatus({ loading: false, ok: true, msg: "Thanks — your message was sent!" });
-        setForm({ name: "", email: "", message: "" });
-      } else {
-        const data = await res.json().catch(() => null);
-        const message = (data && data.error) || "Something went wrong — please try again later.";
-        setStatus({ loading: false, ok: false, msg: message });
-      }
-    } catch (err) {
-      setStatus({ loading: false, ok: false, msg: "Network error — check your connection." });
-    }
-  };
+  function handleMouseLeave() {
+    setImgStyle({
+      transform: "translate3d(0,0,0) rotateX(0deg) rotateY(0deg) scale(1)",
+    });
+  }
 
   return (
     <>
-      <Navbar />
-      <main className="min-h-screen bg-background text-foreground flex items-center justify-center px-6 py-20">
-        <section className="w-full max-w-3xl rounded-2xl border border-white/12 bg-[#0b0b0d]/70 p-8 shadow-xl">
-          <h1 className="text-3xl font-bold mb-2">Contact</h1>
-          <p className="text-sm text-foreground/70 mb-6">
-            Want to work together or have a question? Send me a message and I&apos;ll get back to you.
-          </p>
+      <InteractiveMeshGrid
+        spacing={96}
+        density={0.78}
+        lineColor="rgba(255,255,255,0.03)"
+        pointColor="rgba(168,85,247,0.95)"
+        pointSize={1.6}
+        warp={0.16}
+        pointerSmoothing={0.16}
+        spring={0.1}
+        damping={0.84}
+        disableBelow={420}
+        maxPoints={1600}
+      />
 
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <label className="block">
-                <span className="text-xs text-foreground/60">Name</span>
-                <input
-                  required
-                  value={form.name}
-                  onChange={update("name")}
-                  className="mt-1 block w-full rounded-md border border-white/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400"
-                  placeholder="Your name"
-                />
-              </label>
+      <main className="min-h-screen text-foreground relative z-10 overflow-hidden">
+        <Navbar />
 
-              <label className="block">
-                <span className="text-xs text-foreground/60">Email</span>
-                <input
-                  required
-                  value={form.email}
-                  onChange={update("email")}
-                  type="email"
-                  className="mt-1 block w-full rounded-md border border-white/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400"
-                  placeholder="you@example.com"
-                />
-              </label>
-            </div>
+        <div
+          className="absolute top-[54%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] h-[82vh] rounded-2xl border border-[#635b72] bg-[#0b0014]/95 shadow-[0_0_44px_rgba(99,91,114,0.35)] transition-all duration-500 hover:shadow-[0_0_70px_rgba(99,91,114,0.5)] overflow-hidden"
+          ref={frameRef}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        >
+          <div className="relative w-full h-full">
+            {/* halo behind profile */}
+            <div
+              aria-hidden
+              className="absolute left-8 bottom-8 md:left-8 md:bottom-0 w-[360px] h-[420px] rounded-[14px] blur-[34px] opacity-60 pointer-events-none"
+              style={{
+                background:
+                  "radial-gradient(closest-side, rgba(168,85,247,0.62), rgba(99,91,114,0.08) 55%, rgba(11,0,20,0) 80%)",
+                filter: "blur(32px)",
+                transform: "translateZ(0)",
+              }}
+            />
 
-            <label className="block">
-              <span className="text-xs text-foreground/60">Message</span>
-              <textarea
-                required
-                value={form.message}
-                onChange={update("message")}
-                rows={6}
-                className="mt-1 block w-full rounded-md border border-white/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 resize-y"
-                placeholder="Tell me about your project, collaboration idea, or any questions..."
-              />
-            </label>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="submit"
-                disabled={status.loading}
-                className="inline-flex items-center gap-2 rounded-lg bg-indigo-500 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-600 disabled:opacity-60 disabled:cursor-not-allowed"
+            {/* profile image */}
+            <div
+              className="absolute left-8 bottom-8 md:left-8 md:bottom-0 select-none"
+              style={{ width: 300, height: 400 }}
+            >
+              <div
+                className="relative w-full h-full transition-transform duration-450 ease-out will-change-transform"
+                style={{
+                  ...imgStyle,
+                  transformOrigin: "50% 65%",
+                }}
               >
-                {status.loading ? "Sending…" : "Send Message"}
-              </button>
-
-              <div className="text-sm">
-                {status.ok === true && <span className="text-green-400">{status.msg}</span>}
-                {status.ok === false && <span className="text-rose-400">{status.msg}</span>}
+                <Image
+                  src="/images/Profile/Profile.png"
+                  alt="Profile"
+                  fill
+                  sizes="(min-width: 1280px) 360px, 300px"
+                  style={{
+                    objectFit: "contain",
+                    transform: "translateZ(0)",
+                  }}
+                  className="relative z-20 drop-shadow-[0_30px_60px_rgba(0,0,0,0.6)]"
+                  priority
+                />
               </div>
             </div>
-          </form>
 
-          <hr className="my-6 border-white/6" />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-foreground/70">
-            <div>
-              <h4 className="font-semibold mb-1">Email</h4>
-              <a href="mailto:your.email@example.com" className="underline hover:text-white">your.email@example.com</a>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-1">Find me</h4>
-              <div className="flex gap-3">
-                <a className="underline hover:text-white" href="https://github.com/your-username" target="_blank" rel="noreferrer">GitHub</a>
-                <a className="underline hover:text-white" href="https://www.linkedin.com/in/your-username" target="_blank" rel="noreferrer">LinkedIn</a>
+            {/* Digital Hive container — larger and centered-right */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-[52%] h-[74%] md:w-[48%] md:h-[70%] lg:w-[44%] lg:h-[72%] pointer-events-auto">
+                <DigitalHive size={56} spacing={10} clusterScale={1.06} />
               </div>
             </div>
+
+            {/* overlay gradient for blending */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-l from-[#0b0014]/24 via-transparent to-transparent" />
           </div>
-        </section>
+        </div>
       </main>
     </>
   );
