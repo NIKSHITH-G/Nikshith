@@ -1,12 +1,13 @@
+// hive3d.jsx
 "use client";
 
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Html, Edges } from "@react-three/drei";
 import * as THREE from "three";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 
-/* Tool list */
+/* Tools (labels/colors) */
 const TOOLS = [
   { id: "react", name: "React", color: "#61dafb", caption: "UI" },
   { id: "next", name: "Next.js", color: "#ffffff", caption: "SSR / SSG" },
@@ -23,140 +24,163 @@ const TOOLS = [
   { id: "chatgpt", name: "ChatGPT", color: "#00a67e", caption: "AI" },
 ];
 
-const COORDS = [
-  [-1, -1],
-  [0, -1],
-  [1, -1],
-  [-1, 0],
-  [0, 0],
-  [1, 0],
-  [-1, 1],
-  [0, 1],
-  [1, 1],
-];
-
-/* --------- Compute Node + Connection Positions ---------- */
-function computePositions({ radius = 0.65, spacing = 0.25, scale = 1 }) {
-  const nodes = TOOLS.slice(0, 9).map((t, i) => {
-    const [col, row] = COORDS[i];
-    const horiz = radius * 2.0 + spacing;
-    const vert = Math.sqrt(3) * radius * 0.5 + spacing;
-    const x = (col * horiz) * 1.1;
-    const y = (row * vert * 1.9);
-    const z = (Math.random() - 0.5) * 0.08;
-    return { ...t, x: x * scale, y: y * scale, z, r: radius * scale };
-  });
-
-  const edges = [];
-  for (let i = 0; i < nodes.length; i++) {
-    for (let j = i + 1; j < nodes.length; j++) {
-      const a = nodes[i], b = nodes[j];
-      const dist = Math.hypot(a.x - b.x, a.y - b.y);
-      if (dist < radius * 4.2) edges.push({ aIdx: i, bIdx: j });
+/* ---------- helpers ---------- */
+function fibonacciSpherePoints(samples = 48, radius = 2.0) {
+  const pts = [];
+  const phi = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < samples; i++) {
+    const y = 1 - (i / (samples - 1)) * 2;
+    const r = Math.sqrt(Math.max(0, 1 - y * y));
+    const theta = phi * i;
+    const x = Math.cos(theta) * r;
+    const z = Math.sin(theta) * r;
+    pts.push(new THREE.Vector3(x * radius, y * radius, z * radius));
+  }
+  return pts;
+}
+function projectToTangent(vec, normal) {
+  const n = normal.clone().normalize();
+  return vec.clone().sub(n.multiplyScalar(vec.dot(n)));
+}
+function relaxSpherePoints(points, radius = 2.0, iters = 120, minSeparation = 1.15) {
+  const pts = points.map((p) => p.clone());
+  const n = pts.length;
+  const strength = 0.08;
+  for (let iter = 0; iter < iters; iter++) {
+    for (let i = 0; i < n; i++) {
+      const jitter = new THREE.Vector3((Math.random() - 0.5) * 1e-5, (Math.random() - 0.5) * 1e-5, (Math.random() - 0.5) * 1e-5);
+      pts[i].add(jitter);
+    }
+    for (let i = 0; i < n; i++) {
+      let shift = new THREE.Vector3(0, 0, 0);
+      for (let j = 0; j < n; j++) {
+        if (i === j) continue;
+        const a = pts[i], b = pts[j];
+        const diff = a.clone().sub(b);
+        const dist = diff.length();
+        if (dist === 0) continue;
+        if (dist < minSeparation) {
+          const push = diff.normalize().multiplyScalar((minSeparation - dist) / minSeparation);
+          shift.add(push);
+        }
+      }
+      if (shift.lengthSq() > 0) {
+        const normal = pts[i].clone().normalize();
+        const tangentShift = projectToTangent(shift, normal).multiplyScalar(strength);
+        pts[i].add(tangentShift);
+        pts[i].setLength(radius);
+      }
     }
   }
-  return { nodes, edges };
+  for (let i = 0; i < n; i++) pts[i].setLength(radius);
+  return pts;
+}
+function alignYToNormal(normal) {
+  const up = new THREE.Vector3(0, 1, 0);
+  const q = new THREE.Quaternion().setFromUnitVectors(up, normal.clone().normalize());
+  return q;
 }
 
-/* --------- Curved Connectors ---------- */
-function makeConnectorCurve(a, b) {
-  const mid = new THREE.Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, 0.05);
-  return new THREE.QuadraticBezierCurve3(
-    new THREE.Vector3(a.x, a.y, 0),
-    mid,
-    new THREE.Vector3(b.x, b.y, 0)
-  );
-}
-
-/* --------- Floating Particles ---------- */
-function FloatingParticles() {
+/* ---------- Floating particles ---------- */
+function FloatingParticles({ count = 60, radius = 3.6 }) {
   const group = useRef();
   const particles = useMemo(() => {
-    const temp = [];
-    for (let i = 0; i < 80; i++) {
-      temp.push({
-        position: [
-          (Math.random() - 0.5) * 6,
-          (Math.random() - 0.5) * 6,
-          (Math.random() - 0.5) * 2,
-        ],
-        size: Math.random() * 0.015 + 0.005,
+    const arr = [];
+    for (let i = 0; i < count; i++) {
+      const dir = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
+      arr.push({
+        pos: dir.multiplyScalar(radius * (0.86 + Math.random() * 0.4)),
+        size: Math.random() * 0.01 + 0.004,
+        opacity: Math.random() * 0.35 + 0.12,
       });
     }
-    return temp;
-  }, []);
+    return arr;
+  }, [count, radius]);
 
   useFrame(() => {
-    group.current.rotation.y += 0.0008;
+    if (!group.current) return;
+    group.current.rotation.y += 0.0009;
+    group.current.rotation.x += 0.00018;
   });
 
   return (
     <group ref={group}>
       {particles.map((p, i) => (
-        <mesh key={i} position={p.position}>
-          <sphereGeometry args={[p.size, 6, 6]} />
-          <meshBasicMaterial
-            color={"#a855f7"}
-            transparent
-            opacity={Math.random() * 0.5 + 0.2}
-          />
+        <mesh key={i} position={p.pos}>
+          <sphereGeometry args={[p.size, 8, 8]} />
+          <meshBasicMaterial transparent opacity={p.opacity} color={"#a855f7"} />
         </mesh>
       ))}
     </group>
   );
 }
 
-/* --------- Node (Hex Plate) ---------- */
-function HexNode({ node, idx, hoveredId, setHoveredId }) {
+/* ---------- HexPlate (unchanged) ---------- */
+function HexPlate({ idx, pos, radius, color = "#8b5cf6", hoveredId, setHoveredId }) {
   const meshRef = useRef();
-  const offset = useMemo(() => Math.random() * 1000, []);
-  const isHovered = hoveredId === node.id;
+  const normal = useMemo(() => pos.clone().normalize(), [pos]);
+  const isHovered = hoveredId === idx;
+  const plateRadius = 0.45;
+  const plateThickness = 0.052;
+  const outwardGap = 0.12;
+
+  useEffect(() => {
+    if (!meshRef.current) return;
+    meshRef.current.quaternion.copy(alignYToNormal(normal));
+    meshRef.current.position.copy(pos.clone().add(normal.clone().multiplyScalar(outwardGap)));
+  }, [normal, pos]);
 
   useFrame((state) => {
-    const t = state.clock.elapsedTime * 0.3 + offset;
     if (!meshRef.current) return;
-    meshRef.current.position.z = Math.sin(t + idx) * 0.12;
+    const t = state.clock.getElapsedTime() * 1.05 + idx * 0.08;
+    const bob = Math.sin(t * 1.4) * 0.01;
+    meshRef.current.position.copy(pos.clone().add(normal.clone().multiplyScalar(outwardGap + bob)));
+    const s = isHovered ? 1.12 : 1.0;
+    meshRef.current.scale.set(s, s, s * 0.98);
   });
 
   return (
     <group>
       <mesh
         ref={meshRef}
-        position={[node.x, node.y, node.z]}
-        rotation={[Math.PI / 2, 0, 0]}
-        onPointerOver={(e) => { e.stopPropagation(); setHoveredId(node.id); }}
+        onPointerOver={(e) => { e.stopPropagation(); setHoveredId(idx); }}
         onPointerOut={(e) => { e.stopPropagation(); setHoveredId(null); }}
+        castShadow
+        receiveShadow
       >
-        <cylinderGeometry args={[node.r, node.r, 0.04, 6]} />
+        <cylinderGeometry args={[plateRadius, plateRadius, plateThickness, 6]} />
         <meshStandardMaterial
-          color={node.color}
-          emissive={isHovered ? node.color : new THREE.Color(node.color).multiplyScalar(0.5)}
-          emissiveIntensity={isHovered ? 2 : 0.6}
+          color={color}
+          emissive={isHovered ? color : new THREE.Color(color).multiplyScalar(0.16)}
+          emissiveIntensity={isHovered ? 1.4 : 0.42}
           transparent
-          opacity={0.22}
-          roughness={0.05}
-          metalness={1}
+          opacity={0.36}
+          roughness={0.12}
+          metalness={0.9}
           side={THREE.DoubleSide}
         />
-        <Edges threshold={15} color={isHovered ? node.color : "#444"} />
+        <Edges threshold={15} color={isHovered ? color : "#111"} />
       </mesh>
 
       {isHovered && (
-        <Html distanceFactor={6} style={{ pointerEvents: "none", transform: "translateY(-25px)" }}>
+        <Html distanceFactor={6} style={{ pointerEvents: "none", transform: "translateY(-12px)" }}>
           <div style={{
-            padding: "8px 12px",
-            background: "linear-gradient(180deg, rgba(30,16,50,0.9), rgba(14,10,20,0.75))",
+            padding: "6px 10px",
+            background: "linear-gradient(180deg, rgba(30,16,50,0.96), rgba(12,8,18,0.8))",
             color: "#e9eef7",
-            borderRadius: 10,
+            borderRadius: 8,
             border: "1px solid rgba(255,255,255,0.06)",
-            boxShadow: "0 10px 30px rgba(8,6,12,0.6)",
-            fontSize: 13,
+            boxShadow: "0 8px 28px rgba(8,6,12,0.6)",
+            fontSize: 12,
             fontWeight: 700,
             textAlign: "center",
             backdropFilter: "blur(6px)",
+            minWidth: 72
           }}>
-            <div>{node.name}</div>
-            <div style={{ fontSize: 11, fontWeight: 500, color: "#bfc8d6", marginTop: 6 }}>{node.caption}</div>
+            <div style={{ fontSize: 13 }}>{TOOLS[idx % TOOLS.length].name}</div>
+            <div style={{ fontSize: 11, fontWeight: 500, color: "#bfc8d6", marginTop: 4 }}>
+              {TOOLS[idx % TOOLS.length].caption}
+            </div>
           </div>
         </Html>
       )}
@@ -164,67 +188,129 @@ function HexNode({ node, idx, hoveredId, setHoveredId }) {
   );
 }
 
-/* --------- Connectors ---------- */
-function ConnectorLine({ a, b }) {
-  const curve = useMemo(() => makeConnectorCurve(a, b), [a, b]);
-  const tubeGeometry = useMemo(() => new THREE.TubeGeometry(curve, 24, 0.01, 8, false), [curve]);
+/* ---------- New: Tube connectors ---------- */
+function makeConnectorPath(a, b) {
+  // Slight outward bulge for a pleasant curve: control point halfway, pushed outward by normal
+  const mid = new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5);
+  const out = mid.clone().normalize().multiplyScalar(0.25); // bulge amount
+  mid.add(out);
+  const curve = new THREE.CatmullRomCurve3([a.clone(), mid, b.clone()]);
+  return curve;
+}
+
+function ConnectorsTubes({ nodePositions, threshold = 0.82 }) {
+  const tubes = useMemo(() => {
+    const list = [];
+    for (let i = 0; i < nodePositions.length; i++) {
+      for (let j = i + 1; j < nodePositions.length; j++) {
+        const a = nodePositions[i];
+        const b = nodePositions[j];
+        const d = a.distanceTo(b);
+        if (d < threshold) {
+          const curve = makeConnectorPath(a, b);
+          // push a low-poly tube descriptor
+          list.push({ curve, color: "#a78bfa", glow: "#7c3aed" });
+        }
+      }
+    }
+    return list;
+  }, [nodePositions, threshold]);
+
   return (
     <group>
-      <mesh geometry={tubeGeometry}>
-        <meshBasicMaterial color={"#a855f7"} transparent opacity={0.25} />
-      </mesh>
-      <mesh geometry={tubeGeometry}>
-        <meshBasicMaterial color={"#6be7ff"} transparent opacity={0.15} />
-      </mesh>
+      {tubes.map((t, idx) => {
+        // geometry: segments small for perf
+        const tubeGeo = new THREE.TubeGeometry(t.curve, 12, 0.02, 6, false);
+        const tubeGlowGeo = new THREE.TubeGeometry(t.curve, 12, 0.04, 6, false);
+        return (
+          <group key={idx}>
+            <mesh geometry={tubeGlowGeo}>
+              <meshBasicMaterial
+                color={t.glow}
+                transparent
+                opacity={0.09}
+                side={THREE.DoubleSide}
+                depthWrite={false}
+              />
+            </mesh>
+            <mesh geometry={tubeGeo}>
+              <meshStandardMaterial
+                color={t.color}
+                emissive={t.color}
+                emissiveIntensity={0.9}
+                metalness={0.2}
+                roughness={0.1}
+                transparent
+                opacity={0.95}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+          </group>
+        );
+      })}
     </group>
   );
 }
 
-/* --------- Main Hive Scene ---------- */
-function HiveScene() {
-  const { nodes, edges } = useMemo(() => computePositions({ radius: 0.65, spacing: 0.25, scale: 1 }), []);
+/* ---------- Main scene ---------- */
+function SphereHiveScene({ numNodes = 48 }) {
+  const radius = 2.05;
+  const base = useMemo(() => fibonacciSpherePoints(numNodes, radius), [numNodes, radius]);
+  const plateRadius = 0.45;
+  const minSeparation = 1.1 * plateRadius * 2.0;
+  const nodePositions = useMemo(() => relaxSpherePoints(base, radius, 120, minSeparation), [base, radius]);
+
   const [hoveredId, setHoveredId] = useState(null);
   const groupRef = useRef();
   const pulseRef = useRef();
 
   useFrame((state) => {
-    const t = state.clock.getElapsedTime() * 0.6;
-    if (groupRef.current) groupRef.current.rotation.y = Math.sin(t) * 0.2;
+    const t = state.clock.getElapsedTime() * 0.28;
+    if (groupRef.current) {
+      groupRef.current.rotation.y = t * 0.55;
+      groupRef.current.rotation.x = Math.sin(t * 0.12) * 0.035;
+    }
     if (pulseRef.current) {
-      const s = Math.sin(t * 3) * 0.3 + 1.2;
+      const s = Math.sin(state.clock.getElapsedTime() * 2.6) * 0.16 + 1.04;
       pulseRef.current.scale.set(s, s, s);
     }
   });
 
   return (
     <>
-      {/* Lighting */}
-      <ambientLight intensity={0.4} />
-      <pointLight position={[0, 0, 6]} intensity={0.25} color={0xa855f7} />
-      <pointLight position={[2, -3, 5]} intensity={0.2} color={0x38bdf8} />
+      <hemisphereLight skyColor={0x3a3240} groundColor={0x06030a} intensity={0.42} />
+      <ambientLight intensity={0.22} />
+      <pointLight position={[0, 0, 6]} intensity={0.36} color={0xa855f7} />
+      <pointLight position={[4, -3, 5]} intensity={0.12} color={0x38bdf8} />
 
-      {/* Group */}
-      <group ref={groupRef} scale={[1.2, 1.2, 1.2]}>
-        {edges.map((edge, i) => {
-          const a = nodes[edge.aIdx];
-          const b = nodes[edge.bIdx];
-          return <ConnectorLine key={`c-${i}`} a={a} b={b} />;
-        })}
-        {nodes.map((node, idx) => (
-          <HexNode key={node.id} node={node} idx={idx} hoveredId={hoveredId} setHoveredId={setHoveredId} />
+      <group ref={groupRef}>
+        {/* Tubular connectors */}
+        <ConnectorsTubes nodePositions={nodePositions} threshold={0.82} />
+
+        {/* Tiles */}
+        {nodePositions.map((p, idx) => (
+          <HexPlate
+            key={idx}
+            idx={idx}
+            pos={p}
+            radius={radius}
+            color={TOOLS[idx % TOOLS.length].color}
+            hoveredId={hoveredId}
+            setHoveredId={setHoveredId}
+          />
         ))}
-        <FloatingParticles />
+
+        <FloatingParticles count={60} radius={3.6} />
       </group>
 
-      {/* Central Pulse */}
       <mesh ref={pulseRef}>
-        <sphereGeometry args={[0.1, 24, 24]} />
+        <sphereGeometry args={[0.14, 32, 32]} />
         <meshStandardMaterial
           emissive="#a855f7"
-          emissiveIntensity={1.8}
+          emissiveIntensity={1.6}
           color="#ffffff"
           transparent
-          opacity={0.9}
+          opacity={0.98}
         />
       </mesh>
 
@@ -233,21 +319,18 @@ function HiveScene() {
   );
 }
 
-/* --------- Exported Component ---------- */
+/* ---------- Export ---------- */
 export default function Hive3D({ className = "" }) {
   return (
     <div className={`w-full h-full ${className}`} style={{ touchAction: "none" }}>
-      <Canvas camera={{ position: [0, 0, 8], fov: 60 }} gl={{ antialias: true }}>
+      <Canvas camera={{ position: [0, 0, 6.2], fov: 56 }} gl={{ antialias: true }}>
         <color attach="background" args={["#0b0014"]} />
-        <fog attach="fog" args={["#0b0014", 6, 14]} />
-        <HiveScene />
+        <fog attach="fog" args={["#0b0014", 4, 10]} />
+        <SphereHiveScene numNodes={48} />
         <EffectComposer>
-          <Bloom intensity={1.3} luminanceThreshold={0.15} luminanceSmoothing={0.25} height={300} />
+          <Bloom intensity={1.25} luminanceThreshold={0.12} luminanceSmoothing={0.25} height={300} />
         </EffectComposer>
       </Canvas>
     </div>
   );
 }
-
-
-

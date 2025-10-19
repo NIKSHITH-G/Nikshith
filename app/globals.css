@@ -241,3 +241,64 @@ svg text {
 .bg-gradient-radial {
   background: radial-gradient(circle, var(--tw-gradient-stops));
 }
+
+/* Placeholder outlines for hero/frame */
+.outlines-root {
+  position: absolute;
+  inset: 0; /* fill the hero frame */
+  pointer-events: none; /* prevents blocking mouse events (toggle via .outlines-interactive) */
+  z-index: 30; /* sits above scene but under UI nav (adjust if needed) */
+}
+
+/* When interactive is true, allow pointer events */
+.outlines-root.outlines-interactive {
+  pointer-events: auto;
+}
+
+/* Each placeholder box */
+.outline-box {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px dashed rgba(167,139,250,0.28);
+  border-radius: 12px;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  background: linear-gradient(180deg, rgba(11,0,20,0.02), rgba(11,0,20,0.03));
+  box-shadow: 0 6px 22px rgba(10,8,12,0.25), inset 0 1px 0 rgba(255,255,255,0.02);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 8px;
+  overflow: hidden;
+  z-index: 31;
+}
+
+/* label at top-left of each box */
+.outline-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(230,230,240,0.95);
+  background: linear-gradient(90deg, rgba(124,58,237,0.95), rgba(99,102,241,0.85));
+  padding: 6px 8px;
+  border-radius: 999px;
+  box-shadow: 0 6px 14px rgba(99,91,180,0.12);
+  transform: translateY(-4px);
+}
+
+/* hover highlight — only useful when interactive (pointer-events auto) */
+.outlines-root.outlines-interactive .outline-box:hover {
+  transform: translateY(-6px) scale(1.01);
+  border-color: rgba(167,139,250,0.58);
+  box-shadow: 0 12px 36px rgba(99,91,180,0.18);
+}
+
+/* small decorative outline for the inner area (subtle) */
+.outline-box::after {
+  content: "";
+  position: absolute;
+  inset: 10% 10% 10% 10%;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.02);
+  pointer-events: none;
+}
