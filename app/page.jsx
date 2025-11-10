@@ -1,55 +1,59 @@
-// app/page.jsx
 "use client";
 
-import { useRef, useState } from "react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import InteractiveMeshGrid from "../components/InteractiveMeshGrid";
-import Hive3D from "../components/Hive3D";
+import ProjectsGrid from "../components/ProjectsGrid";
 
 export default function Home() {
-  const frameRef = useRef(null);
-  const [imgStyle, setImgStyle] = useState({
-    transform: "translate3d(0,0,0) rotateX(0deg) rotateY(0deg) scale(1)",
-  });
-  // background parallax offsets (small)
-  const [bgOffset, setBgOffset] = useState({ x: 0, y: 0 });
+  const tools = ["VS Code", "Postman", "Git / GitHub", "Docker", "Terminal (zsh)"];
+  const devices = ["MacBook Pro (M4 Pro)", "Samsung Galaxy S23+", "Samsung Galaxy Buds 3 Pro"];
+  const software = ["Chrome", "Slack", "Figma", "Tableau", "IntelliJ IDEA"];
 
-  function handleMouseMove(e) {
-    const el = frameRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const dx = e.clientX - cx;
-    const dy = e.clientY - cy;
+  const projects = [
+    {
+      name: "Peer to Peer Encrypted File Sharing Using Blockchain",
+      points: [
+        "AES for encryption + SHA-512 for hashing; privacy-preserving scheme.",
+        "Smart contracts for secondary verification & access control.",
+      ],
+      stack: ["Blockchain", "AES", "SHA-512", "MySQL"],
+      images: ["/images/Projects/blockchain2.jpeg"],
+    },
+    {
+      name: "Smart Mathematics Tutor",
+      points: [
+        "Web-based GUI where users draw shapes and get related formulas.",
+        "Built with deep learning for shape recognition.",
+      ],
+      stack: ["TensorFlow", "Keras", "Flask"],
+      images: ["/images/Projects/AI1.png"],
+    },
+  ];
 
-    // profile image transform (same as before)
-    const rx = (dy / rect.height) * -6;
-    const ry = (dx / rect.width) * 8;
-    const tx = (dx / rect.width) * -8;
-    const ty = (dy / rect.height) * -6;
-    const transform = `translate3d(${tx}px, ${ty}px, 0px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.02)`;
-    setImgStyle({ transform });
+  const subtitles = [
+    "Engineer • Builder • Learner",
+    "Exploring Web3 & Cloud",
+    "Experimenting with AI & UX",
+  ];
+  const [subtitleIdx, setSubtitleIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSubtitleIdx((s) => (s + 1) % subtitles.length);
+    }, 2800);
+    return () => clearInterval(id);
+  }, []);
 
-    // subtle background parallax - move opposite of cursor, scaled down
-    const bx = -(dx / rect.width) * 4; // percent offsets
-    const by = -(dy / rect.height) * 4;
-    setBgOffset({ x: bx, y: by });
-  }
-
-  function handleMouseLeave() {
-    setImgStyle({
-      transform: "translate3d(0,0,0) rotateX(0deg) rotateY(0deg) scale(1)",
-    });
-    setBgOffset({ x: 0, y: 0 });
-  }
-
-  // helper: computed background position string for slight parallax
-  const bgPos = `${50 + bgOffset.x}% ${50 + bgOffset.y}%`;
+  const status = {
+    color: "bg-green-500",
+    text: "Working at Tata Consultancy Services",
+  };
 
   return (
     <>
+      <Navbar />
+
       <InteractiveMeshGrid
         spacing={96}
         density={0.78}
@@ -64,147 +68,171 @@ export default function Home() {
         maxPoints={1600}
       />
 
-      <main className="min-h-screen text-foreground relative z-10 overflow-hidden">
-        <Navbar />
-
-        {/* Main Frame with Background */}
-        <div
-          className="absolute top-[54%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] h-[82vh] rounded-2xl border border-[#635b72] bg-[#0b0014]/80 shadow-[0_0_44px_rgba(99,91,114,0.35)] transition-all duration-500 hover:shadow-[0_0_90px_rgba(99,91,114,0.6)] overflow-hidden"
-          ref={frameRef}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          style={{
-            // background image placed behind everything
-            backgroundImage: "url('/images/scene-bg.png')",
-            backgroundSize: "cover",
-            backgroundPosition: bgPos,
-            backgroundRepeat: "no-repeat",
-          }}
-        >
-          <div className="relative w-full h-full">
-            {/* neon inner border: separate element so it blends on top of bg but under content */}
+      <main className="relative z-10 text-foreground">
+        {/* HERO */}
+        <section className="mx-auto max-w-6xl px-6 pt-24 pb-12">
+          <div className="relative rounded-2xl p-8 border-2 border-white/6 bg-black/20 backdrop-blur-sm overflow-hidden">
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-2xl"
               style={{
-                // a thin inner stroke + soft outer glow
-                boxShadow:
-                  "inset 0 0 0 1px rgba(120,160,255,0.18), inset 0 0 40px rgba(99,91,244,0.06), 0 8px 60px rgba(10,6,18,0.6)",
-                borderRadius: "12px",
-                mixBlendMode: "screen",
-              }}
-            />
-
-            {/* subtle vignette + grain overlays to add depth */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-2xl"
-              style={{
+                position: "absolute",
+                inset: 0,
+                pointerEvents: "none",
                 background:
-                  "radial-gradient(1200px 600px at 10% 90%, rgba(0,0,0,0.55), rgba(0,0,0,0.18) 40%, rgba(0,0,0,0.6) 100%)",
-                opacity: 0.6,
-                borderRadius: "12px",
-                mixBlendMode: "multiply",
-              }}
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-2xl"
-              style={{
-                backgroundImage:
-                  "linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02))",
-                opacity: 0.6,
-                borderRadius: "12px",
-                mixBlendMode: "overlay",
+                  "radial-gradient(ellipse at 10% 20%, rgba(99,102,241,0.06), transparent 15%), radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.04), transparent 20%)",
               }}
             />
 
-            {/* Soft glow halo behind profile */}
-            <div
-              aria-hidden
-              className="absolute left-8 bottom-8 md:left-8 md:bottom-0 w-[360px] h-[420px] rounded-[14px] opacity-40 pointer-events-none"
-              style={{
-                background:
-                  "radial-gradient(closest-side, rgba(138,95,255,0.72), rgba(99,91,244,0.06) 55%, rgba(11,0,20,0) 80%)",
-                filter: "blur(36px)",
-                transform: "translateZ(0)",
-              }}
-            />
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+              {/* Left: Profile Image */}
+              <div className="flex justify-center md:justify-start">
+                <div className="group relative w-60 h-[28rem] md:w-70 md:h-[24rem] rounded-3xl overflow-hidden transform transition-all duration-500 will-change-transform group-hover:scale-[1.04] animate-float">
+                  {/* Glow effect behind image */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600/20 via-violet-500/20 to-transparent blur-3xl opacity-60 group-hover:opacity-90 transition duration-500"></div>
 
-            {/* Profile Image (now with crisp outline + inner purple outline) */}
-            <div
-              className="absolute left-8 bottom-8 md:left-8 md:bottom-0 select-none"
-              style={{ width: 325, height: 372 }}
-            >
-              <div
-                className="relative w-full h-full transition-transform duration-450 ease-out will-change-transform"
-                style={{
-                  ...imgStyle,
-                  transformOrigin: "50% 65%",
-                }}
-              >
-                {/* outline wrapper */}
-                <div
-                  aria-hidden
-                  className="absolute inset-0 rounded-[6px] pointer-events-none"
-                  style={{
-                    boxShadow:
-                      "0 8px 30px rgba(0,0,0,0.6), 0 0 18px rgba(99,91,244,0.18)",
-                    borderRadius: "6px",
-                    zIndex: 18,
-                  }}
-                />
-                <Image
-                  src="/images/Profile/Profile.png"
-                  alt="Profile"
-                  fill
-                  sizes="(min-width: 1280px) 360px, 300px"
-                  style={{
-                    objectFit: "contain",
-                    transform: "translateZ(0)",
-                  }}
-                  className="relative z-20 -ml-2 drop-shadow-[0_30px_40px_rgba(0,0,0,0.65)]"
-                  priority
-                />
-                {/* small purple rim under profile for a stronger cutout read */}
-                <div
-                  aria-hidden
-                  className="absolute -left-3 -bottom-6 w-28 h-28 rounded-full pointer-events-none"
-                  style={{
-                    background:
-                      "radial-gradient(closest-side, rgba(138,95,255,0.28), rgba(11,0,20,0) 60%)",
-                    filter: "blur(18px)",
-                    zIndex: 15,
-                  }}
-                />
+                  {/* Profile Image directly inside */}
+                  <Image
+                    src="/images/Profile/Profile.png"
+                    alt="Nikshith profile"
+                    fill
+                    className="object-cover"
+                    sizes="(min-width: 1024px) 320px, (min-width: 768px) 240px, 200px"
+                    priority
+                  />
+                </div>
+              </div>
+
+              {/* Right: Intro Content */}
+              <div className="md:col-span-2">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight">
+                  <span className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
+                    Hi — I build things that people use.
+                  </span>
+                </h1>
+
+                <p className="mt-4 text-lg text-foreground/70 max-w-2xl">
+                  I’m Nikshith — systems engineer and full-stack tinkerer. This homepage is a compact hub: the
+                  tools, devices and software I rely on daily, and a quick highlight of featured projects. For full
+                  timelines and experience please visit the About page.
+                </p>
+
+                <div className="mt-3 text-indigo-400 font-medium">{subtitles[subtitleIdx]}</div>
+
+                <div className="mt-4 flex items-center gap-3 text-sm text-foreground/70">
+                  <span className={`inline-block w-2.5 h-2.5 rounded-full ${status.color}`} aria-hidden />
+                  <span>{status.text}</span>
+                </div>
+
+                <div className="mt-6 flex items-center gap-3">
+                  <a
+                    href="/about"
+                    className="inline-flex items-center rounded-md px-4 py-2 text-sm font-medium bg-indigo-600/90 hover:bg-indigo-500/95 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  >
+                    About me
+                  </a>
+
+                  <a
+                    href="https://github.com/NIKSHITH-G"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="inline-flex items-center rounded-md px-4 py-2 text-sm font-medium bg-white/6 hover:bg-white/8"
+                  >
+                    View GitHub
+                  </a>
+                </div>
               </div>
             </div>
-
-            {/* Hive 3D Visual (kept commented per your current file; feel free to re-enable) 
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[56%] h-[76%] md:w-[50%] md:h-[72%] lg:w-[44%] lg:h-[76%] pointer-events-auto">
-                <Hive3D />
-              </div>
-            </div> */}
-
-            {/* subtle top-right lens glow (decorative) */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute right-8 top-8 w-40 h-12 rounded-full"
-              style={{
-                background:
-                  "linear-gradient(90deg, rgba(120,95,255,0.18), rgba(78,210,255,0.06))",
-                filter: "blur(20px)",
-                opacity: 0.7,
-                mixBlendMode: "screen",
-              }}
-            />
-
-            {/* Overlay gradient for subtle fade */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-l from-[#0b0014]/22 via-transparent to-transparent rounded-2xl" />
           </div>
-        </div>
+        </section>
+
+        {/* QUICK HUB */}
+        <section className="mx-auto max-w-6xl px-6 pb-12">
+          <h2 className="text-2xl font-bold mb-6">Quick Hub</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="rounded-2xl border-2 border-white/20 p-6 bg-[rgba(255,255,255,0.02)]">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Tools I use</h3>
+                <span className="text-xs text-foreground/60">Daily</span>
+              </div>
+              <ul className="mt-4 space-y-2 text-sm text-foreground/80">
+                {tools.map((t) => (
+                  <li key={t} className="flex items-center gap-3">
+                    <span className="inline-flex items-center justify-center w-2.5 h-2.5 rounded-full bg-indigo-500/80" />
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border-2 border-white/20 p-6 bg-[rgba(255,255,255,0.02)]">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Devices I use</h3>
+                <span className="text-xs text-foreground/60">Hardware</span>
+              </div>
+              <ul className="mt-4 space-y-2 text-sm text-foreground/80">
+                {devices.map((d) => (
+                  <li key={d} className="flex items-center gap-3">
+                    <span className="inline-flex items-center justify-center w-2.5 h-2.5 rounded-full bg-violet-500/80" />
+                    <span>{d}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border-2 border-white/20 p-6 bg-[rgba(255,255,255,0.02)]">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Software I rely on</h3>
+                <span className="text-xs text-foreground/60">Apps</span>
+              </div>
+              <ul className="mt-4 space-y-2 text-sm text-foreground/80">
+                {software.map((s) => (
+                  <li key={s} className="flex items-center gap-3">
+                    <span className="inline-flex items-center justify-center w-2.5 h-2.5 rounded-full bg-pink-500/80" />
+                    <span>{s}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <p className="mt-4 text-sm text-foreground/60">
+            Note: this page is intentionally concise and avoids repeating the detailed timeline and experience found on About.
+          </p>
+        </section>
+
+        {/* FEATURED PROJECTS */}
+        <section className="mx-auto max-w-6xl px-6 pb-20">
+          <h2 className="text-2xl font-bold mb-6">Featured Projects</h2>
+          <div className="rounded-2xl border-2 border-white/30 p-6">
+            <ProjectsGrid projects={projects} />
+          </div>
+        </section>
+
+        {/* FOOTER */}
+        <footer className="mx-auto max-w-6xl px-6 pb-12 text-sm text-foreground/70">
+          <div className="pt-6 border-t border-white/6">
+            <div className="flex items-center justify-between">
+              <div>© {new Date().getFullYear()} Nikshith — Built with ❤️</div>
+              <div className="flex items-center gap-4">
+                <a href="/about" className="underline">About</a>
+                <a href="/contact" className="underline">Contact</a>
+              </div>
+            </div>
+          </div>
+        </footer>
       </main>
+
+      <style jsx>{`
+        @keyframes float {
+          0% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+          100% { transform: translateY(0); }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+      `}</style>
     </>
   );
 }
