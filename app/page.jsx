@@ -14,7 +14,7 @@ import ProjectsGrid from "../components/ProjectsGrid";
 ------------------------- */
 function MicroTerminal({
   lines = ["git push origin main", "deploy: succeeded (maybe)", "running experiments..."],
-  whoami = "Nikshith — systems engineer & full-stack tinkerer",
+  whoami = "Nikshith — systems engineer",
   onExpand = null,
   paused = false,
 }) {
@@ -108,7 +108,7 @@ function MicroTerminal({
    - appears when user presses / clicks (easter egg)
    - shows recent logs + "whoami" output
 ------------------------- */
-function ExpandedTerminalPanel({ open, onClose, logs = [], whoami = "Nikshith — systems engineer & full-stack tinkerer" }) {
+function ExpandedTerminalPanel({ open, onClose, logs = [], whoami = "Nikshith — systems engineer " }) {
   // trap Esc to close
   useEffect(() => {
     function onKey(e) {
@@ -417,7 +417,7 @@ export default function Home() {
                     {/* Micro terminal (click to expand) */}
                     <MicroTerminal
                       lines={["git push origin main", "deploy: succeeded (maybe)", "running experiments..."]}
-                      whoami={"Nikshith — systems engineer & full-stack tinkerer"}
+                      whoami={"Nikshith — systems engineer"}
                       onExpand={() => setTerminalOpen(true)}
                       paused={terminalOpen}
                     />
@@ -516,7 +516,7 @@ export default function Home() {
         open={terminalOpen}
         onClose={() => setTerminalOpen(false)}
         logs={terminalLogs}
-        whoami={"Nikshith — systems engineer & full-stack tinkerer"}
+        whoami={"Nikshith — systems engineer"}
       />
 
       <style jsx>{`
