@@ -7,11 +7,11 @@ import InteractiveMeshGrid from "../components/InteractiveMeshGrid";
 import ProjectsGrid from "../components/ProjectsGrid";
 
 /* -------------------------
-   MicroTerminal (unchanged behavior)
+   MicroTerminal (typing + click to expand)
 ------------------------- */
 function MicroTerminal({
-  lines = ["running training script...", "processing data...", "evaluating behaviour..."],
-  whoami = "Nikshith — part engineer, part detective, full-time 'why is this happening'",
+  lines = ["git push origin main", "deploy: succeeded (maybe)", "running experiments..."],
+  whoami = "Nikshith — someone who learns by building and breaking things",
   onExpand = null,
   paused = false,
 }) {
@@ -78,12 +78,12 @@ function MicroTerminal({
         onClick={handleClick}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
-        className="rounded-md bg-[rgba(0,0,0,0.55)] border border-white/6 px-3 py-2 text-sm font-mono flex items-center gap-3"
+        className="rounded-md bg-[rgba(0,0,0,0.55)] border border-white/6 px-3 py-2 text-sm font-mono flex items-center gap-3 hover:scale-[1.01] transition"
         aria-label="Terminal — click to open"
         title="Click to open terminal (or press ⌘/Ctrl+K)"
       >
         <span className="text-green-300 select-none">$</span>
-        <span className="select-text" aria-live="polite" style={{ minWidth: 160 }}>
+        <span className="select-text" aria-live="polite" style={{ minWidth: 180 }}>
           {display}
         </span>
         <span className="ml-1 animate-blink">|</span>
@@ -95,9 +95,9 @@ function MicroTerminal({
 }
 
 /* -------------------------
-   ExpandedTerminalPanel (unchanged)
+   ExpandedTerminalPanel
 ------------------------- */
-function ExpandedTerminalPanel({ open, onClose, logs = [], whoami = "Nikshith — part engineer, part detective, full-time 'why is this happening'" }) {
+function ExpandedTerminalPanel({ open, onClose, logs = [], whoami = "Nikshith — someone who learns by building and breaking things" }) {
   useEffect(() => {
     function onKey(e) {
       if (e.key === "Escape") onClose?.();
@@ -116,7 +116,7 @@ function ExpandedTerminalPanel({ open, onClose, logs = [], whoami = "Nikshith �
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-220 rounded-2xl p-6 bg-[#06050a]/95 border border-white/8 shadow-2xl"
+        className="w-full max-w-230 rounded-2xl p-6 bg-[#06050a]/95 border border-white/8 shadow-2xl"
         style={{ backdropFilter: "blur(8px)" }}
       >
         <div className="flex items-start justify-between gap-4">
@@ -153,7 +153,7 @@ function ExpandedTerminalPanel({ open, onClose, logs = [], whoami = "Nikshith �
 }
 
 /* -------------------------
-   Main Home component
+   Home component — updated per last requests
 ------------------------- */
 export default function Home() {
   const tools = ["VS Code", "Postman", "Git / GitHub", "Docker", "Terminal (zsh)"];
@@ -172,21 +172,22 @@ export default function Home() {
     },
   ];
 
-  // === status rotation (the 3 lines you selected) ===
-  const statusLines = [
-    { dot: "bg-blue-500", text: "Learning how learning works" },
-    { dot: "bg-green-500", text: "Working at Tata Consultancy Services" },
-    { dot: "bg-purple-500", text: "Studying the shape of ideas I’ll encounter next." },
+  // rotating small status chips (3 items)
+  const rotatingChips = [
+    { dot: "bg-blue-400", text: "Learning how learning works" },
+    { dot: "bg-green-400", text: "Working at Tata Consultancy Services" },
+    { dot: "bg-violet-400", text: "Studying the shape of ideas I’ll encounter next." },
   ];
-  const [statusIdx, setStatusIdx] = useState(0);
+  const [chipIdx, setChipIdx] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => {
-      setStatusIdx((s) => (s + 1) % statusLines.length);
-    }, 3000);
+    const id = setInterval(() => setChipIdx((i) => (i + 1) % rotatingChips.length), 3000);
     return () => clearInterval(id);
   }, []);
 
-  // small portrait/card parallax
+  // small subtitle / tagline chosen (Option E)
+  const heroSub = "Running experiments until the universe sends me a hint.";
+
+  // parallax + mouse movement refs
   const heroRef = useRef(null);
   const portraitRef = useRef(null);
   const cardRef = useRef(null);
@@ -197,6 +198,7 @@ export default function Home() {
   useEffect(() => {
     const hero = heroRef.current;
     if (!hero) return;
+
     function clamp(v, a, b) {
       return Math.max(a, Math.min(b, v));
     }
@@ -221,14 +223,14 @@ export default function Home() {
       const mx = mouse.current.x;
       const my = mouse.current.y;
       const s = Math.min(1, scrollY.current / 900);
-      const scrollOffset = s * 12;
+      const scrollOffset = s * 10;
 
-      const pTx = clamp(mx * 18, -24, 24);
-      const pTy = clamp(my * 10 - scrollOffset, -28, 28);
-      const pRot = clamp(mx * 2.2, -3.5, 3.5);
+      const pTx = clamp(mx * 14, -20, 20);
+      const pTy = clamp(my * 10 - scrollOffset, -24, 24);
+      const pRot = clamp(mx * 2.4, -3, 3);
 
       const cTx = clamp(-mx * 8, -12, 12);
-      const cTy = clamp(-my * 6, -10, 10 - s * 5);
+      const cTy = clamp(-my * 5, -8, 8 - s * 4);
 
       if (portraitRef.current) {
         portraitRef.current.style.transform = `translate3d(${pTx}px, ${pTy}px, 0) rotate(${pRot}deg)`;
@@ -258,15 +260,15 @@ export default function Home() {
     };
   }, []);
 
-  // expanded terminal state + logs
+  // Expanded terminal modal state + logs
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [terminalLogs, setTerminalLogs] = useState([
-    { cmd: "pip install -r requirements.txt", out: "installed dependencies" },
-    { cmd: "python train.py", out: "epoch 3/20 — loss: 0.134" },
-    { cmd: "git push origin main", out: "pushed" },
+    { cmd: "npm run build", out: "build succeeded in 3.1s" },
+    { cmd: "git push origin main", out: "pushed to origin/main" },
+    { cmd: "deploy", out: "deployment started — rolling out" },
   ]);
 
-  // toggle terminal with ctrl/cmd+k + add demo log with 'r'
+  // open/close with key combo CMD/Ctrl + K
   useEffect(() => {
     function onKey(e) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -276,7 +278,7 @@ export default function Home() {
       if (terminalOpen && e.key.toLowerCase() === "r") {
         setTerminalLogs((l) => [
           ...l,
-          { cmd: "whoami", out: "part engineer, part detective, full-time 'why is this happening'" },
+          { cmd: "whoami", out: "Nikshith — part engineer, part detective, full-time : why is this happening" },
         ]);
       }
     }
@@ -314,7 +316,7 @@ export default function Home() {
               border: "1px solid rgba(255,255,255,0.04)",
             }}
           >
-            {/* soft hero vignette */}
+            {/* toned down lights — removed large blob behind portrait for a cleaner look */}
             <div
               aria-hidden
               style={{
@@ -322,38 +324,36 @@ export default function Home() {
                 inset: 0,
                 pointerEvents: "none",
                 background:
-                  "radial-gradient(1000px 420px at 16% 12%, rgba(88,58,226,0.06), transparent 16%), radial-gradient(900px 360px at 92% 80%, rgba(124,58,237,0.04), transparent 18%)",
+                  "radial-gradient(900px 360px at 88% 78%, rgba(124,58,237,0.06), transparent 10%), radial-gradient(700px 300px at 18% 10%, rgba(56,34,110,0.04), transparent 12%)",
                 mixBlendMode: "overlay",
               }}
             />
 
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-              {/* LEFT: portrait */}
+              {/* LEFT: portrait (no odd glow, subtle shadow only) */}
               <div className="md:col-span-5 flex justify-start items-center">
-                <div className="relative w-[360px] h-[520px] md:w-[380px] md:h-[540px] select-none portrait-container">
-                  {/* smaller, darker local backdrop (reduced halo) */}
-                  <div className="portrait-backdrop" />
-
-                  {/* subtle rim to separate subject from background */}
-                  <div className="portrait-rim" />
-
-                  {/* portrait wrapper that receives transforms */}
+                <div className="relative w-[360px] h-[520px] md:w-[380px] md:h-[540px] select-none">
                   <div
                     ref={portraitRef}
-                    className="absolute left-0 top-0 w-full h-full rounded-3xl overflow-hidden transition-transform duration-300 will-change-transform"
+                    className="absolute left-0 top-0 w-full h-full rounded-3xl overflow-hidden shadow-[0_30px_90px_-50px_rgba(0,0,0,0.85)] transition-transform duration-300 will-change-transform"
                     style={{ transformOrigin: "50% 40%" }}
                   >
                     <Image
                       src="/images/Profile/Profile.png"
                       alt="Nikshith profile"
                       fill
-                      className="object-cover transition-transform duration-400"
+                      className="object-cover transition-transform duration-500"
                       style={{ objectPosition: "30% 12%" }}
                       priority
                     />
-
-                    {/* soft ground shadow (tiny oval) */}
-                    <div className="portrait-ground" />
+                    {/* soft cursor-shadow on hover to ground the portrait */}
+                    <div
+                      className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 hover:opacity-100 transition-opacity duration-400"
+                      style={{
+                        boxShadow: "0 26px 80px -32px rgba(31,9,50,0.45)",
+                        mixBlendMode: "multiply",
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -362,53 +362,52 @@ export default function Home() {
               <div className="md:col-span-7 flex items-center justify-end">
                 <div
                   ref={cardRef}
-                  className="w-full md:max-w-[820px] rounded-2xl p-8 bg-[rgba(255,255,255,0.025)] backdrop-blur-md border border-white/6 shimmer-border transform transition will-change-transform"
+                  className="w-full md:max-w-[820px] rounded-2xl p-8 bg-[rgba(255,255,255,0.03)] backdrop-blur-md border border-white/6 transform transition will-change-transform"
                 >
-                  {/* diagonal subtle reflection overlay (subtle, low opacity) */}
-                  <div
-                    aria-hidden
-                    style={{
-                      position: "absolute",
-                      inset: "0",
-                      borderRadius: "inherit",
-                      pointerEvents: "none",
-                      background: "linear-gradient(120deg, rgba(255,255,255,0.02), transparent 60%)",
-                      mixBlendMode: "overlay",
-                      opacity: 0.36,
-                    }}
-                  />
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight">
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
+                          I’m Nikshith, I build things, break things, fix things.
+                        </span>
+                      </h1>
 
-                  <div className="relative z-10 flex flex-col gap-4">
-                    {/* Intro (locked) */}
-                    <h2 className="text-4xl sm:text-5xl font-extrabold leading-tight">
-                      <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
-                        I’m Nikshith, I build things, break things, fix things.
-                      </span>
-                    </h2>
+                      <p className="mt-6 text-lg text-foreground/70 max-w-[64ch]">{heroSub}</p>
+                    </div>
 
-                    {/* Short supporting line (keeps things clean, not repeating) */}
-                    <p className="mt-3 text-lg text-foreground/70 max-w-[64ch]">
-                      Experimenting with ideas until they make sense.
-                    </p>
-
-                    {/* Rotating status chip */}
-                    <div className="mt-4">
-                      <div className="inline-flex items-center gap-3 px-3 py-2 rounded-md bg-[rgba(0,0,0,0.45)] border border-white/6 text-sm">
-                        <span className={`inline-block w-2.5 h-2.5 rounded-full ${statusLines[statusIdx].dot}`} />
-                        <span className="text-foreground/80">{statusLines[statusIdx].text}</span>
+                    {/* Rotating single chip (fade/slide) */}
+                    <div className="mt-6">
+                      <div className="relative w-full max-w-[420px] h-12">
+                        {rotatingChips.map((c, i) => (
+                          <div
+                            key={i}
+                            className={`absolute left-0 top-0 w-full h-12 rounded-md px-4 py-3 flex items-center gap-3 text-sm text-foreground/90 transition-all duration-600 ease-in-out`}
+                            style={{
+                              transform: `translateY(${(i - chipIdx) * 110}%)`,
+                              opacity: i === chipIdx ? 1 : 0,
+                              visibility: i === chipIdx ? "visible" : "hidden",
+                            }}
+                          >
+                            <span className={`inline-block w-3 h-3 rounded-full ${c.dot}`} />
+                            <span>{c.text}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
 
-                    {/* Micro terminal and actions */}
+                    {/* Micro terminal (click to expand) */}
                     <MicroTerminal
-                      lines={["running training script..", "processing data..", "evaluating behaviour.."]}
-                      whoami={"Nikshith — part engineer, part detective, full-time 'why is this happening'"}
+                      lines={["git push origin main", "deploy: succeeded (maybe)", "running experiments..."]}
+                      whoami={"Nikshith — part engineer, part detective, full-time : why is this happening"}
                       onExpand={() => setTerminalOpen(true)}
                       paused={terminalOpen}
                     />
 
-                    <div className="mt-4 flex flex-wrap items-center gap-3">
-                      <a href="/about" className="inline-flex items-center rounded-md px-4 py-2 text-sm bg-white/6 hover:bg-white/8">
+                    <div className="mt-6 flex flex-wrap items-center gap-3">
+                      <a
+                        href="/about"
+                        className="inline-flex items-center rounded-md px-4 py-2 text-sm font-medium bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-sm"
+                      >
                         About
                       </a>
 
@@ -416,7 +415,7 @@ export default function Home() {
                         href="https://github.com/NIKSHITH-G"
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center rounded-md px-4 py-2 text-sm bg-transparent border border-white/6 hover:bg-white/5"
+                        className="inline-flex items-center rounded-md px-4 py-2 text-sm font-medium bg-transparent border border-white/6 hover:bg-white/6"
                       >
                         GitHub
                       </a>
@@ -426,8 +425,11 @@ export default function Home() {
               </div>
             </div>
 
-            {/* subtle reflected glow under card */}
-            <div className="absolute -bottom-6 left-8 right-8 h-[60px] pointer-events-none" style={{ filter: "blur(28px)", opacity: 0.12 }} />
+            {/* small reflection under card (very subtle) */}
+            <div
+              className="absolute -bottom-6 left-8 right-8 h-[60px] pointer-events-none"
+              style={{ filter: "blur(22px)", opacity: 0.08 }}
+            />
           </div>
         </section>
 
@@ -501,7 +503,7 @@ export default function Home() {
         open={terminalOpen}
         onClose={() => setTerminalOpen(false)}
         logs={terminalLogs}
-        whoami={"Nikshith — part engineer, part detective, full-time 'why is this happening'"}
+        whoami={"Nikshith — part engineer, part detective, full-time : why is this happening"}
       />
 
       <style jsx>{`
@@ -514,89 +516,12 @@ export default function Home() {
           }
         }
 
-        /* portrait backdrop (smaller, darker, and lower) */
-        .portrait-backdrop {
-          position: absolute;
-          inset: 0;
-          z-index: -2;
-          pointer-events: none;
-          background: radial-gradient(
-            380px 220px at 28% 22%,
-            rgba(48,18,66,0.30),
-            rgba(20, 6, 6, 0.2) 50%,
-            rgba(0,0,0,0) 70%
-          );
-          filter: blur(22px);
-          opacity: 0.95;
-        }
-
-        /* rim light to help separate portrait from background */
-        .portrait-rim {
-          position: absolute;
-          inset: 0;
-          z-index: -1;
-          pointer-events: none;
-          background: linear-gradient(90deg, rgba(0,0,0,0) 60%, rgba(124,58,237,0.06) 100%);
-          mix-blend-mode: screen;
-          filter: blur(8px);
-          opacity: 0.65;
-        }
-
-        /* ground shadow under portrait to avoid floating look */
-        .portrait-ground {
-          position: absolute;
-          left: 6%;
-          right: 6%;
-          bottom: -10px;
-          height: 28px;
-          border-radius: 50%;
-          background: radial-gradient(ellipse at center, rgba(0,0,0,0.45), rgba(0,0,0,0.0) 60%);
-          filter: blur(18px);
-          opacity: 0.42;
-          pointer-events: none;
-          transform: translateY(6px);
-        }
-
-        /* shimmer border (subtle) */
-        .shimmer-border {
-          position: relative;
-          overflow: hidden;
-        }
-        .shimmer-border::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          padding: 1px;
-          border-radius: inherit;
-          background: linear-gradient(90deg, rgba(124,58,237,0.04), rgba(99,102,241,0.04), rgba(124,58,237,0.04));
-          -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          pointer-events: none;
-          filter: blur(6px);
-          opacity: 0.55;
-          animation: shimmer 10s linear infinite;
-        }
-        @keyframes shimmer {
-          0% { transform: translateX(-30%); }
-          50% { transform: translateX(30%); }
-          100% { transform: translateX(-30%); }
-        }
-
-        /* subtle hover shadow only (no 3D lift) */
-        .shimmer-border:hover {
-          box-shadow: 0 12px 40px -24px rgba(99,102,241,0.10), 0 6px 18px -20px rgba(0,0,0,0.45);
-        }
-
-        /* prefers-reduced-motion respects */
+        /* Reduced shimmer effect — removed aggressive shimmer */
         @media (prefers-reduced-motion: reduce) {
           .transition, .transition-transform {
             transition: none !important;
           }
           .animate-blink {
-            animation: none;
-          }
-          .shimmer-border::before {
             animation: none;
           }
         }
