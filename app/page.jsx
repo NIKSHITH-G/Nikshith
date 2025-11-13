@@ -7,14 +7,11 @@ import InteractiveMeshGrid from "../components/InteractiveMeshGrid";
 import ProjectsGrid from "../components/ProjectsGrid";
 
 /* -------------------------
-   MicroTerminal (upgraded)
-   - typing loop
-   - pauses on hover
-   - clicking triggers whoami & expands (via callback)
+   MicroTerminal (unchanged behavior)
 ------------------------- */
 function MicroTerminal({
-  lines = ["git push origin main", "deploy: succeeded (maybe)", "running experiments..."],
-  whoami = "Nikshith — systems engineer",
+  lines = ["running training script...", "processing data...", "evaluating behaviour..."],
+  whoami = "Nikshith — part engineer, part detective, full-time 'why is this happening'",
   onExpand = null,
   paused = false,
 }) {
@@ -26,7 +23,6 @@ function MicroTerminal({
   const [showWhoami, setShowWhoami] = useState(false);
   const raf = useRef(null);
 
-  // combine external paused with local hover pause
   const effectivePaused = paused || isPaused;
 
   useEffect(() => {
@@ -53,16 +49,12 @@ function MicroTerminal({
     }
   }, [charIdx, isDeleting, lineIdx, effectivePaused, showWhoami, lines, whoami]);
 
-  // clicking terminal: if onExpand provided, expand; also show whoami once
   const handleClick = () => {
-    // prefer expanding if available
     if (typeof onExpand === "function") {
       onExpand();
-      // show whoami briefly inside the small terminal as instant feedback
       setShowWhoami(true);
       setIsDeleting(false);
       setCharIdx(0);
-      // hide whoami shortly (but when expanded large panel will show logs)
       if (raf.current) clearTimeout(raf.current);
       raf.current = setTimeout(() => {
         setShowWhoami(false);
@@ -70,7 +62,6 @@ function MicroTerminal({
       }, 2200);
       return;
     }
-    // fallback: just show whoami
     setShowWhoami(true);
     setIsDeleting(false);
     setCharIdx(0);
@@ -87,7 +78,7 @@ function MicroTerminal({
         onClick={handleClick}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
-        className="rounded-md bg-[rgba(0,0,0,0.55)] border border-white/6 px-3 py-2 text-sm font-mono flex items-center gap-3 hover:scale-[1.01] transition"
+        className="rounded-md bg-[rgba(0,0,0,0.55)] border border-white/6 px-3 py-2 text-sm font-mono flex items-center gap-3"
         aria-label="Terminal — click to open"
         title="Click to open terminal (or press ⌘/Ctrl+K)"
       >
@@ -104,12 +95,9 @@ function MicroTerminal({
 }
 
 /* -------------------------
-   ExpandedTerminalPanel
-   - appears when user presses / clicks (easter egg)
-   - shows recent logs + "whoami" output
+   ExpandedTerminalPanel (unchanged)
 ------------------------- */
-function ExpandedTerminalPanel({ open, onClose, logs = [], whoami = "Nikshith — systems engineer " }) {
-  // trap Esc to close
+function ExpandedTerminalPanel({ open, onClose, logs = [], whoami = "Nikshith — part engineer, part detective, full-time 'why is this happening'" }) {
   useEffect(() => {
     function onKey(e) {
       if (e.key === "Escape") onClose?.();
@@ -128,7 +116,7 @@ function ExpandedTerminalPanel({ open, onClose, logs = [], whoami = "Nikshith �
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-3xl rounded-2xl p-6 bg-[#06050a]/95 border border-white/8 shadow-2xl"
+        className="w-full max-w-220 rounded-2xl p-6 bg-[#06050a]/95 border border-white/8 shadow-2xl"
         style={{ backdropFilter: "blur(8px)" }}
       >
         <div className="flex items-start justify-between gap-4">
@@ -165,7 +153,7 @@ function ExpandedTerminalPanel({ open, onClose, logs = [], whoami = "Nikshith �
 }
 
 /* -------------------------
-   Home component
+   Main Home component
 ------------------------- */
 export default function Home() {
   const tools = ["VS Code", "Postman", "Git / GitHub", "Docker", "Terminal (zsh)"];
@@ -184,27 +172,21 @@ export default function Home() {
     },
   ];
 
-  const statusPool = [
+  // === status rotation (the 3 lines you selected) ===
+  const statusLines = [
+    { dot: "bg-blue-500", text: "Learning how learning works" },
     { dot: "bg-green-500", text: "Working at Tata Consultancy Services" },
-    { dot: "bg-indigo-400", text: "Exploring Web3 & Cloud" },
-    { dot: "bg-rose-400", text: "Taking notes on AI UX experiments" },
-    { dot: "bg-yellow-400", text: "Open to small freelance gigs" },
+    { dot: "bg-purple-500", text: "Studying the shape of ideas I’ll encounter next." },
   ];
-
   const [statusIdx, setStatusIdx] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setStatusIdx((s) => (s + 1) % statusPool.length), 3700);
+    const id = setInterval(() => {
+      setStatusIdx((s) => (s + 1) % statusLines.length);
+    }, 3000);
     return () => clearInterval(id);
   }, []);
 
-  const subtitles = ["Engineer • Builder • Learner", "Exploring Web3 & Cloud", "Experimenting with AI & UX"];
-  const [subtitleIdx, setSubtitleIdx] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setSubtitleIdx((s) => (s + 1) % subtitles.length), 3000);
-    return () => clearInterval(id);
-  }, []);
-
-  // parallax refs
+  // small portrait/card parallax
   const heroRef = useRef(null);
   const portraitRef = useRef(null);
   const cardRef = useRef(null);
@@ -239,13 +221,13 @@ export default function Home() {
       const mx = mouse.current.x;
       const my = mouse.current.y;
       const s = Math.min(1, scrollY.current / 900);
-      const scrollOffset = s * 18;
+      const scrollOffset = s * 12;
 
       const pTx = clamp(mx * 18, -24, 24);
-      const pTy = clamp(my * 12 - scrollOffset, -32, 32);
-      const pRot = clamp(mx * 3.5, -5, 5);
+      const pTy = clamp(my * 10 - scrollOffset, -28, 28);
+      const pRot = clamp(mx * 2.2, -3.5, 3.5);
 
-      const cTx = clamp(-mx * 10, -14, 14);
+      const cTx = clamp(-mx * 8, -12, 12);
       const cTy = clamp(-my * 6, -10, 10 - s * 5);
 
       if (portraitRef.current) {
@@ -276,34 +258,31 @@ export default function Home() {
     };
   }, []);
 
-  // Expanded terminal (easter egg) state + logs
+  // expanded terminal state + logs
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [terminalLogs, setTerminalLogs] = useState([
-    { cmd: "npm run build", out: "build succeeded in 3.1s" },
-    { cmd: "git push origin main", out: "pushed to origin/main" },
-    { cmd: "deploy", out: "deployment started — rolling out" },
+    { cmd: "pip install -r requirements.txt", out: "installed dependencies" },
+    { cmd: "python train.py", out: "epoch 3/20 — loss: 0.134" },
+    { cmd: "git push origin main", out: "pushed" },
   ]);
 
-  // open/close with key combo CMD/Ctrl + K
+  // toggle terminal with ctrl/cmd+k + add demo log with 'r'
   useEffect(() => {
     function onKey(e) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setTerminalOpen((v) => !v);
       }
-      // quick shortcut: R to add a fake log (for demo), only when terminal open
       if (terminalOpen && e.key.toLowerCase() === "r") {
         setTerminalLogs((l) => [
           ...l,
-          { cmd: "whoami", out: "Nikshith — systems engineer & tinkerer" },
+          { cmd: "whoami", out: "part engineer, part detective, full-time 'why is this happening'" },
         ]);
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [terminalOpen]);
-
-  // subtle shimmer + depth classes applied to card via CSS below
 
   return (
     <>
@@ -335,6 +314,7 @@ export default function Home() {
               border: "1px solid rgba(255,255,255,0.04)",
             }}
           >
+            {/* soft hero vignette */}
             <div
               aria-hidden
               style={{
@@ -342,7 +322,7 @@ export default function Home() {
                 inset: 0,
                 pointerEvents: "none",
                 background:
-                  "radial-gradient(1200px 480px at 20% 10%, rgba(88,58,226,0.12), transparent 12%), radial-gradient(900px 360px at 92% 80%, rgba(124,58,237,0.08), transparent 18%)",
+                  "radial-gradient(1000px 420px at 16% 12%, rgba(88,58,226,0.06), transparent 16%), radial-gradient(900px 360px at 92% 80%, rgba(124,58,237,0.04), transparent 18%)",
                 mixBlendMode: "overlay",
               }}
             />
@@ -350,39 +330,30 @@ export default function Home() {
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
               {/* LEFT: portrait */}
               <div className="md:col-span-5 flex justify-start items-center">
-                <div className="relative w-[360px] h-[520px] md:w-[380px] md:h-[540px] select-none">
-                  <div
-                    className="absolute inset-0 rounded-2xl -z-10"
-                    style={{
-                      background:
-                        "radial-gradient(closest-side at 35% 18%, rgba(48,18,66,0.78), rgba(12,6,20,0.42) 40%, rgba(0,0,0,0.0) 70%)",
-                      filter: "blur(38px)",
-                      opacity: 1,
-                    }}
-                  />
+                <div className="relative w-[360px] h-[520px] md:w-[380px] md:h-[540px] select-none portrait-container">
+                  {/* smaller, darker local backdrop (reduced halo) */}
+                  <div className="portrait-backdrop" />
+
+                  {/* subtle rim to separate subject from background */}
+                  <div className="portrait-rim" />
+
+                  {/* portrait wrapper that receives transforms */}
                   <div
                     ref={portraitRef}
-                    className="absolute left-0 top-0 w-full h-full rounded-3xl overflow-hidden shadow-[0_24px_80px_-40px_rgba(0,0,0,0.85)] transition-transform duration-300 will-change-transform"
+                    className="absolute left-0 top-0 w-full h-full rounded-3xl overflow-hidden transition-transform duration-300 will-change-transform"
                     style={{ transformOrigin: "50% 40%" }}
                   >
-                    <div className="w-full h-full relative group">
-                      <Image
-                        src="/images/Profile/Profile.png"
-                        alt="Nikshith profile"
-                        fill
-                        className="object-cover group-hover:scale-[1.03] transition-transform duration-400"
-                        style={{ objectPosition: "30% 12%" }}
-                        priority
-                      />
+                    <Image
+                      src="/images/Profile/Profile.png"
+                      alt="Nikshith profile"
+                      fill
+                      className="object-cover transition-transform duration-400"
+                      style={{ objectPosition: "30% 12%" }}
+                      priority
+                    />
 
-                      <div
-                        className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-400"
-                        style={{
-                          boxShadow: "0 14px 80px -30px rgba(99,66,245,0.28)",
-                          mixBlendMode: "screen",
-                        }}
-                      />
-                    </div>
+                    {/* soft ground shadow (tiny oval) */}
+                    <div className="portrait-ground" />
                   </div>
                 </div>
               </div>
@@ -391,33 +362,47 @@ export default function Home() {
               <div className="md:col-span-7 flex items-center justify-end">
                 <div
                   ref={cardRef}
-                  className="w-full md:max-w-[820px] rounded-2xl p-8 bg-[rgba(255,255,255,0.03)] backdrop-blur-md border border-white/6 shimmer-border hover:card-hover transform transition will-change-transform"
+                  className="w-full md:max-w-[820px] rounded-2xl p-8 bg-[rgba(255,255,255,0.025)] backdrop-blur-md border border-white/6 shimmer-border transform transition will-change-transform"
                 >
-                  <div className="flex flex-col gap-4">
-                    <div>
-                      <h2 className="text-4xl sm:text-5xl font-extrabold leading-tight">
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
-                          Hi — I build things that people use.
-                        </span>
-                      </h2>
-                      <p className="mt-4 text-lg text-foreground/70 max-w-[64ch]">
-                        I’m Nikshith — systems engineer and full-stack tinkerer. This studio card is a compact
-                        expression of my work: tools I love, things I ship, and experiments I can't stop tinkering with.
-                      </p>
+                  {/* diagonal subtle reflection overlay (subtle, low opacity) */}
+                  <div
+                    aria-hidden
+                    style={{
+                      position: "absolute",
+                      inset: "0",
+                      borderRadius: "inherit",
+                      pointerEvents: "none",
+                      background: "linear-gradient(120deg, rgba(255,255,255,0.02), transparent 60%)",
+                      mixBlendMode: "overlay",
+                      opacity: 0.36,
+                    }}
+                  />
+
+                  <div className="relative z-10 flex flex-col gap-4">
+                    {/* Intro (locked) */}
+                    <h2 className="text-4xl sm:text-5xl font-extrabold leading-tight">
+                      <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
+                        I’m Nikshith, I build things, break things, fix things.
+                      </span>
+                    </h2>
+
+                    {/* Short supporting line (keeps things clean, not repeating) */}
+                    <p className="mt-3 text-lg text-foreground/70 max-w-[64ch]">
+                      Experimenting with ideas until they make sense.
+                    </p>
+
+                    {/* Rotating status chip */}
+                    <div className="mt-4">
+                      <div className="inline-flex items-center gap-3 px-3 py-2 rounded-md bg-[rgba(0,0,0,0.45)] border border-white/6 text-sm">
+                        <span className={`inline-block w-2.5 h-2.5 rounded-full ${statusLines[statusIdx].dot}`} />
+                        <span className="text-foreground/80">{statusLines[statusIdx].text}</span>
+                      </div>
                     </div>
 
-                    <div className="mt-1 text-indigo-300 font-medium">{subtitles[subtitleIdx]}</div>
-
-                    {/* Context-aware status chip */}
-                    <div className="mt-4 flex items-center gap-3 text-sm">
-                      <span className={`inline-block w-2.5 h-2.5 rounded-full ${statusPool[statusIdx].dot}`} aria-hidden />
-                      <span className="text-foreground/80">{statusPool[statusIdx].text}</span>
-                    </div>
-
-                    {/* Micro terminal (click to expand) */}
+                    {/* Micro terminal and actions */}
                     <MicroTerminal
-                      lines={["git push origin main", "deploy: succeeded (maybe)", "running experiments..."]}
-                      whoami={"Nikshith — systems engineer"}
+                      lines={["running training script..", "processing data..", "evaluating behaviour.."]}
+                      whoami={"Nikshith — part engineer, part detective, full-time 'why is this happening'"}
                       onExpand={() => setTerminalOpen(true)}
                       paused={terminalOpen}
                     />
@@ -516,7 +501,7 @@ export default function Home() {
         open={terminalOpen}
         onClose={() => setTerminalOpen(false)}
         logs={terminalLogs}
-        whoami={"Nikshith — systems engineer"}
+        whoami={"Nikshith — part engineer, part detective, full-time 'why is this happening'"}
       />
 
       <style jsx>{`
@@ -529,7 +514,50 @@ export default function Home() {
           }
         }
 
-        /* shimmer border + subtle depth on hover */
+        /* portrait backdrop (smaller, darker, and lower) */
+        .portrait-backdrop {
+          position: absolute;
+          inset: 0;
+          z-index: -2;
+          pointer-events: none;
+          background: radial-gradient(
+            380px 220px at 28% 22%,
+            rgba(48,18,66,0.30),
+            rgba(20, 6, 6, 0.2) 50%,
+            rgba(0,0,0,0) 70%
+          );
+          filter: blur(22px);
+          opacity: 0.95;
+        }
+
+        /* rim light to help separate portrait from background */
+        .portrait-rim {
+          position: absolute;
+          inset: 0;
+          z-index: -1;
+          pointer-events: none;
+          background: linear-gradient(90deg, rgba(0,0,0,0) 60%, rgba(124,58,237,0.06) 100%);
+          mix-blend-mode: screen;
+          filter: blur(8px);
+          opacity: 0.65;
+        }
+
+        /* ground shadow under portrait to avoid floating look */
+        .portrait-ground {
+          position: absolute;
+          left: 6%;
+          right: 6%;
+          bottom: -10px;
+          height: 28px;
+          border-radius: 50%;
+          background: radial-gradient(ellipse at center, rgba(0,0,0,0.45), rgba(0,0,0,0.0) 60%);
+          filter: blur(18px);
+          opacity: 0.42;
+          pointer-events: none;
+          transform: translateY(6px);
+        }
+
+        /* shimmer border (subtle) */
         .shimmer-border {
           position: relative;
           overflow: hidden;
@@ -540,14 +568,14 @@ export default function Home() {
           inset: 0;
           padding: 1px;
           border-radius: inherit;
-          background: linear-gradient(90deg, rgba(124,58,237,0.06), rgba(99,102,241,0.06), rgba(124,58,237,0.06));
+          background: linear-gradient(90deg, rgba(124,58,237,0.04), rgba(99,102,241,0.04), rgba(124,58,237,0.04));
           -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
           pointer-events: none;
-          filter: blur(8px);
-          opacity: 0.8;
-          animation: shimmer 6s linear infinite;
+          filter: blur(6px);
+          opacity: 0.55;
+          animation: shimmer 10s linear infinite;
         }
         @keyframes shimmer {
           0% { transform: translateX(-30%); }
@@ -555,13 +583,12 @@ export default function Home() {
           100% { transform: translateX(-30%); }
         }
 
-        /* card hover depth */
-        .card-hover:hover {
-          transform: translateY(-6px) translateZ(6px) scale(1.005);
-          box-shadow: 0 18px 80px -40px rgba(99,102,241,0.18), 0 6px 30px -28px rgba(0,0,0,0.6);
+        /* subtle hover shadow only (no 3D lift) */
+        .shimmer-border:hover {
+          box-shadow: 0 12px 40px -24px rgba(99,102,241,0.10), 0 6px 18px -20px rgba(0,0,0,0.45);
         }
 
-        /* prefer-reduced-motion respects */
+        /* prefers-reduced-motion respects */
         @media (prefers-reduced-motion: reduce) {
           .transition, .transition-transform {
             transition: none !important;
