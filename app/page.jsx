@@ -331,10 +331,11 @@ export default function Home() {
               }}
             />
 
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+            {/* main grid: align from top */}
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
               {/* LEFT: portrait */}
-              <div className="md:col-span-5 flex justify-start items-center">
-                <div className="relative w-[360px] h-[520px] md:w-[380px] md:h-[540px] select-none">
+              <div className="md:col-span-5 flex justify-start items-start">
+                <div className="relative w-[360px] h-[520px] md:w-[380px] md:h-[540px] select-none md:mt-[-20px]">
                   <div
                     ref={portraitRef}
                     className="absolute left-0 top-0 w-full h-full rounded-3xl overflow-hidden shadow-[0_30px_90px_-50px_rgba(0,0,0,0.85)] transition-transform duration-300 will-change-transform"
@@ -360,10 +361,10 @@ export default function Home() {
               </div>
 
               {/* RIGHT: frosted card */}
-              <div className="md:col-span-7 flex items-center justify-end">
+              <div className="md:col-span-7 flex items-start justify-end">
                 <div
                   ref={cardRef}
-                  className="w-full md:max-w-[820px] rounded-2xl p-8 bg-[rgba(255,255,255,0.03)] backdrop-blur-md border border-white/6 transform transition will-change-transform"
+                  className="w-full md:max-w-[820px] rounded-2xl p-8 pt-10 bg-[rgba(255,255,255,0.03)] backdrop-blur-md border border-white/6 transform transition will-change-transform"
                 >
                   <div className="flex flex-col gap-4">
                     <div>
