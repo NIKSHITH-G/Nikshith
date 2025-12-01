@@ -97,7 +97,12 @@ function MicroTerminal({
 /* -------------------------
    ExpandedTerminalPanel
 ------------------------- */
-function ExpandedTerminalPanel({ open, onClose, logs = [], whoami = "Nikshith — someone who learns by building and breaking things" }) {
+function ExpandedTerminalPanel({
+  open,
+  onClose,
+  logs = [],
+  whoami = "Nikshith — someone who learns by building and breaking things",
+}) {
   useEffect(() => {
     function onKey(e) {
       if (e.key === "Escape") onClose?.();
@@ -116,7 +121,7 @@ function ExpandedTerminalPanel({ open, onClose, logs = [], whoami = "Nikshith �
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-230 rounded-2xl p-6 bg-[#06050a]/95 border border-white/8 shadow-2xl"
+        className="w-full max-w-2xl rounded-2xl p-6 bg-[#06050a]/95 border border-white/8 shadow-2xl"
         style={{ backdropFilter: "blur(8px)" }}
       >
         <div className="flex items-start justify-between gap-4">
@@ -153,7 +158,7 @@ function ExpandedTerminalPanel({ open, onClose, logs = [], whoami = "Nikshith �
 }
 
 /* -------------------------
-   Home component — updated per last requests
+   Home component
 ------------------------- */
 export default function Home() {
   const tools = ["VS Code", "Postman", "Git / GitHub", "Docker", "Terminal (zsh)"];
@@ -172,7 +177,6 @@ export default function Home() {
     },
   ];
 
-  // rotating small status chips (3 items)
   const rotatingChips = [
     { dot: "bg-blue-400", text: "Learning how learning works" },
     { dot: "bg-green-400", text: "Working at Tata Consultancy Services" },
@@ -180,14 +184,12 @@ export default function Home() {
   ];
   const [chipIdx, setChipIdx] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setChipIdx((i) => (i + 1) % rotatingChips.length), 3000);
+    const id = setInterval(() => setChipIdx((i) => (i + 1) % rotatingChips.length), 4500);
     return () => clearInterval(id);
   }, []);
 
-  // small subtitle / tagline chosen (Option E)
   const heroSub = "Running experiments until the universe sends me a hint.";
 
-  // parallax + mouse movement refs
   const heroRef = useRef(null);
   const portraitRef = useRef(null);
   const cardRef = useRef(null);
@@ -260,7 +262,6 @@ export default function Home() {
     };
   }, []);
 
-  // Expanded terminal modal state + logs
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [terminalLogs, setTerminalLogs] = useState([
     { cmd: "npm run build", out: "build succeeded in 3.1s" },
@@ -268,7 +269,6 @@ export default function Home() {
     { cmd: "deploy", out: "deployment started — rolling out" },
   ]);
 
-  // open/close with key combo CMD/Ctrl + K
   useEffect(() => {
     function onKey(e) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -278,7 +278,10 @@ export default function Home() {
       if (terminalOpen && e.key.toLowerCase() === "r") {
         setTerminalLogs((l) => [
           ...l,
-          { cmd: "whoami", out: "Nikshith — part engineer, part detective, full-time : why is this happening" },
+          {
+            cmd: "whoami",
+            out: "Nikshith — part engineer, part detective, full-time : why is this happening",
+          },
         ]);
       }
     }
@@ -316,7 +319,6 @@ export default function Home() {
               border: "1px solid rgba(255,255,255,0.04)",
             }}
           >
-            {/* toned down lights — removed large blob behind portrait for a cleaner look */}
             <div
               aria-hidden
               style={{
@@ -330,7 +332,7 @@ export default function Home() {
             />
 
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-              {/* LEFT: portrait (no odd glow, subtle shadow only) */}
+              {/* LEFT: portrait */}
               <div className="md:col-span-5 flex justify-start items-center">
                 <div className="relative w-[360px] h-[520px] md:w-[380px] md:h-[540px] select-none">
                   <div
@@ -346,7 +348,6 @@ export default function Home() {
                       style={{ objectPosition: "30% 12%" }}
                       priority
                     />
-                    {/* soft cursor-shadow on hover to ground the portrait */}
                     <div
                       className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 hover:opacity-100 transition-opacity duration-400"
                       style={{
@@ -375,15 +376,14 @@ export default function Home() {
                       <p className="mt-6 text-lg text-foreground/70 max-w-[64ch]">{heroSub}</p>
                     </div>
 
-                    {/* Rotating single chip (fade/slide) */}
+                    {/* Rotating single chip (fade only) */}
                     <div className="mt-6">
                       <div className="relative w-full max-w-[420px] h-12">
                         {rotatingChips.map((c, i) => (
                           <div
                             key={i}
-                            className={`absolute left-0 top-0 w-full h-12 rounded-md px-4 py-3 flex items-center gap-3 text-sm text-foreground/90 transition-all duration-600 ease-in-out`}
+                            className="absolute left-0 top-0 w-full h-12 rounded-md px-4 py-3 flex items-center gap-3 text-sm text-foreground/90 transition-opacity duration-500 ease-out"
                             style={{
-                              transform: `translateY(${(i - chipIdx) * 110}%)`,
                               opacity: i === chipIdx ? 1 : 0,
                               visibility: i === chipIdx ? "visible" : "hidden",
                             }}
@@ -403,21 +403,23 @@ export default function Home() {
                       paused={terminalOpen}
                     />
 
+                    {/* New pill-style buttons */}
                     <div className="mt-6 flex flex-wrap items-center gap-3">
                       <a
                         href="/about"
-                        className="inline-flex items-center rounded-md px-4 py-2 text-sm font-medium bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-sm"
+                        className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white shadow-[0_18px_40px_rgba(79,70,229,0.45)] ring-1 ring-indigo-300/40 transition-transform duration-150 hover:scale-[1.02]"
                       >
-                        About
+                        <span>About</span>
                       </a>
 
                       <a
                         href="https://github.com/NIKSHITH-G"
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center rounded-md px-4 py-2 text-sm font-medium bg-transparent border border-white/6 hover:bg-white/6"
+                        className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium border border-white/15 bg-white/5 hover:bg-white/10 text-foreground/90 shadow-[0_12px_30px_rgba(0,0,0,0.35)] transition-transform duration-150 hover:scale-[1.02]"
                       >
-                        GitHub
+                        <span className="font-mono text-xs opacity-70">GH</span>
+                        <span>GitHub</span>
                       </a>
                     </div>
                   </div>
@@ -425,7 +427,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* small reflection under card (very subtle) */}
             <div
               className="absolute -bottom-6 left-8 right-8 h-[60px] pointer-events-none"
               style={{ filter: "blur(22px)", opacity: 0.08 }}
@@ -490,15 +491,18 @@ export default function Home() {
             <div className="flex items-center justify-between">
               <div>© {new Date().getFullYear()} Nikshith — Built with ❤️</div>
               <div className="flex items-center gap-4">
-                <a href="/about" className="underline">About</a>
-                <a href="/contact" className="underline">Contact</a>
+                <a href="/about" className="underline">
+                  About
+                </a>
+                <a href="/contact" className="underline">
+                  Contact
+                </a>
               </div>
             </div>
           </div>
         </footer>
       </main>
 
-      {/* Expanded terminal modal */}
       <ExpandedTerminalPanel
         open={terminalOpen}
         onClose={() => setTerminalOpen(false)}
@@ -516,9 +520,9 @@ export default function Home() {
           }
         }
 
-        /* Reduced shimmer effect — removed aggressive shimmer */
         @media (prefers-reduced-motion: reduce) {
-          .transition, .transition-transform {
+          .transition,
+          .transition-transform {
             transition: none !important;
           }
           .animate-blink {
