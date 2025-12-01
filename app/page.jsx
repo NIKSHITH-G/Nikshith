@@ -73,12 +73,12 @@ function MicroTerminal({
   };
 
   return (
-    <div className="mt-4 flex items-center gap-4">
+    <div className="mt-3 flex items-center gap-4">
       <button
         onClick={handleClick}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
-        className="rounded-md bg-[rgba(0,0,0,0.55)] border border-white/6 px-3 py-2 text-sm font-mono flex items-center gap-3 hover:scale-[1.01] transition"
+        className="rounded-lg bg-[rgba(0,0,0,0.8)] border border-white/8 px-4 py-2 text-sm font-mono flex items-center gap-3 hover:scale-[1.01] active:scale-[0.99] transition-transform transition-colors"
         aria-label="Terminal — click to open"
         title="Click to open terminal (or press ⌘/Ctrl+K)"
       >
@@ -89,7 +89,9 @@ function MicroTerminal({
         <span className="ml-1 animate-blink">|</span>
       </button>
 
-      <div className="text-sm text-foreground/60">Deployed something. Probably works. Maybe.</div>
+      <div className="text-sm text-foreground/60">
+        Deployed something, Probably works.
+      </div>
     </div>
   );
 }
@@ -145,7 +147,7 @@ function ExpandedTerminalPanel({
           <div className="flex-shrink-0">
             <button
               onClick={onClose}
-              className="rounded-md bg-white/6 px-3 py-2 text-sm hover:bg-white/8"
+              className="rounded-md bg-white/6 px-3 py-2 text-sm hover:bg-white/8 active:scale-[0.98] transition"
               aria-label="Close terminal"
             >
               Close
@@ -188,7 +190,7 @@ export default function Home() {
     return () => clearInterval(id);
   }, []);
 
-  const heroSub = "Running experiments until the universe sends me a hint.";
+  const heroSub = "Poke around — everything here is a work in progress.";
 
   const heroRef = useRef(null);
   const portraitRef = useRef(null);
@@ -197,6 +199,7 @@ export default function Home() {
   const mouse = useRef({ x: 0, y: 0 });
   const scrollY = useRef(0);
 
+  // Parallax only for the card, not the image
   useEffect(() => {
     const hero = heroRef.current;
     if (!hero) return;
@@ -225,18 +228,10 @@ export default function Home() {
       const mx = mouse.current.x;
       const my = mouse.current.y;
       const s = Math.min(1, scrollY.current / 900);
-      const scrollOffset = s * 10;
-
-      const pTx = clamp(mx * 14, -20, 20);
-      const pTy = clamp(my * 10 - scrollOffset, -24, 24);
-      const pRot = clamp(mx * 2.4, -3, 3);
 
       const cTx = clamp(-mx * 8, -12, 12);
       const cTy = clamp(-my * 5, -8, 8 - s * 4);
 
-      if (portraitRef.current) {
-        portraitRef.current.style.transform = `translate3d(${pTx}px, ${pTy}px, 0) rotate(${pRot}deg)`;
-      }
       if (cardRef.current) {
         cardRef.current.style.transform = `translate3d(${cTx}px, ${cTy}px, 0)`;
       }
@@ -316,7 +311,7 @@ export default function Home() {
             style={{
               background:
                 "linear-gradient(180deg, rgba(8,6,20,0.72) 0%, rgba(10,4,26,0.66) 40%, rgba(18,6,40,0.62) 100%)",
-              border: "1px solid rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.03)",
             }}
           >
             <div
@@ -331,42 +326,36 @@ export default function Home() {
               }}
             />
 
-            {/* main grid: align from top */}
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+            {/* main grid */}
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
               {/* LEFT: portrait */}
-              <div className="md:col-span-5 flex justify-start items-start">
-                <div className="relative w-[360px] h-[520px] md:w-[380px] md:h-[540px] select-none md:mt-[-20px]">
+              <div className="md:col-span-5 flex justify-start items-center">
+                <div className="relative w-[380px] h-[560px] md:w-[420px] md:h-[620px] select-none md:mt-[-32px]">
                   <div
                     ref={portraitRef}
-                    className="absolute left-0 top-0 w-full h-full rounded-3xl overflow-hidden shadow-[0_30px_90px_-50px_rgba(0,0,0,0.85)] transition-transform duration-300 will-change-transform"
+                    className="absolute left-0 top-0 w-full h-full rounded-3xl overflow-hidden shadow-[0_30px_90px_-50px_rgba(0,0,0,0.85)]"
                     style={{ transformOrigin: "50% 40%" }}
                   >
                     <Image
                       src="/images/Profile/Profile.png"
                       alt="Nikshith profile"
                       fill
-                      className="object-cover transition-transform duration-500"
+                      className="object-cover"
                       style={{ objectPosition: "30% 12%" }}
                       priority
-                    />
-                    <div
-                      className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 hover:opacity-100 transition-opacity duration-400"
-                      style={{
-                        boxShadow: "0 26px 80px -32px rgba(31,9,50,0.45)",
-                        mixBlendMode: "multiply",
-                      }}
                     />
                   </div>
                 </div>
               </div>
 
               {/* RIGHT: frosted card */}
-              <div className="md:col-span-7 flex items-start justify-end">
+              <div className="md:col-span-7 flex items-center justify-end">
                 <div
                   ref={cardRef}
-                  className="w-full md:max-w-[820px] rounded-2xl p-8 pt-10 bg-[rgba(255,255,255,0.03)] backdrop-blur-md border border-white/6 transform transition will-change-transform"
+                  className="w-full md:max-w-[820px] rounded-2xl p-7 pt-9 bg-[rgba(255,255,255,0.03)] backdrop-blur-md border border-white/5 transform transition will-change-transform"
                 >
                   <div className="flex flex-col gap-4">
+                    {/* Heading + subtitle */}
                     <div>
                       <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight">
                         <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
@@ -374,16 +363,19 @@ export default function Home() {
                         </span>
                       </h1>
 
-                      <p className="mt-6 text-lg text-foreground/70 max-w-[64ch]">{heroSub}</p>
+                      <p className="mt-6 text-lg text-foreground/70 max-w-[64ch]">
+                        {heroSub}
+                      </p>
                     </div>
 
-                    {/* Rotating single chip (fade only) */}
-                    <div className="mt-6">
-                      <div className="relative w-full max-w-[420px] h-12">
+                    {/* Status + terminal grouped */}
+                    <div className="mt-3 space-y-2">
+                      {/* Rotating chip as status */}
+                      <div className="relative w-full max-w-[420px] h-10">
                         {rotatingChips.map((c, i) => (
                           <div
                             key={i}
-                            className="absolute left-0 top-0 w-full h-12 rounded-md px-4 py-3 flex items-center gap-3 text-sm text-foreground/90 transition-opacity duration-500 ease-out"
+                            className="absolute left-0 top-0 w-full h-10 rounded-md px-4 py-2 flex items-center gap-3 text-sm text-foreground/90 transition-opacity duration-500 ease-out"
                             style={{
                               opacity: i === chipIdx ? 1 : 0,
                               visibility: i === chipIdx ? "visible" : "hidden",
@@ -394,34 +386,42 @@ export default function Home() {
                           </div>
                         ))}
                       </div>
+
+                      {/* Micro terminal */}
+                      <MicroTerminal
+                        lines={[
+                          "git push origin main",
+                          "deploy: succeeded (maybe)",
+                          "running experiments...",
+                        ]}
+                        whoami={
+                          "Nikshith — part engineer, part detective, full-time : why is this happening"
+                        }
+                        onExpand={() => setTerminalOpen(true)}
+                        paused={terminalOpen}
+                      />
                     </div>
 
-                    {/* Micro terminal (click to expand) */}
-                    <MicroTerminal
-                      lines={["git push origin main", "deploy: succeeded (maybe)", "running experiments..."]}
-                      whoami={"Nikshith — part engineer, part detective, full-time : why is this happening"}
-                      onExpand={() => setTerminalOpen(true)}
-                      paused={terminalOpen}
-                    />
+                    {/* CTA links aligned right */}
+                    <div className="mt-6 pr-4 flex justify-end">
+                      <div className="flex items-center gap-4 text-xs sm:text-sm text-foreground/60">
+                        <a
+                          href="/resume.pdf"
+                          className="hover:text-foreground/90 hover:underline underline-offset-4 transition-colors"
+                        >
+                          Download CV
+                        </a>
 
-                    {/* New pill-style buttons */}
-                    <div className="mt-6 flex flex-wrap items-center gap-3">
-                      <a
-                        href="/about"
-                        className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white shadow-[0_18px_40px_rgba(79,70,229,0.45)] ring-1 ring-indigo-300/40 transition-transform duration-150 hover:scale-[1.02]"
-                      >
-                        <span>About</span>
-                      </a>
+                        <span className="inline-block w-1 h-1 rounded-full bg-foreground/40" />
 
-                      <a
-                        href="https://github.com/NIKSHITH-G"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium border border-white/15 bg-white/5 hover:bg-white/10 text-foreground/90 shadow-[0_12px_30px_rgba(0,0,0,0.35)] transition-transform duration-150 hover:scale-[1.02]"
-                      >
-                        <span className="font-mono text-xs opacity-70">GH</span>
-                        <span>GitHub</span>
-                      </a>
+                        <a
+                          href="/contact"
+                          className="inline-flex items-center gap-1 text-emerald-300 hover:text-emerald-200 hover:underline underline-offset-4 transition-colors"
+                        >
+                          Let&apos;s talk
+                          <span>→</span>
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
