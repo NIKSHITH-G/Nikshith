@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import Navbar from "../components/Navbar";
 import InteractiveMeshGrid from "../components/InteractiveMeshGrid";
 import ProjectsGrid from "../components/ProjectsGrid";
@@ -414,13 +415,13 @@ export default function Home() {
 
                         <span className="inline-block w-1 h-1 rounded-full bg-foreground/40" />
 
-                        <a
+                        <Link
                           href="/contact"
                           className="inline-flex items-center gap-1 text-emerald-300 hover:text-emerald-200 hover:underline underline-offset-4 transition-colors"
                         >
                           Let&apos;s talk
                           <span>→</span>
-                        </a>
+                        </Link>
                       </div>
                     </div>
                   </div>
