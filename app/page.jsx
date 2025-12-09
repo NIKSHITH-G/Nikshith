@@ -90,9 +90,7 @@ function MicroTerminal({
         <span className="ml-1 animate-blink">|</span>
       </button>
 
-      <div className="text-sm text-foreground/60">
-        Deployed something, Probably works.
-      </div>
+      <div className="text-sm text-foreground/60">Deployed something, Probably works.</div>
     </div>
   );
 }
@@ -129,7 +127,9 @@ function ExpandedTerminalPanel({
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="text-sm text-foreground/60 mb-2">Interactive terminal — test commands</div>
+            <div className="text-sm text-foreground/60 mb-2">
+              Interactive terminal — test commands
+            </div>
             <div className="bg-black/70 rounded-md p-4 font-mono text-sm text-green-200">
               {logs.map((l, i) => (
                 <div key={i} className="mb-2">
@@ -161,13 +161,312 @@ function ExpandedTerminalPanel({
 }
 
 /* -------------------------
+   StackDashboard – one big stack card
+------------------------- */
+function StackDashboard() {
+  const sections = [
+    {
+      id: "software",
+      label: "Software",
+      title: "Software I rely on",
+      subtitle: "The apps that are almost always open on my Mac.",
+      badge: "Apps",
+      items: [
+        {
+          slug: "vscode",
+          name: "VS Code",
+          role: "Editor",
+          icon: "🧑‍💻",
+          description: "Where most of the building (and breaking) happens.",
+          bullets: ["Primary editor for code.", "Lives next to Git, terminals & debuggers."],
+        },
+        {
+          slug: "chrome",
+          name: "Chrome",
+          role: "Browser",
+          icon: "🌐",
+          description: "DevTools, testing, and way too many tabs.",
+          bullets: ["Inspecting layouts & network calls.", "Debugging frontend issues quickly."],
+        },
+        {
+          slug: "postman",
+          name: "Postman",
+          role: "APIs",
+          icon: "📮",
+          description: "Where APIs get poked, broken, and fixed.",
+          bullets: ["Testing REST endpoints.", "Trying different payloads & edge cases."],
+        },
+        {
+          slug: "figma",
+          name: "Figma",
+          role: "Design",
+          icon: "🎨",
+          description: "A scratchpad for UI ideas and flows.",
+          bullets: ["Rough wireframes for projects.", "Experimenting with layouts & components."],
+        },
+        {
+          slug: "notion",
+          name: "Notion",
+          role: "Notes",
+          icon: "📚",
+          description: "Dumping ideas, tracking learning, and planning.",
+          bullets: ["Project notes & task lists.", "Tracking what I’m learning next."],
+        },
+      ],
+    },
+    {
+      id: "stack",
+      label: "Stack",
+      title: "Engineering stack",
+      subtitle: "Technologies I reach for first when building something.",
+      badge: "Tech",
+      items: [
+        {
+          slug: "nextjs",
+          name: "Next.js",
+          role: "Web framework",
+          icon: "⚡️",
+          description: "My go-to for modern React apps.",
+          bullets: [
+            "File-based routing & server components.",
+            "Great for fast prototypes & serious builds.",
+          ],
+        },
+        {
+          slug: "react",
+          name: "React",
+          role: "UI layer",
+          icon: "⚛️",
+          description: "Where UI logic and components live.",
+          bullets: ["Component-driven thinking.", "Hooks for state & effects."],
+        },
+        {
+          slug: "tailwind",
+          name: "Tailwind CSS",
+          role: "Styling",
+          icon: "💨",
+          description: "Utility-first styling for fast iteration.",
+          bullets: ["Keeps styles close to components.", "Easy to tweak spacing & typography."],
+        },
+        {
+          slug: "python",
+          name: "Python",
+          role: "Scripting / AI",
+          icon: "🐍",
+          description: "Scripting, experiments, and data workflows.",
+          bullets: ["Quick prototypes & utilities.", "Great for ML / AI work later."],
+        },
+        {
+          slug: "git",
+          name: "Git & GitHub",
+          role: "Version control",
+          icon: "🧬",
+          description: "Timeline of experiments, mistakes, and fixes.",
+          bullets: ["Feature branches & PRs.", "Keeping work backed up & reviewable."],
+        },
+      ],
+    },
+    {
+      id: "workflow",
+      label: "Workflow",
+      title: "How I like to work",
+      subtitle: "Little habits and tools that keep me shipping consistently.",
+      badge: "Flow",
+      items: [
+        {
+          slug: "terminal",
+          name: "Terminal (zsh)",
+          role: "CLI",
+          icon: "⌨️",
+          description: "Git, scripts, and quick checks.",
+          bullets: ["Aliases for frequent commands.", "Jumping between projects quickly."],
+        },
+        {
+          slug: "macbook",
+          name: "MacBook Pro (M4 Pro)",
+          role: "Machine",
+          icon: "💻",
+          description: "Main workhorse for code, design, and meetings.",
+          bullets: ["Everything from coding to video calls.", "Optimized for long sessions."],
+        },
+        {
+          slug: "buds",
+          name: "Galaxy Buds 3 Pro",
+          role: "Audio",
+          icon: "🎧",
+          description: "Noise barrier + music while working.",
+          bullets: ["Deep work playlists.", "Blocking out background noise."],
+        },
+        {
+          slug: "routine",
+          name: "Small routines",
+          role: "Habits",
+          icon: "⏱️",
+          description: "Short blocks of focused work + breaks.",
+          bullets: ["Breaking work into sprints.", "Reviewing progress at the end of the day."],
+        },
+      ],
+    },
+  ];
+
+  const [activeSectionId, setActiveSectionId] = useState("software");
+  const [hoveredSlug, setHoveredSlug] = useState(null);
+
+  const activeSection =
+    sections.find((s) => s.id === activeSectionId) ?? sections[0];
+
+  const activeItem =
+    activeSection.items.find((item) => item.slug === hoveredSlug) ??
+    activeSection.items[0];
+
+  return (
+    <section className="mx-auto max-w-7xl px-6 pb-12">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+        <div>
+          <h2 className="text-2xl font-bold">Stack dashboard</h2>
+          <p className="mt-2 text-sm text-foreground/70 max-w-xl">
+            Hover over anything on the right to see how it fits into how I work.
+          </p>
+        </div>
+
+        {/* Tabs / file switcher */}
+        <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[rgba(8,6,20,0.7)] px-1 py-1">
+          {sections.map((section) => {
+            const active = activeSectionId === section.id;
+            return (
+              <button
+                key={section.id}
+                onClick={() => {
+                  setActiveSectionId(section.id);
+                  setHoveredSlug(null);
+                }}
+                className={`relative px-3.5 py-1.5 text-xs sm:text-sm rounded-full border transition-all duration-200
+                  ${
+                    active
+                      ? "border-white/40 bg-white/10 shadow-[0_0_0_1px_rgba(148,163,184,0.35)]"
+                      : "border-transparent text-foreground/60 hover:text-foreground/90 hover:bg-white/5"
+                  }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  {active && (
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.8)]" />
+                  )}
+                  <span>{section.label}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ONE big stack card */}
+      <div
+        className="relative rounded-2xl border-2 border-white/12 bg-[rgba(10,10,20,0.88)] overflow-hidden 
+                   px-6 py-6 md:px-8 md:py-7"
+      >
+        {/* faint inner border to feel like a “file” */}
+        <div className="pointer-events-none absolute inset-[10px] rounded-2xl border border-white/5 opacity-[0.08]" />
+
+        <div className="relative grid gap-6 md:gap-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,2fr)] items-stretch">
+          {/* LEFT: detail panel that changes on hover */}
+          <div className="flex flex-col justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] uppercase tracking-[0.09em] text-foreground/70 mb-3">
+                <span>{activeSection.badge}</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-semibold">
+                {activeSection.title}
+              </h3>
+              <p className="mt-2 text-sm text-foreground/70 max-w-md">
+                {activeSection.subtitle}
+              </p>
+
+              <div className="mt-5 rounded-xl border border-white/10 bg-black/40 px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-xl">
+                    <span>{activeItem.icon}</span>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">{activeItem.name}</div>
+                    <div className="text-xs uppercase tracking-wide text-foreground/60">
+                      {activeItem.role}
+                    </div>
+                  </div>
+                </div>
+
+                <p className="mt-3 text-sm text-foreground/80">
+                  {activeItem.description}
+                </p>
+
+                {activeItem.bullets && activeItem.bullets.length > 0 && (
+                  <ul className="mt-3 space-y-1.5 text-xs text-foreground/70">
+                    {activeItem.bullets.map((b) => (
+                      <li key={b} className="flex gap-2">
+                        <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400/80" />
+                        <span>{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            <p className="text-[11px] text-foreground/50">
+              Tip: move your cursor over different icons on the right. The left
+              side updates to show how I use each one.
+            </p>
+          </div>
+
+          {/* RIGHT: icon grid */}
+          <div
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4"
+            onMouseLeave={() => setHoveredSlug(null)}
+          >
+            {activeSection.items.map((item) => {
+              const isActive = activeItem.slug === item.slug;
+              return (
+                <button
+                  key={item.slug}
+                  type="button"
+                  onMouseEnter={() => setHoveredSlug(item.slug)}
+                  onFocus={() => setHoveredSlug(item.slug)}
+                  className={`group relative flex flex-col items-center justify-between gap-2 rounded-xl border px-3 py-3 text-xs
+                    transition-all duration-150
+                    ${
+                      isActive
+                        ? "border-emerald-400/70 bg-emerald-400/10 shadow-[0_0_25px_rgba(16,185,129,0.25)]"
+                        : "border-white/10 bg-white/5 hover:border-white/30 hover:bg-white/10"
+                    }`}
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-lg">
+                    <span className="group-hover:scale-110 transition-transform">
+                      {item.icon}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-[11px] font-medium">{item.name}</span>
+                    <span className="text-[10px] uppercase tracking-wide text-foreground/50">
+                      {item.role}
+                    </span>
+                  </div>
+
+                  {isActive && (
+                    <span className="absolute -top-1.5 right-2 inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.9)]" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------
    Home component
 ------------------------- */
 export default function Home() {
-  const tools = ["VS Code", "Postman", "Git / GitHub", "Docker", "Terminal (zsh)"];
-  const devices = ["MacBook Pro (M4 Pro)", "Samsung Galaxy S23+", "Samsung Galaxy Buds 3 Pro"];
-  const software = ["Chrome", "Slack", "Figma", "Tableau", "IntelliJ IDEA"];
-
   const projects = [
     {
       name: "Peer to Peer Encrypted File Sharing Using Blockchain",
@@ -187,7 +486,10 @@ export default function Home() {
   ];
   const [chipIdx, setChipIdx] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setChipIdx((i) => (i + 1) % rotatingChips.length), 4500);
+    const id = setInterval(
+      () => setChipIdx((i) => (i + 1) % rotatingChips.length),
+      4500
+    );
     return () => clearInterval(id);
   }, []);
 
@@ -376,7 +678,7 @@ export default function Home() {
                         {rotatingChips.map((c, i) => (
                           <div
                             key={i}
-                            className="absolute left-0 top-0 w-full h-10 rounded-md px-4 py-2 flex items-center gap-3 text-sm text-foreground/90 transition-opacity duration-500 ease-out"
+                            className="absolute left-0 top-0 w-full h-10 rounded-md px-4 py-2 flex items-center gap-3 text-sm text-foreground/90 transition-opacity duration-500ease-out"
                             style={{
                               opacity: i === chipIdx ? 1 : 0,
                               visibility: i === chipIdx ? "visible" : "hidden",
@@ -436,48 +738,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* QUICK HUB */}
-        <section className="mx-auto max-w-7xl px-6 pb-12">
-          <h2 className="text-2xl font-bold mb-6">Quick Hub</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="rounded-2xl border-2 border-white/20 p-6 bg-[rgba(255,255,255,0.02)]">
-              <h3 className="font-semibold">Tools I use</h3>
-              <ul className="mt-4 space-y-2 text-sm text-foreground/80">
-                {tools.map((t) => (
-                  <li key={t} className="flex items-center gap-3">
-                    <span className="inline-flex items-center justify-center w-2.5 h-2.5 rounded-full bg-indigo-500/80" />
-                    <span>{t}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="rounded-2xl border-2 border-white/20 p-6 bg-[rgba(255,255,255,0.02)]">
-              <h3 className="font-semibold">Devices I use</h3>
-              <ul className="mt-4 space-y-2 text-sm text-foreground/80">
-                {devices.map((d) => (
-                  <li key={d} className="flex items-center gap-3">
-                    <span className="inline-flex items-center justify-center w-2.5 h-2.5 rounded-full bg-violet-500/80" />
-                    <span>{d}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="rounded-2xl border-2 border-white/20 p-6 bg-[rgba(255,255,255,0.02)]">
-              <h3 className="font-semibold">Software I rely on</h3>
-              <ul className="mt-4 space-y-2 text-sm text-foreground/80">
-                {software.map((s) => (
-                  <li key={s} className="flex items-center gap-3">
-                    <span className="inline-flex items-center justify-center w-2.5 h-2.5 rounded-full bg-pink-500/80" />
-                    <span>{s}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
+        {/* STACK DASHBOARD */}
+        <StackDashboard />
 
         {/* FEATURED PROJECTS */}
         <section className="mx-auto max-w-7xl px-6 pb-20">
@@ -490,7 +752,7 @@ export default function Home() {
         {/* FOOTER */}
         <footer className="mx-auto max-w-7xl px-6 pb-12 text-sm text-foreground/70">
           <div className="pt-6 border-t border-white/6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
               <div>© {new Date().getFullYear()} Nikshith — Built with ❤️</div>
               <div className="flex items-center gap-4">
                 <a href="/about" className="underline">
