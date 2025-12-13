@@ -302,3 +302,91 @@ svg text {
   border: 1px solid rgba(255,255,255,0.02);
   pointer-events: none;
 }
+
+/* ===== STACK SECTION ===== */
+
+.stack-section {
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 6rem 1.5rem 0;
+}
+
+/* HEADER stays normal */
+.stack-header {
+  margin-bottom: 4rem;
+}
+
+.stack-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.stack-header p {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+/* ===== STACKING LOGIC ===== */
+
+.stack-cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  /* critical: creates scroll space */
+  padding-bottom: calc(var(--numcards) * 6rem);
+
+  display: grid;
+  grid-template-rows: repeat(var(--numcards), 70vh);
+  gap: 4rem;
+}
+
+/* each card sticks */
+.stack-card {
+  position: sticky;
+  top: 20vh;
+
+  padding-top: calc(var(--index) * 1.25rem);
+}
+
+/* card visuals */
+.stack-card__content {
+  height: 70vh;
+  border-radius: 1rem;
+  padding: 2rem;
+
+  background: rgba(10, 10, 20, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  transform-origin: top center;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* subtle depth effect */
+.stack-card {
+  --depth: calc(var(--numcards) - var(--index));
+}
+
+.stack-card__content {
+  transform: scale(calc(1 - var(--depth) * 0.04));
+}
+
+/* typography */
+.stack-card__content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.stack-card__content .subtitle {
+  font-size: 0.85rem;
+  opacity: 0.6;
+  margin-top: 0.25rem;
+}
+
+.stack-card__content .body {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
