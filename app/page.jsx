@@ -6,7 +6,6 @@ import Link from "next/link";
 import Navbar from "../components/Navbar";
 import InteractiveMeshGrid from "../components/InteractiveMeshGrid";
 import ProjectsGrid from "../components/ProjectsGrid";
-import StackBoard from "../components/StackBoard";
 
 /* -------------------------
    MicroTerminal (typing + click to expand)
@@ -160,11 +159,6 @@ function ExpandedTerminalPanel({
     </div>
   );
 }
-
-
-
-
-
 /* -------------------------
    Home component
 ------------------------- */
@@ -440,8 +434,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* STACK DASHBOARD */}
-        <StackBoard/>
 
         {/* FEATURED PROJECTS */}
         <section className="mx-auto max-w-7xl px-6 pb-20">
