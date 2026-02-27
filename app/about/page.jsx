@@ -12,22 +12,25 @@ import InteractiveMeshGrid from "../../components/InteractiveMeshGrid";
 export default function About() {
   // ---- DATA ----
   const milestones = [
-    {
-      title: "Monash University",
-      year: "2026-2028",
-      image: "/images/Timeline/step3.png",
-    },
-    {
-      title: "Vellore Institute Of Technology",
-      year: "2020-2024",
-      image: "/images/Timeline/step2.png",
-    },
-    {
-      title: "Narayana Saraswathi Pati",
-      year: "2018-2020",
-      image: "/images/Timeline/step1.png",
-    },
-  ];
+  {
+    title: "Monash University",
+    degree: "Masters in Artificial Intelligence",
+    year: "2026-2028",
+    image: "/images/Timeline/step3.png",
+  },
+  {
+    title: "Vellore Institute Of Technology",
+    degree: "B.Tech in Computer Science Engineering",
+    year: "2020-2024",
+    image: "/images/Timeline/step2.png",
+  },
+  {
+    title: "Narayana Saraswathi Pati",
+    degree: "Mathematics, Physics & Chemistry",
+    year: "2018-2020",
+    image: "/images/Timeline/step1.png",
+  },
+];
 
   const experience = [
     {

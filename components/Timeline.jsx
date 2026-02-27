@@ -21,7 +21,7 @@ export default function Timeline({ milestones }) {
   const dotBlurPx = useTransform(dotBlur, (b) => `blur(${b}px)`);
 
   const DOT_SIZE = 12;
-  const LINE_X = 10;      // matches className "left-10" on the vertical line
+  const LINE_X = 10; // matches className "left-10" on the vertical line
   const HALO_OFFSET = 45; // halo visual offset to the right
   const mergeProgress = useMotionValue(0);
 
@@ -73,9 +73,9 @@ export default function Timeline({ milestones }) {
             ? 0
             : Math.min(1, (dotY - fadeStartY) / (FADE_ZONE_PX - DOT_SIZE));
 
-        opacity.set(1 - fadeProgress);          // 1 -> 0
-        dotScale.set(1 - 0.4 * fadeProgress);   // 1 -> 0.6
-        dotBlur.set(6 * fadeProgress);          // 0px -> 6px
+        opacity.set(1 - fadeProgress); // 1 -> 0
+        dotScale.set(1 - 0.4 * fadeProgress); // 1 -> 0.6
+        dotBlur.set(6 * fadeProgress); // 0px -> 6px
         return;
       }
 
@@ -89,23 +89,22 @@ export default function Timeline({ milestones }) {
       const pillHeight = r.height;
 
       // Anchor pill to milestone's LEFT edge (so dot merges with the text)
-      const milestoneLeft =
-        r.left + window.scrollX - containerLeft; // absolute within container
+      const milestoneLeft = r.left + window.scrollX - containerLeft; // absolute within container
       const pillWidth = r.width;
 
       top.set(pillTop);
       height.set(pillHeight);
-      left.set(milestoneLeft);   // left edge, not center
+      left.set(milestoneLeft); // left edge, not center
       width.set(pillWidth);
       radius.set(12);
-      opacity.set(0.18);         // pill translucency
+      opacity.set(0.18); // pill translucency
 
       // keep pill crisp
       dotScale.set(1);
       dotBlur.set(0);
 
       const dist = Math.abs(
-        scrollMiddle - (r.top + window.scrollY + r.height / 2)
+        scrollMiddle - (r.top + window.scrollY + r.height / 2),
       );
       mergeProgress.set(Math.max(0, 1 - dist / (r.height * 0.6)));
     };
@@ -113,16 +112,35 @@ export default function Timeline({ milestones }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
-  }, [DOT_SIZE, LINE_X, top, left, width, height, radius, opacity, dotScale, dotBlur, mergeProgress]);
+  }, [
+    DOT_SIZE,
+    LINE_X,
+    top,
+    left,
+    width,
+    height,
+    radius,
+    opacity,
+    dotScale,
+    dotBlur,
+    mergeProgress,
+  ]);
 
   const isDot = activeIndex === -1;
 
   return (
     <div className="w-full" suppressHydrationWarning>
       {/* Responsive grid: single column on small; two columns on lg */}
-      <div className="grid grid-cols-1 lg:grid-cols-[560px_minmax(0,1fr)] gap-8 lg:gap-12 items-center" suppressHydrationWarning>
+      <div
+        className="grid grid-cols-1 lg:grid-cols-[560px_minmax(0,1fr)] gap-8 lg:gap-12 items-center"
+        suppressHydrationWarning
+      >
         {/* Left: Timeline column */}
-        <div ref={containerRef} className="relative w-full py-10 sm:py-12" suppressHydrationWarning>
+        <div
+          ref={containerRef}
+          className="relative w-full py-10 sm:py-12"
+          suppressHydrationWarning
+        >
           {/* Vertical line */}
           <div className="absolute left-10 top-0 w-1 h-full bg-indigo-600/80 rounded" />
 
@@ -167,9 +185,21 @@ export default function Timeline({ milestones }) {
                 >
                   {m.title}
                 </h3>
+
+                {/* ✅ Degree Added */}
                 <p
-                  className={`text-sm transition-colors ${
-                    activeIndex === i ? "text-indigo-400" : "text-foreground/70"
+                  className={`text-sm font-medium transition-colors ${
+                    activeIndex === i ? "text-indigo-400" : "text-foreground/80"
+                  }`}
+                >
+                  {m.degree}
+                </p>
+
+                <p
+                  className={`text-xs transition-colors ${
+                    activeIndex === i
+                      ? "text-indigo-300/80"
+                      : "text-foreground/60"
                   }`}
                 >
                   {m.year}
@@ -209,7 +239,10 @@ export default function Timeline({ milestones }) {
         </div>
 
         {/* Right: Image (responsive sizes) */}
-        <div className="w-full flex items-center justify-center" suppressHydrationWarning>
+        <div
+          className="w-full flex items-center justify-center"
+          suppressHydrationWarning
+        >
           {activeIndex > -1 && (
             <motion.img
               key={activeIndex}
