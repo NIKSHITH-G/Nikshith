@@ -14,19 +14,19 @@ export default function About() {
   // ---- DATA ----
   const milestones = [
     {
+      title: "Monash University",
+      year: "2026-2028",
+      image: "/images/Timeline/step3.png",
+    },
+    {
       title: "Vellore Institute Of Technology",
       year: "2020-2024",
-      image: "/images/Timeline/step1.png",
+      image: "/images/Timeline/step2.png",
     },
     {
       title: "Narayana Saraswathi Pati",
       year: "2018-2020",
-      image: "/images/Timeline/step2.png",
-    },
-    {
-      title: "Narayana E-Techno School",
-      year: "2016-2018",
-      image: "/images/Timeline/step3.png",
+      image: "/images/Timeline/step1.png",
     },
   ];
 
