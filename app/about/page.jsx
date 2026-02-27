@@ -7,7 +7,6 @@ import Navbar from "../../components/Navbar";
 import Timeline from "../../components/Timeline";
 import ProjectCard from "../../components/ProjectCard";
 import ProjectsGrid from "../../components/ProjectsGrid";
-// interactive mesh grid (replace component file with the updated mesh implementation)
 import InteractiveMeshGrid from "../../components/InteractiveMeshGrid";
 
 export default function About() {
@@ -32,8 +31,8 @@ export default function About() {
 
   const experience = [
     {
-      title: "Systems Engineer — Tata Consultancy Services (TCS)",
-      period: "Sep 2024 – Present • Bangalore, India",
+      title: "Systems Engineer — Tata Consultancy Services (TCS)", // add -present if currently working
+      period: "Sep 2024 – Feb 2026 • Bangalore, India",
       bullets: [
         "BFSI unit: core software development & maintenance in agile teams.",
         "Real-time issue resolution, RCA, and system enhancements.",
@@ -43,7 +42,7 @@ export default function About() {
     },
     {
       title: "Web Developer — AR BRANDS (Intern)",
-      period: "Jun–Jul 2023 • Remote",
+      period: "Jun 2023 – Jul 2023 • Remote",
       bullets: [
         "Gathered requirements and aligned dev with project goals.",
         "Built custom HTML/JS solutions and performed site testing.",
