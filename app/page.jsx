@@ -163,17 +163,6 @@ function ExpandedTerminalPanel({
    Home component
 ------------------------- */
 export default function Home() {
-  const projects = [
-    {
-      name: "Peer to Peer Encrypted File Sharing Using Blockchain",
-      points: [
-        "AES for encryption + SHA-512 for hashing; privacy-preserving scheme.",
-        "Smart contracts for secondary verification & access control.",
-      ],
-      stack: ["Blockchain", "AES", "SHA-512", "MySQL"],
-      images: ["/images/Projects/blockchain2.jpeg"],
-    },
-  ];
 
   const rotatingChips = [
     { dot: "bg-blue-400", text: "Learning how learning works" },
@@ -434,14 +423,6 @@ export default function Home() {
           </div>
         </section>
 
-
-        {/* FEATURED PROJECTS */}
-        <section className="mx-auto max-w-7xl px-6 pb-20">
-          <h2 className="text-2xl font-bold mb-6">Featured Projects</h2>
-          <div className="rounded-2xl border-2 border-white/30 p-6">
-            <ProjectsGrid projects={projects} />
-          </div>
-        </section>
 
         {/* FOOTER */}
         <footer className="mx-auto max-w-7xl px-6 pb-12 text-sm text-foreground/70">
