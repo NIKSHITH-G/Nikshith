@@ -32,28 +32,38 @@ export default function About() {
   },
 ];
 
-  const experience = [
-    {
-      title: "Systems Engineer — Tata Consultancy Services (TCS)", // add -present if currently working
-      period: "Sep 2024 – Feb 2026 • Bangalore, India",
-      bullets: [
-        "BFSI unit: core software development & maintenance in agile teams.",
-        "Real-time issue resolution, RCA, and system enhancements.",
-        "Deployments, monitoring, and automation with internal tooling.",
-        "Worked on backend services, incident triage and CI/CD improvements.",
-      ],
-    },
-    {
-      title: "Web Developer — AR BRANDS (Intern)",
-      period: "Jun 2023 – Jul 2023 • Remote",
-      bullets: [
-        "Gathered requirements and aligned dev with project goals.",
-        "Built custom HTML/JS solutions and performed site testing.",
-        "Shipped a smooth, bug-free user experience.",
-        "Implemented responsive fixes and QA automation checks.",
-      ],
-    },
-  ];
+const experience = [
+  {
+    title: "Systems Engineer — Tata Consultancy Services (TCS)",
+    period: "Sep 2024 – Feb 2026 • Bangalore, India",
+    bullets: [
+      "Developed and maintained Java Spring Boot REST APIs for core banking systems in the BFSI domain, supporting high-volume transactions.",
+      "Designed and executed automated test suites (unit, integration, regression) using Selenium, reducing manual QA effort and improving release confidence.",
+      "Performed root cause analysis on production issues across multiple banking modules, ensuring system reliability and faster resolution times.",
+      "Contributed to CI/CD pipelines and deployment workflows using Git, enabling consistent and efficient software releases.",
+    ],
+  },
+  {
+    title: "AI Developer Intern — Google Developers Program",
+    period: "Jun 2023 – Jul 2023 • Remote",
+    bullets: [
+      "Developed an interactive GUI application to enhance mathematics learning using AI-based shape recognition.",
+      "Built machine learning models using TensorFlow and Keras to detect hand-drawn shapes and generate relevant formulas.",
+      "Deployed the application using Flask, integrating NumPy and Matplotlib for data processing and visualization.",
+      "Collaborated using Jupyter Notebook, IBM Watson Studio, and Anaconda to deliver project outcomes.",
+    ],
+  },
+  {
+    title: "Web Developer Intern — AR BRANDS",
+    period: "Jun 2023 – Jul 2023 • Remote",
+    bullets: [
+      "Collaborated with stakeholders to gather requirements and translate business needs into functional web solutions.",
+      "Developed responsive web interfaces using HTML, CSS, and JavaScript, ensuring cross-device compatibility.",
+      "Conducted testing and debugging to deliver a smooth, bug-free user experience.",
+      "Implemented performance optimizations and usability improvements across web pages.",
+    ],
+  },
+];
 
   // ===== PROJECTS =====
   const projects = [
