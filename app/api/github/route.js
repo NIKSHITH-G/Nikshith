@@ -1,4 +1,16 @@
+let cache = null;
+let lastFetch = 0;
+
+const ONE_DAY = 1000 * 60 * 60 * 24;
+
 export async function GET() {
+  const now = Date.now();
+
+  // ✅ RETURN CACHE IF FRESH
+  if (cache && now - lastFetch < ONE_DAY) {
+    return Response.json(cache);
+  }
+
   const headers = {
     Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
   };
@@ -6,7 +18,6 @@ export async function GET() {
   const username = "NIKSHITH-G";
 
   try {
-    // fetch user + repos
     const [userRes, reposRes] = await Promise.all([
       fetch(`https://api.github.com/users/${username}`, { headers }),
       fetch(`https://api.github.com/users/${username}/repos?per_page=100`, { headers }),
@@ -15,7 +26,6 @@ export async function GET() {
     const user = await userRes.json();
     const repos = await reposRes.json();
 
-    // stats
     const totalStars = repos.reduce(
       (acc, r) => acc + (r.stargazers_count || 0),
       0
@@ -23,7 +33,10 @@ export async function GET() {
 
     const topRepos = repos.filter((r) => !r.fork).slice(0, 3);
 
-    // commits (last year)
+    /* -------------------------
+       COMMITS
+    ------------------------- */
+
     const since = new Date();
     since.setDate(since.getDate() - 371);
 
@@ -47,7 +60,7 @@ export async function GET() {
       } catch {}
     }
 
-    return Response.json({
+    const result = {
       stats: {
         followers: user.followers,
         publicRepos: user.public_repos,
@@ -55,7 +68,13 @@ export async function GET() {
       },
       repos: topRepos,
       commitMap,
-    });
+    };
+
+    // ✅ SAVE CACHE
+    cache = result;
+    lastFetch = now;
+
+    return Response.json(result);
 
   } catch {
     return Response.json({ error: "Failed to fetch GitHub data" }, { status: 500 });
