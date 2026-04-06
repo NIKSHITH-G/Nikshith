@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Fragment, useEffect, useRef, useState } from "react";
+import { animate, stagger, utils } from "animejs";
 
 const NAV = [
   { href: "/", label: "Home" },
@@ -20,19 +21,106 @@ export default function Navbar() {
 
   const [hidden, setHidden] = useState(false);
   const lastYRef = useRef(0);
+  const nameRef = useRef(null);
+  const shimmerInstances = useRef([]);
+  const isAnimating = useRef(false);
 
+  // ── scroll hide/show ──────────────────────────────────────────────
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY;
-      // scroll down => hide when passed a threshold, otherwise show
       if (y > lastYRef.current && y > 80) setHidden(true);
       else setHidden(false);
       lastYRef.current = y;
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // ── helpers ───────────────────────────────────────────────────────
+  const stopShimmer = () => {
+    shimmerInstances.current.forEach((a) => {
+      try { a.pause(); } catch (_) {}
+    });
+    shimmerInstances.current = [];
+  };
+
+  const startShimmer = (arr) => {
+    stopShimmer();
+    shimmerInstances.current = arr.map((el, i) =>
+      animate(el, {
+        color: [
+          "rgba(255,255,255,0.92)",
+          "rgba(165,180,252,1)",
+          "rgba(216,180,254,1)",
+          "rgba(255,255,255,0.92)",
+        ],
+        translateY: [0, -1.5, 0],
+        duration: 3000,
+        loop: true,
+        ease: "inOutSine",
+        delay: i * 120,
+        alternate: true,
+      })
+    );
+  };
+
+  const burstIn = (arr) => {
+    // set random starting transforms
+    arr.forEach((el) => {
+      el.style.opacity = "0";
+      const tx = utils.random(-80, 80);
+      const ty = utils.random(-60, 60);
+      const r  = utils.random(-30, 30);
+      const s  = utils.random(30, 180) / 100;
+      el.style.transform = `translateX(${tx}px) translateY(${ty}px) rotate(${r}deg) scale(${s})`;
+    });
+
+    animate(arr, {
+      opacity: 1,
+      translateX: 0,
+      translateY: 0,
+      rotate: 0,
+      scale: 1,
+      duration: 800,
+      ease: "outElastic(1, .6)",
+      delay: stagger(60, { from: "center" }),
+      onComplete: () => {
+        isAnimating.current = false;
+        startShimmer(arr);
+      },
+    });
+  };
+
+  // ── on mount ──────────────────────────────────────────────────────
+  useEffect(() => {
+    const letters = Array.from(nameRef.current?.querySelectorAll("span") ?? []);
+    if (!letters.length) return;
+    burstIn(letters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── hover — scatter out then burst back in ────────────────────────
+  const handleNameHover = () => {
+    if (isAnimating.current) return;
+    const letters = Array.from(nameRef.current?.querySelectorAll("span") ?? []);
+    if (!letters.length) return;
+
+    isAnimating.current = true;
+    stopShimmer();
+
+    animate(letters, {
+      translateX: () => utils.random(-100, 100),
+      translateY: () => utils.random(-80, 80),
+      rotate:     () => utils.random(-45, 45),
+      scale:      () => utils.random(20, 160) / 100,
+      opacity: 0,
+      duration: 350,
+      ease: "inBack",
+      delay: stagger(35, { from: "center" }),
+      onComplete: () => burstIn(letters),
+    });
+  };
 
   return (
     <header
@@ -59,14 +147,23 @@ export default function Navbar() {
           </div>
 
           <div className="relative flex items-center justify-between gap-3">
+
             {/* BRAND */}
             <Link
               href="/"
+              onMouseEnter={handleNameHover}
               className="relative inline-flex items-center gap-2 rounded-xl px-3 py-1 text-white/90 hover:text-white transition"
             >
               <span className="relative h-2.5 w-2.5 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 shadow-[0_0_14px_rgba(99,102,241,.6)]" />
-              <span className="font-semibold tracking-tight text-[1.05rem]">
-                Nikshith
+              <span
+                ref={nameRef}
+                className="font-semibold tracking-tight text-[1.05rem] inline-flex"
+              >
+                {"Nikshith".split("").map((ch, i) => (
+                  <span key={i} style={{ display: "inline-block", opacity: 0 }}>
+                    {ch}
+                  </span>
+                ))}
               </span>
             </Link>
 
@@ -100,7 +197,11 @@ export default function Navbar() {
                         {active && (
                           <motion.span
                             layoutId="nav-active-pill"
-                            transition={{ type: "spring", stiffness: 520, damping: 38 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 520,
+                              damping: 38,
+                            }}
                             className="
                               absolute inset-0 rounded-full
                               bg-[linear-gradient(135deg,rgba(93,95,240,.95),rgba(124,58,237,.95))]
@@ -117,7 +218,7 @@ export default function Navbar() {
                       </Link>
                     </li>
 
-                    {/* divider as its own flex item */}
+                    {/* divider */}
                     {i < NAV.length - 1 && (
                       <span
                         aria-hidden
