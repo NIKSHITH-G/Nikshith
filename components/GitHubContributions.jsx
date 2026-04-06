@@ -112,7 +112,7 @@ export default function GitHubContributions() {
         {/* HEADER */}
         <div className="flex justify-between items-center mb-4">
           <div className="text-xs text-white/50 font-mono">
-            @{USERNAME} — {totalCommits} commits
+            Total Commits — {totalCommits}
           </div>
 
           <div className="flex items-center gap-3">

@@ -328,7 +328,7 @@ export default function Home() {
 
                     <div className="mt-6 pr-4 flex justify-end">
                       <div className="flex items-center gap-4 text-xs sm:text-sm text-foreground/60">
-                        <a href="/resume.pdf" className="hover:text-foreground/90 hover:underline underline-offset-4 transition-colors">Download CV</a>
+                        <a href="/resume.pdf" download target = "_blank" rel = "noopener noreferrer" className="hover:text-foreground/90 hover:underline underline-offset-4 transition-colors">Download CV</a>
                         <span className="inline-block w-1 h-1 rounded-full bg-foreground/40" />
                         <Link href="/contact" className="inline-flex items-center gap-1 text-emerald-300 hover:text-emerald-200 hover:underline underline-offset-4 transition-colors">
                           Let&apos;s talk <span>→</span>
@@ -349,7 +349,7 @@ export default function Home() {
     {/* HEADER */}
     <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
       <span className="text-sm font-mono text-white/40">
-        @NIKSHITH-G
+        GitHub stats
       </span>
 
       <div className="flex gap-2 flex-wrap">
