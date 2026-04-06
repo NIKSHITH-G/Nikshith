@@ -166,7 +166,7 @@ export default function Home() {
 
   const rotatingChips = [
     { dot: "bg-blue-400", text: "Learning how learning works" },
-    { dot: "bg-green-400", text: "Working at Tata Consultancy Services" },
+    { dot: "bg-green-400", text: "Master of Artificial Intelligence at Monash" },
     { dot: "bg-violet-400", text: "Studying the shape of ideas I’ll encounter next." },
   ];
   const [chipIdx, setChipIdx] = useState(0);
