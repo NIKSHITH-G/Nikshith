@@ -135,36 +135,22 @@ function GitHubStatsRow({ username = "NIKSHITH-G" }) {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const [userRes, reposRes] = await Promise.all([
-          fetch(`https://api.github.com/users/${username}`),
-          fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=pushed`),
-        ]);
-        if (!userRes.ok) throw new Error("GitHub API error");
-        const userData = await userRes.json();
-        const reposData = await reposRes.json();
+        const res = await fetch("/api/github");
+        if (!res.ok) throw new Error("API failed");
 
-        const totalStars = Array.isArray(reposData)
-          ? reposData.reduce((acc, r) => acc + (r.stargazers_count || 0), 0)
-          : 0;
+        const data = await res.json();
 
-        const topRepos = Array.isArray(reposData)
-          ? reposData.filter((r) => !r.fork).slice(0, 3)
-          : [];
-
-        setStats({
-          followers: userData.followers,
-          publicRepos: userData.public_repos,
-          totalStars,
-        });
-        setRepos(topRepos);
+        setStats(data.stats);
+        setRepos(data.repos);
       } catch {
         setError(true);
       } finally {
         setLoading(false);
       }
     }
+
     fetchStats();
-  }, [username]);
+  }, []);
 
   const statItems = stats
     ? [
@@ -174,108 +160,24 @@ function GitHubStatsRow({ username = "NIKSHITH-G" }) {
       ]
     : [];
 
-  const langColor = {
-    JavaScript: "#f1e05a",
-    TypeScript: "#3178c6",
-    Python: "#3572A5",
-    Java: "#b07219",
-    HTML: "#e34c26",
-    CSS: "#563d7c",
-    Shell: "#89e051",
-    Go: "#00ADD8",
-    Rust: "#dea584",
-    default: "#8b8b8b",
-  };
-
   return (
-    <section className="mx-auto max-w-7xl px-6 pt-6 pb-2">
-      <div
-        className="rounded-2xl border border-white/5 bg-[rgba(255,255,255,0.02)] backdrop-blur-md px-6 py-5"
-        style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.03) inset" }}
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-
-          {/* GitHub identity */}
-          <a
-            href={`https://github.com/${username}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 group shrink-0"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06] border border-white/8 group-hover:bg-white/10 transition">
-              <svg viewBox="0 0 24 24" className="h-4 w-4 fill-white/70 group-hover:fill-white transition" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
-              </svg>
-            </span>
-            <span className="text-sm font-mono text-white/50 group-hover:text-white/80 transition">
-              @{username}
-            </span>
-          </a>
-
-          {/* divider */}
-          <span className="hidden sm:block h-8 w-px bg-white/8 shrink-0" />
-
-          {/* stat pills */}
-          {loading ? (
-            <div className="flex gap-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-7 w-24 rounded-full bg-white/[0.04] animate-pulse" />
-              ))}
-            </div>
-          ) : error ? (
-            <span className="text-xs text-white/30 font-mono">github stats unavailable</span>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {statItems.map((s) => (
-                <div
-                  key={s.label}
-                  className="flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.03] px-3 py-1"
-                >
-                  <span className="text-sm font-semibold text-white/80 tabular-nums">{s.value}</span>
-                  <span className="text-xs text-white/35">{s.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* divider */}
-          {!loading && !error && repos.length > 0 && (
-            <span className="hidden sm:block h-8 w-px bg-white/8 shrink-0" />
-          )}
-
-          {/* top repos */}
-          {!loading && !error && repos.length > 0 && (
-            <div className="flex flex-wrap gap-2 min-w-0">
-              {repos.map((repo) => (
-                <a
-                  key={repo.id}
-                  href={repo.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/15 px-3 py-1 transition"
-                >
-                  {repo.language && (
-                    <span
-                      className="h-2 w-2 rounded-full shrink-0"
-                      style={{ background: langColor[repo.language] ?? langColor.default }}
-                    />
-                  )}
-                  <span className="text-xs font-mono text-white/50 group-hover:text-white/80 transition truncate max-w-[120px]">
-                    {repo.name}
-                  </span>
-                  {repo.stargazers_count > 0 && (
-                    <span className="text-[10px] text-white/25 group-hover:text-white/50 transition">
-                      ★ {repo.stargazers_count}
-                    </span>
-                  )}
-                </a>
-              ))}
-            </div>
-          )}
+  <>
+    {loading ? (
+      <div className="text-white/30 text-sm">Loading...</div>
+    ) : error ? (
+      <div className="text-white/30 text-sm">GitHub stats unavailable</div>
+    ) : (
+      statItems.map((s) => (
+        <div
+          key={s.label}
+          className="px-3 py-1 bg-white/5 rounded-full text-sm"
+        >
+          {s.value} {s.label}
         </div>
-      </div>
-    </section>
-  );
+      ))
+    )}
+  </>
+);
 }
 
 /* -------------------------
@@ -441,10 +343,28 @@ export default function Home() {
         </section>
 
         {/* GITHUB STATS ROW */}
-        <GitHubStatsRow username="NIKSHITH-G" />
+        <section className="mx-auto max-w-7xl px-6 pt-6 pb-4">
+  <div className="rounded-2xl border border-white/5 bg-[rgba(255,255,255,0.02)] backdrop-blur-md px-6 py-6">
 
-        {/* GITHUB CONTRIBUTION GRAPH */}
-        <GitHubContributions />
+    {/* HEADER */}
+    <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+      <span className="text-sm font-mono text-white/40">
+        @NIKSHITH-G
+      </span>
+
+      <div className="flex gap-2 flex-wrap">
+        <GitHubStatsRow username="NIKSHITH-G" />
+      </div>
+    </div>
+
+    {/* DIVIDER */}
+    <div className="h-px bg-white/6 my-4" />
+
+    {/* CONTRIBUTIONS */}
+    <GitHubContributions />
+
+  </div>
+</section>
 
         {/* FOOTER */}
         <footer className="mx-auto max-w-7xl px-6 pb-12 pt-10 text-sm text-foreground/70">
