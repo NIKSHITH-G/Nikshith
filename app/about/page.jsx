@@ -343,7 +343,7 @@ const experience = [
   useEffect(() => {
     if (!statsStarted) return;
 
-    const targetYears = 1;
+    const targetYears = 1.5;
     const targetCerts = 15;
     const duration = 1000;
 
