@@ -106,19 +106,19 @@ export default function GitHubContributions() {
   const activeDays = Object.values(commitMap).filter((c) => c > 0).length;
 
   return (
-    <section className="mx-auto max-w-7xl px-6 pt-4 pb-2">
-      <div className="rounded-2xl border border-white/10 bg-[#0b0b12] px-6 py-5">
+    <section className="mx-auto max-w-7xl px-4 sm:px-6 pt-3 sm:pt-4 pb-2">
+      <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-[#0b0b12] px-4 sm:px-6 py-4 sm:py-5">
 
-        {/* HEADER */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="text-xs text-white/50 font-mono">
+        {/* HEADER - Now responsive */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
+          <div className="text-xs sm:text-sm text-white/50 font-mono">
             Total Commits — {totalCommits}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
 
             {lastUpdated && (
-              <span className="text-[10px] text-white/30 font-mono">
+              <span className="text-[10px] sm:text-xs text-white/30 font-mono">
                 updated {lastUpdated.toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -129,13 +129,13 @@ export default function GitHubContributions() {
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="flex items-center gap-2 text-xs font-mono border border-white/10 px-3 py-1.5 rounded-md transition 
+              className="flex items-center gap-1.5 sm:gap-2 text-xs font-mono border border-white/10 px-2.5 sm:px-3 py-1.5 rounded-md transition 
                          text-white/40 hover:text-white hover:border-white/20
-                         disabled:opacity-40 disabled:cursor-not-allowed"
+                         disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
             >
               <svg
                 className={loading ? "animate-spin" : ""}
-                style={{ width: "14px", height: "14px" }}
+                style={{ width: "12px", height: "12px" }}
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -144,75 +144,101 @@ export default function GitHubContributions() {
                 <path d="M21 12a9 9 0 1 1-6.2-8.6" />
               </svg>
 
-              <span>{loading ? "refreshing..." : "refresh"}</span>
+              <span className="hidden sm:inline">{loading ? "refreshing..." : "refresh"}</span>
+              <span className="sm:hidden">{loading ? "..." : "refresh"}</span>
             </button>
           </div>
         </div>
 
-        <div className="flex gap-6">
+        {/* MAIN CONTENT - Flexible layout */}
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
 
+          {/* CONTRIBUTION GRID - Scrollable on mobile */}
           <div
             ref={containerRef}
-            className="relative flex-1"
-            style={{ height: "110px" }}
+            className="relative flex-1 overflow-hidden"
+            style={{ minHeight: "110px" }}
           >
             {loading ? (
               <div className="text-white/30 text-xs font-mono">
                 loading commits...
               </div>
             ) : (
-              <div className="flex gap-[3px] overflow-x-auto overflow-y-hidden">
+              <div className="overflow-x-auto overflow-y-hidden pb-2 -mx-2 px-2">
+                <div className="flex gap-[2px] sm:gap-[3px] min-w-max">
 
-                {weeks.map((week, wi) => (
-                  <div key={wi} className="flex flex-col gap-[3px]">
-                    {week.map((day, di) => {
-                      const key = toKey(day);
-                      const count = commitMap[key] || 0;
+                  {weeks.map((week, wi) => (
+                    <div key={wi} className="flex flex-col gap-[2px] sm:gap-[3px]">
+                      {week.map((day, di) => {
+                        const key = toKey(day);
+                        const count = commitMap[key] || 0;
 
-                      return (
-                        <div
-                          key={di}
-                          className="relative w-[13px] h-[13px] cursor-pointer group"
-                          onMouseEnter={(e) => {
-                            const containerRect =
-                              containerRef.current.getBoundingClientRect();
-                            const cellRect =
-                              e.currentTarget.getBoundingClientRect();
-
-                            setTooltip({
-                              x:
-                                cellRect.left -
-                                containerRect.left +
-                                cellRect.width / 2,
-                              y: cellRect.top - containerRect.top,
-                              date: day.toLocaleDateString("en-AU", {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              }),
-                              count,
-                            });
-                          }}
-                          onMouseLeave={() => setTooltip(null)}
-                        >
+                        return (
                           <div
-                            className="absolute inset-0 rounded-[3px] transition-transform group-hover:scale-125"
-                            style={{
-                              backgroundColor: getColor(count),
-                              border: "1px solid rgba(255,255,255,0.08)",
+                            key={di}
+                            className="relative w-[10px] h-[10px] sm:w-[13px] sm:h-[13px] cursor-pointer group"
+                            onMouseEnter={(e) => {
+                              const containerRect =
+                                containerRef.current.getBoundingClientRect();
+                              const cellRect =
+                                e.currentTarget.getBoundingClientRect();
+
+                              setTooltip({
+                                x:
+                                  cellRect.left -
+                                  containerRect.left +
+                                  cellRect.width / 2,
+                                y: cellRect.top - containerRect.top,
+                                date: day.toLocaleDateString("en-AU", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                }),
+                                count,
+                              });
                             }}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
+                            onMouseLeave={() => setTooltip(null)}
+                            onTouchStart={(e) => {
+                              const containerRect =
+                                containerRef.current.getBoundingClientRect();
+                              const cellRect =
+                                e.currentTarget.getBoundingClientRect();
+
+                              setTooltip({
+                                x:
+                                  cellRect.left -
+                                  containerRect.left +
+                                  cellRect.width / 2,
+                                y: cellRect.top - containerRect.top,
+                                date: day.toLocaleDateString("en-AU", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                }),
+                                count,
+                              });
+                            }}
+                          >
+                            <div
+                              className="absolute inset-0 rounded-[2px] sm:rounded-[3px] transition-transform group-hover:scale-125"
+                              style={{
+                                backgroundColor: getColor(count),
+                                border: "1px solid rgba(255,255,255,0.08)",
+                              }}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
+            {/* TOOLTIP - Responsive positioning */}
             {tooltip && (
               <div
-                className="absolute z-50 px-3 py-2 rounded-lg text-xs font-mono text-white border border-white/10 pointer-events-none"
+                className="absolute z-50 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-mono text-white border border-white/10 pointer-events-none whitespace-nowrap"
                 style={{
                   background: "#111",
                   left: tooltip.x,
@@ -230,7 +256,8 @@ export default function GitHubContributions() {
             )}
           </div>
 
-          <div className="hidden md:flex flex-col justify-between min-w-[180px]">
+          {/* LEGEND & STATS - Hidden on small screens, shown on larger */}
+          <div className="hidden lg:flex flex-col justify-between min-w-[180px]">
             <div>
               <div className="text-xs text-white/40 mb-2 font-mono">
                 Activity
@@ -257,6 +284,25 @@ export default function GitHubContributions() {
 
             <div className="mt-6 text-xs text-white/50 font-mono">
               Active days: {activeDays}
+            </div>
+          </div>
+
+          {/* MOBILE STATS - Shown below grid on mobile */}
+          <div className="lg:hidden flex items-center justify-between gap-4 pt-2 border-t border-white/6">
+            <div className="flex gap-1">
+              {[0, 1, 3, 7, 12].map((v, i) => (
+                <div
+                  key={i}
+                  className="w-2.5 h-2.5 rounded-[2px]"
+                  style={{
+                    backgroundColor: getColor(v),
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                />
+              ))}
+            </div>
+            <div className="text-[10px] text-white/40 font-mono">
+              {activeDays} active days
             </div>
           </div>
 
