@@ -195,9 +195,14 @@ export default function Home() {
     return () => clearInterval(id);
   }, []);
 
-  // Links — replace with your real handles
-  const INSTAGRAM_URL = "https://instagram.com/";
-  const READING_URL = "https://www.goodreads.com/";
+  const INSTAGRAM_URL = "https://www.instagram.com/enigma_view/";
+
+  const books = [
+    { title: "The Mistborn Trilogy", author: "Brandon Sanderson" },
+    { title: "Die With Zero", author: "Bill Perkins" },
+    { title: "The Psychology of Money", author: "Morgan Housel" },
+    { title: "Zero to One", author: "Peter Thiel" },
+  ];
 
   const apps = [
     { name: "Arc", role: "Browser", icon: Compass },
@@ -421,32 +426,31 @@ export default function Home() {
                 When I&apos;m not shipping code, I&apos;m chasing light — the frames I&apos;m proud
                 of live on Instagram.
               </p>
-              <span className="mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-indigo-300">
-                view on instagram
+              <span className="mt-auto inline-flex items-center gap-1.5 pt-4 font-mono text-xs text-indigo-300">
+                @enigma_view
                 <span className="transition-transform group-hover:translate-x-0.5">↗</span>
               </span>
             </a>
 
             {/* Reading */}
-            <a
-              href={READING_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 transition-all hover:-translate-y-1 hover:border-indigo-500/40"
-            >
+            <div className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 transition-colors hover:border-indigo-500/40">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-indigo-300 transition-colors group-hover:border-indigo-400/40">
                 <BookOpen className="h-5 w-5" strokeWidth={1.7} />
               </div>
               <h3 className="mt-4 text-base sm:text-lg font-semibold tracking-tight">Reading</h3>
               <p className="mt-2 text-sm leading-relaxed text-foreground/60">
-                Usually mid-book on my Kindle — a mix of fiction and things that make me think
-                differently.
+                Always mid-book on my Kindle — fantasy worlds and ideas that rewire how I think.
               </p>
-              <span className="mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-indigo-300">
-                my bookshelf
-                <span className="transition-transform group-hover:translate-x-0.5">↗</span>
-              </span>
-            </a>
+              <ul className="mt-4 space-y-2">
+                {books.map((b) => (
+                  <li key={b.title} className="flex flex-wrap items-baseline gap-x-2">
+                    <span className="text-indigo-400/60">→</span>
+                    <span className="text-sm text-foreground/85">{b.title}</span>
+                    <span className="font-mono text-[11px] text-foreground/40">{b.author}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </section>
 
