@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Compass, Ghost, Code2, Send, Library, Camera } from "lucide-react";
+import { Compass, Ghost, NotebookText, Send, Library, Snowflake, Camera, BookOpen } from "lucide-react";
 import Navbar from "../components/Navbar";
 import GitHubContributions from "../components/GitHubContributions";
 import InteractiveMeshGrid from "../components/InteractiveMeshGrid";
@@ -195,15 +195,17 @@ export default function Home() {
     return () => clearInterval(id);
   }, []);
 
-  // Photography — replace with your real Instagram handle
+  // Links — replace with your real handles
   const INSTAGRAM_URL = "https://instagram.com/";
+  const READING_URL = "https://www.goodreads.com/";
 
   const apps = [
-    { name: "Arc", role: "Browser", icon: Compass, color: "from-rose-500 to-orange-400" },
-    { name: "Ghostty", role: "Terminal", icon: Ghost, color: "from-violet-500 to-fuchsia-500" },
-    { name: "VS Code", role: "Editor", icon: Code2, color: "from-sky-500 to-blue-600" },
-    { name: "Blip", role: "File transfer", icon: Send, color: "from-cyan-400 to-teal-500" },
-    { name: "Shelf", role: "Stash", icon: Library, color: "from-amber-400 to-orange-500" },
+    { name: "Arc", role: "Browser", icon: Compass },
+    { name: "Ghostty", role: "Terminal", icon: Ghost },
+    { name: "Notion", role: "Notes & docs", icon: NotebookText },
+    { name: "Blip", role: "File transfer", icon: Send },
+    { name: "Shelf", role: "Drag & drop stash", icon: Library },
+    { name: "Ice", role: "Menu bar", icon: Snowflake },
   ];
 
   const heroSub = "Poke around — everything here is a work in progress.";
@@ -367,85 +369,85 @@ export default function Home() {
           </div>
         </section>
 
-        {/* DAILY DRIVERS — app dock */}
+        {/* DAILY DRIVERS — apps */}
         <section className="mx-auto max-w-7xl px-4 sm:px-6 pt-8 sm:pt-12 pb-2">
           <div className="mb-6 sm:mb-8">
             <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// daily drivers</div>
             <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Tools I reach for</h2>
-            <p className="mt-1.5 text-sm text-foreground/50">The apps that live on my dock.</p>
+            <p className="mt-1.5 text-sm text-foreground/50">The apps always open on my machine.</p>
           </div>
 
-          <div className="flex justify-center sm:justify-start">
-            <div className="inline-flex items-end gap-4 sm:gap-5 rounded-3xl border border-white/10 bg-white/[0.03] px-5 sm:px-7 py-4 sm:py-5 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-              {apps.map((app) => {
-                const Icon = app.icon;
-                return (
-                  <div key={app.name} className="group relative flex flex-col items-center">
-                    {/* tooltip (role) */}
-                    <div className="pointer-events-none absolute -top-9 whitespace-nowrap rounded-md border border-white/10 bg-[#111] px-2 py-1 font-mono text-[10px] text-white/70 opacity-0 transition-all duration-200 group-hover:-top-10 group-hover:opacity-100">
-                      {app.role}
-                    </div>
-                    {/* tile */}
-                    <div
-                      className={`flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${app.color} text-white shadow-[0_10px_30px_-10px_rgba(0,0,0,0.7)] transition-transform duration-200 ease-out group-hover:-translate-y-2.5 group-hover:scale-110`}
-                    >
-                      <Icon className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={1.8} />
-                    </div>
-                    {/* name */}
-                    <div className="mt-2.5 font-mono text-[11px] text-foreground/45">{app.name}</div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6">
+            {apps.map((app) => {
+              const Icon = app.icon;
+              return (
+                <div
+                  key={app.name}
+                  className="group flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 text-center transition-all duration-200 hover:-translate-y-1 hover:border-indigo-500/40 hover:bg-white/[0.04]"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-foreground/65 transition-colors group-hover:border-indigo-400/40 group-hover:text-indigo-300">
+                    <Icon className="h-5 w-5" strokeWidth={1.6} />
                   </div>
-                );
-              })}
-            </div>
+                  <div>
+                    <div className="text-sm font-medium text-foreground/90">{app.name}</div>
+                    <div className="mt-0.5 font-mono text-[10px] text-foreground/40">{app.role}</div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
-        {/* OFF THE CLOCK — photography */}
+        {/* OFF THE CLOCK — photography + reading */}
         <section className="mx-auto max-w-7xl px-4 sm:px-6 pt-8 sm:pt-12 pb-2">
           <div className="mb-6 sm:mb-8">
             <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// off the clock</div>
             <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Beyond the code</h2>
           </div>
 
-          <a
-            href={INSTAGRAM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group relative block overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-8 transition-colors hover:border-fuchsia-400/40"
-          >
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(236,72,153,0.18),transparent_70%)] blur-2xl"
-            />
-            <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-amber-400 text-white">
-                  <Camera className="h-6 w-6" strokeWidth={1.8} />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold tracking-tight">I shoot photos, too.</h3>
-                  <p className="mt-1.5 max-w-md text-sm leading-relaxed text-foreground/60">
-                    When I&apos;m not shipping code, I&apos;m chasing light. I keep a photography
-                    page for the frames I&apos;m proud of.
-                  </p>
-                </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* Photography */}
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 transition-all hover:-translate-y-1 hover:border-indigo-500/40"
+            >
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-indigo-300 transition-colors group-hover:border-indigo-400/40">
+                <Camera className="h-5 w-5" strokeWidth={1.7} />
               </div>
-              <span className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-gradient-to-r from-fuchsia-500 to-amber-400 px-5 py-2.5 text-sm font-medium text-white transition-transform group-hover:-translate-y-0.5 sm:self-auto">
-                View on Instagram
+              <h3 className="mt-4 text-base sm:text-lg font-semibold tracking-tight">Photography</h3>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/60">
+                When I&apos;m not shipping code, I&apos;m chasing light — the frames I&apos;m proud
+                of live on Instagram.
+              </p>
+              <span className="mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-indigo-300">
+                view on instagram
                 <span className="transition-transform group-hover:translate-x-0.5">↗</span>
               </span>
-            </div>
+            </a>
 
-            {/* film-strip decoration */}
-            <div className="relative mt-6 flex gap-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-12 flex-1 rounded-md border border-white/10 bg-gradient-to-br from-white/[0.05] to-transparent transition-colors group-hover:border-fuchsia-400/20"
-                />
-              ))}
-            </div>
-          </a>
+            {/* Reading */}
+            <a
+              href={READING_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 transition-all hover:-translate-y-1 hover:border-indigo-500/40"
+            >
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-indigo-300 transition-colors group-hover:border-indigo-400/40">
+                <BookOpen className="h-5 w-5" strokeWidth={1.7} />
+              </div>
+              <h3 className="mt-4 text-base sm:text-lg font-semibold tracking-tight">Reading</h3>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/60">
+                Usually mid-book on my Kindle — a mix of fiction and things that make me think
+                differently.
+              </p>
+              <span className="mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-indigo-300">
+                my bookshelf
+                <span className="transition-transform group-hover:translate-x-0.5">↗</span>
+              </span>
+            </a>
+          </div>
         </section>
 
         {/* GITHUB STATS ROW */}
