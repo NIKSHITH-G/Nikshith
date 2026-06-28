@@ -124,22 +124,11 @@ const experience = [
     },
   ];
 
-  const skills = [
-    "Python",
-    "Java",
-    "React",
-    "Next.js",
-    "TypeScript",
-    "HTML",
-    "CSS",
-    "PHP",
-    "SQL",
-    "Git",
-    "OOP",
-    "DBMS",
-    "Blockchain",
-    "AI",
-    "ML",
+  const skillGroups = [
+    { key: "languages", items: ["Python", "Java", "TypeScript", "PHP", "SQL"] },
+    { key: "frameworks", items: ["React", "Next.js", "HTML", "CSS"] },
+    { key: "tools", items: ["Git", "OOP", "DBMS", "Blockchain"] },
+    { key: "ai_ml", items: ["AI", "ML"] },
   ];
 
   const certs = [
@@ -162,113 +151,6 @@ const experience = [
       "/images/certificates/GRE.jpg",
   };
 
-  // === Skills interaction helpers ===
-  const skillsContainerRef = useRef(null);
-  const skillRefs = useRef([]);
-  const skillsRaf = useRef(0);
-  const glowRef = useRef(null);
-
-  const safeNum = (n, fallback = 0) =>
-    Number.isFinite(n) ? n : fallback;
-
-  const handleSkillsMove = (e) => {
-    const wrap = skillsContainerRef.current;
-    if (!wrap) return;
-
-    // Disable interaction on mobile
-    if (window.matchMedia("(max-width: 768px)").matches) return;
-
-    let rect;
-    try {
-      rect = wrap.getBoundingClientRect();
-    } catch {
-      return;
-    }
-    if (!rect) return;
-
-    const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : (e.clientX ?? null);
-    const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : (e.clientY ?? null);
-    if (clientX === null || clientY === null) return;
-
-    const mxRaw = clientX - rect.left;
-    const myRaw = clientY - rect.top;
-    const mx = safeNum(mxRaw, 0);
-    const my = safeNum(myRaw, 0);
-
-    if (glowRef.current) {
-      try {
-        glowRef.current.style.left = `${mx}px`;
-        glowRef.current.style.top = `${my}px`;
-        glowRef.current.style.opacity = "1";
-      } catch {}
-    }
-
-    cancelAnimationFrame(skillsRaf.current);
-    skillsRaf.current = requestAnimationFrame(() => {
-      const AMPLITUDE = 14;
-      const RADIUS = 180;
-
-      for (const el of skillRefs.current) {
-        if (!el) continue;
-        let r;
-        try {
-          r = el.getBoundingClientRect();
-        } catch {
-          continue;
-        }
-        if (!r) continue;
-
-        const cxRaw = r.left - rect.left + r.width / 2;
-        const cyRaw = r.top - rect.top + r.height / 2;
-        const cx = safeNum(cxRaw, 0);
-        const cy = safeNum(cyRaw, 0);
-
-        const dx = mx - cx;
-        const dy = my - cy;
-        const d = Math.hypot(dx, dy);
-
-        const t = Math.max(0, 1 - d / RADIUS);
-        const lift = AMPLITUDE * t * t;
-        const scaleRaw = 1 + 0.06 * t;
-        const scale = safeNum(scaleRaw, 1);
-
-        const alphaBgRaw = 0.05 + 0.25 * t;
-        const alphaBg = safeNum(alphaBgRaw, 0.05);
-        const alphaBorderRaw = 0.4 + 0.6 * t;
-        const alphaBorder = safeNum(alphaBorderRaw, 0.4);
-
-        try {
-          el.style.transform = `translateY(${-safeNum(lift, 0)}px) scale(${scale})`;
-          el.style.border = `1px solid rgba(99,102,241,${alphaBorder})`;
-          el.style.backgroundColor = `rgba(99,102,241,${alphaBg})`;
-          el.style.boxShadow = `0 10px 24px -12px rgba(99,102,241,${safeNum(0.35 * t, 0)})`;
-          el.style.transition =
-            "transform 120ms ease-out, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease";
-          el.style.willChange =
-            "transform, background-color, border-color, box-shadow";
-        } catch {}
-      }
-    });
-  };
-
-  const handleSkillsLeave = () => {
-    cancelAnimationFrame(skillsRaf.current);
-    if (glowRef.current) {
-      try {
-        glowRef.current.style.opacity = "0";
-      } catch {}
-    }
-    for (const el of skillRefs.current) {
-      if (!el) continue;
-      try {
-        el.style.transform = "translateY(0) scale(1)";
-        el.style.border = "1px solid rgba(99,102,241,0.4)";
-        el.style.backgroundColor = "rgba(99,102,241,0.05)";
-        el.style.boxShadow = "0 0 0 0 rgba(99,102,241,0)";
-        el.style.transition = "all 300ms ease";
-      } catch {}
-    }
-  };
 
   // === Certifications hover preview (disabled on mobile) ===
   const [preview, setPreview] = useState({ show: false, x: 0, y: 0, src: "" });
@@ -591,81 +473,114 @@ const experience = [
             <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Skills &amp; certifications</h2>
           </div>
 
-          <div
-            className="
-      relative rounded-xl sm:rounded-2xl border border-white/10 p-4 sm:p-6 
-      grid items-start gap-6 sm:gap-8 md:gap-10 md:grid-cols-2
-      before:content-[''] before:absolute before:inset-0 before:rounded-xl sm:before:rounded-2xl
-      before:bg-[conic-gradient(from_180deg,rgba(99,102,241,0.16),transparent,rgba(168,85,247,0.14),transparent)]
-      before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500
-      before:blur-[20px] before:pointer-events-none
-    "
-          >
-            {/* SKILLS */}
-            <div
-              ref={skillsContainerRef}
-              onMouseMove={handleSkillsMove}
-              onMouseLeave={handleSkillsLeave}
-              className="relative"
+          <div className="grid items-start gap-4 sm:gap-6 lg:grid-cols-2 lg:gap-8">
+            {/* SKILLS — rendered as a code object in an editor window */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.45 }}
+              className="overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b12]"
             >
-              <div
-                ref={glowRef}
-                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 w-[280px] h-[180px] rounded-full opacity-0 transition-opacity duration-300 bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.12),transparent_70%)] blur-2xl hidden md:block"
-                style={{ left: 0, top: 0 }}
-              />
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-                {skills.map((s, i) => (
-                  <motion.div
-                    key={`skill-${s}-${i}`}
-                    ref={(el) => (skillRefs.current[i] = el)}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.3, delay: i * 0.05 }}
-                    className="relative group overflow-hidden rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-center select-none flex items-center justify-center min-h-[52px] sm:min-h-[56px]"
-                    style={{
-                      transform: "translateY(0) scale(1)",
-                      border: "1px solid rgba(99,102,241,0.4)",
-                      backgroundColor: "rgba(99,102,241,0.05)",
-                      boxShadow: "0 0 0 0 rgba(99,102,241,0)",
-                    }}
-                  >
-                    <span className="pointer-events-none absolute -inset-1 translate-x-[-150%] group-hover:animate-[sheen_700ms_ease] bg-[linear-gradient(115deg,transparent,rgba(255,255,255,0.28),transparent)] w-1/2" />
-                    {s}
-                  </motion.div>
-                ))}
+              {/* window chrome */}
+              <div className="flex items-center gap-2 border-b border-white/8 px-4 py-2.5">
+                <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+                <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+                <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+                <span className="ml-2 font-mono text-xs text-white/40">stack.js</span>
               </div>
-            </div>
 
-            {/* CERTIFICATIONS */}
-            <div className="relative">
-              <div
-                className="space-y-2 sm:space-y-3 overflow-y-auto pr-2 sm:pr-6 certs-scroll"
-                style={{
-                  maxHeight: "380px",
-                  scrollbarGutter: "stable both-edges",
-                }}
-              >
-                {certs.map((c, i) => (
-                  <motion.div
-                    key={`cert-${i}`}
-                    initial={{ opacity: 0, x: 10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.35, delay: i * 0.1 }}
-                    className="relative overflow-hidden rounded-lg border border-indigo-500/40 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm bg-background/60 transition-all hover:translate-x-[2px] flex items-center min-h-[52px] sm:min-h-[56px] before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0 hover:before:w-[4px] sm:hover:before:w-[6px] before:bg-indigo-500/70 before:transition-[width] before:duration-200"
-                    onMouseEnter={(e) => showCertPreview(e, c)}
-                    onMouseMove={moveCertPreview}
-                    onMouseLeave={hideCertPreview}
-                    tabIndex={0}
-                    onFocus={(e) => showCertPreview(e, c)}
-                    onBlur={hideCertPreview}
-                    role="button"
-                    aria-label={`Preview ${c}`}
-                  >
-                    <span className="break-words">{c}</span>
-                  </motion.div>
+              {/* code body */}
+              <div className="overflow-x-auto p-4 sm:p-6 font-mono text-[12px] sm:text-sm leading-7">
+                <div>
+                  <span className="text-violet-300">const</span>{" "}
+                  <span className="text-sky-300">stack</span>{" "}
+                  <span className="text-white/45">= {"{"}</span>
+                </div>
+                {skillGroups.map((g) => (
+                  <div key={g.key} className="pl-4 sm:pl-6">
+                    <span className="text-emerald-300">{g.key}</span>
+                    <span className="text-white/45">: [</span>
+                    {g.items.map((s, i) => (
+                      <span key={s}>
+                        <span className="cursor-default text-amber-200/90 transition-colors hover:text-white">
+                          &quot;{s}&quot;
+                        </span>
+                        {i < g.items.length - 1 && (
+                          <span className="text-white/40">, </span>
+                        )}
+                      </span>
+                    ))}
+                    <span className="text-white/45">],</span>
+                  </div>
                 ))}
+                <div className="text-white/45">
+                  {"}"}
+                  <span className="ml-1 inline-block h-4 w-[7px] translate-y-[2px] animate-pulse bg-violet-300/70" />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* CERTIFICATIONS — verified credentials panel */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.45 }}
+              className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b12]"
+            >
+              {/* panel header */}
+              <div className="flex items-center justify-between border-b border-white/8 px-4 py-2.5">
+                <div className="flex items-center gap-2 font-mono text-xs text-white/45">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400" aria-hidden>
+                    <path d="M12 2 4 5v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V5l-8-3Z" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                  credentials
+                </div>
+                <span className="font-mono text-xs text-white/30">
+                  {certs.length} verified
+                </span>
+              </div>
+
+              {/* credential rows */}
+              <div className="divide-y divide-white/5">
+                {certs.map((c, i) => {
+                  const [title, issuer] = c.split(" — ");
+                  return (
+                    <motion.div
+                      key={`cert-${i}`}
+                      initial={{ opacity: 0, x: 10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true, amount: 0.3 }}
+                      transition={{ duration: 0.3, delay: i * 0.06 }}
+                      className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.03]"
+                      onMouseEnter={(e) => showCertPreview(e, c)}
+                      onMouseMove={moveCertPreview}
+                      onMouseLeave={hideCertPreview}
+                      tabIndex={0}
+                      onFocus={(e) => showCertPreview(e, c)}
+                      onBlur={hideCertPreview}
+                      role="button"
+                      aria-label={`Preview ${c}`}
+                    >
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-emerald-500/15 text-emerald-400">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                          <path d="m5 12 5 5L20 6" />
+                        </svg>
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium text-foreground/90">{title}</div>
+                        {issuer && (
+                          <div className="truncate font-mono text-xs text-foreground/45">{issuer}</div>
+                        )}
+                      </div>
+                      <span className="shrink-0 font-mono text-xs text-indigo-300 opacity-0 transition-opacity group-hover:opacity-100">
+                        view ↗
+                      </span>
+                    </motion.div>
+                  );
+                })}
               </div>
 
               {/* PREVIEW (desktop only) */}
@@ -692,7 +607,7 @@ const experience = [
                   </div>
                 );
               })()}
-            </div>
+            </motion.div>
           </div>
         </section>
       </main>
