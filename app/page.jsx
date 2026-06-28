@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Brain, Layers, Wrench } from "lucide-react";
 import Navbar from "../components/Navbar";
 import GitHubContributions from "../components/GitHubContributions";
 import InteractiveMeshGrid from "../components/InteractiveMeshGrid";
@@ -194,6 +195,27 @@ export default function Home() {
     return () => clearInterval(id);
   }, []);
 
+  const focusAreas = [
+    {
+      icon: Brain,
+      title: "AI & Machine Learning",
+      desc: "Training and deploying models — from hand-drawn shape recognition to applied ML. Now going deeper with a Master's at Monash.",
+      tags: ["TensorFlow", "Keras", "NumPy"],
+    },
+    {
+      icon: Layers,
+      title: "Full-Stack Engineering",
+      desc: "End-to-end products and REST APIs — two years building high-volume core banking systems at TCS.",
+      tags: ["React", "Next.js", "Java", "Spring Boot"],
+    },
+    {
+      icon: Wrench,
+      title: "Build · Break · Fix",
+      desc: "I learn by shipping, breaking things, and chasing down exactly why. Automated testing, debugging, and CI/CD.",
+      tags: ["Git", "Selenium", "CI/CD"],
+    },
+  ];
+
   const heroSub = "Poke around — everything here is a work in progress.";
   const heroRef = useRef(null);
   const cardRef = useRef(null);
@@ -352,6 +374,46 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* WHAT I DO */}
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 pt-8 sm:pt-12 pb-2">
+          <div className="mb-6 sm:mb-8">
+            <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// what i do</div>
+            <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Where I focus</h2>
+          </div>
+
+          <div className="grid gap-4 sm:gap-5 md:grid-cols-3">
+            {focusAreas.map((f) => {
+              const Icon = f.icon;
+              return (
+                <div
+                  key={f.title}
+                  className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 transition-colors hover:border-indigo-500/40"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-300 transition-colors group-hover:bg-indigo-500/25">
+                    <Icon className="h-5 w-5" strokeWidth={1.8} />
+                  </div>
+                  <h3 className="mt-4 text-base sm:text-lg font-semibold tracking-tight">
+                    {f.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/60">
+                    {f.desc}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {f.tags.map((t) => (
+                      <span
+                        key={t}
+                        className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 font-mono text-[11px] text-foreground/55"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
