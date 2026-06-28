@@ -397,71 +397,71 @@ const experience = [
       <main className="text-foreground relative z-10">
         {/* ===== INTRO / STATS ===== */}
         <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-12 sm:pt-16 md:pt-20 pb-6 sm:pb-8">
-          <div className="font-mono text-xs sm:text-sm text-emerald-300/80 mb-3 sm:mb-4">
-            // about me
+          {/* Heading */}
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="font-mono text-xs sm:text-sm text-emerald-300/80 mb-3">
+              // about me
+            </div>
+            <h2 className="mx-auto max-w-3xl text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
+                There Are Miles To Go Before We Sleep
+              </span>
+            </h2>
+            <p className="mt-2 sm:mt-3 text-sm text-foreground/60">
+              A short reminder to keep building — one step at a time.
+            </p>
           </div>
 
-          <div className="grid gap-4 sm:gap-6 lg:grid-cols-[1.5fr_1fr] lg:gap-8 items-stretch">
-            {/* Bio */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-[radial-gradient(circle,rgba(124,58,237,0.20),transparent_70%)] blur-2xl"
-              />
-              <h2 className="relative text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-[1.1]">
-                Engineer by training,{" "}
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
-                  tinkerer by instinct.
-                </span>
-              </h2>
-              <p className="relative mt-4 sm:mt-5 max-w-[58ch] text-sm sm:text-base leading-relaxed text-foreground/70">
-                I&apos;m a Master&apos;s student in Artificial Intelligence at Monash, with two
-                years building core banking systems at TCS. I move between full-stack engineering
-                and applied ML — and I learn fastest by building things, breaking them, and
-                figuring out exactly why.
-              </p>
-              <p className="relative mt-4 text-sm italic text-foreground/45">
-                &ldquo;There are miles to go before we sleep.&rdquo;
-              </p>
+          {/* Bio */}
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(124,58,237,0.16),transparent_70%)] blur-2xl"
+            />
+            <p className="relative mx-auto max-w-3xl text-center text-sm sm:text-base leading-relaxed text-foreground/75">
+              I&apos;m a Master&apos;s student in Artificial Intelligence at Monash, with two years
+              building core banking systems at TCS. I move between full-stack engineering and
+              applied ML — and I learn fastest by building things, breaking them, and figuring out
+              exactly why.
+            </p>
+          </div>
+
+          {/* Compact stats */}
+          <div ref={statsRef} className="mt-4 sm:mt-6 grid grid-cols-3 gap-3 sm:gap-4">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] px-3 py-4 sm:py-5 text-center transition-colors hover:border-indigo-500/40">
+              <div className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+                {years}
+                <span className="text-indigo-400">+</span>
+              </div>
+              <div className="mt-1 text-[11px] sm:text-sm text-foreground/60">
+                Years experience
+              </div>
             </div>
 
-            {/* Stats */}
-            <div ref={statsRef} className="grid grid-cols-3 gap-3 lg:grid-cols-1">
-              <div className="flex flex-col justify-center rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 transition-colors hover:border-indigo-500/40">
-                <div className="text-3xl sm:text-4xl font-bold tracking-tight">
-                  {years}
-                  <span className="text-indigo-400">+</span>
-                </div>
-                <div className="mt-1 text-[11px] sm:text-sm text-foreground/60">
-                  Years experience
-                </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] px-3 py-4 sm:py-5 text-center transition-colors hover:border-indigo-500/40">
+              <div className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+                {certCount}
+                <span className="text-indigo-400">+</span>
               </div>
-
-              <div className="flex flex-col justify-center rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 transition-colors hover:border-indigo-500/40">
-                <div className="text-3xl sm:text-4xl font-bold tracking-tight">
-                  {certCount}
-                  <span className="text-indigo-400">+</span>
-                </div>
-                <div className="mt-1 text-[11px] sm:text-sm text-foreground/60">
-                  Certifications
-                </div>
+              <div className="mt-1 text-[11px] sm:text-sm text-foreground/60">
+                Certifications
               </div>
-
-              <a
-                href="https://github.com/NIKSHITH-G"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex flex-col justify-center rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 transition-colors hover:border-indigo-500/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-                aria-label="Open my GitHub profile in a new tab"
-              >
-                <div className="text-3xl sm:text-4xl font-bold tracking-tight">
-                  10<span className="text-indigo-400">+</span>
-                </div>
-                <div className="mt-1 text-[11px] sm:text-sm text-foreground/60 group-hover:text-foreground/80">
-                  Projects ↗
-                </div>
-              </a>
             </div>
+
+            <a
+              href="https://github.com/NIKSHITH-G"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group rounded-2xl border border-white/10 bg-white/[0.02] px-3 py-4 sm:py-5 text-center transition-colors hover:border-indigo-500/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              aria-label="Open my GitHub profile in a new tab"
+            >
+              <div className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+                10<span className="text-indigo-400">+</span>
+              </div>
+              <div className="mt-1 text-[11px] sm:text-sm text-foreground/60 group-hover:text-foreground/80">
+                Projects ↗
+              </div>
+            </a>
           </div>
         </section>
 

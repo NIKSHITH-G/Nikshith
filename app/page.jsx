@@ -299,14 +299,8 @@ export default function Home() {
               {/* LEFT: portrait - now stacks on top on mobile */}
               <div className="md:col-span-5 flex justify-center md:justify-start items-center order-1 md:order-none">
                 <div className="relative w-[280px] h-[380px] sm:w-[340px] sm:h-[480px] md:w-[380px] md:h-[560px] lg:w-[420px] lg:h-[620px] select-none md:mt-[-32px]">
-                  <div aria-hidden className="absolute -inset-8 rounded-[2.5rem] bg-[radial-gradient(circle_at_50%_38%,rgba(124,58,237,0.30),transparent_68%)] blur-2xl" />
-                  <div className="absolute left-0 top-0 w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden ring-1 ring-white/10 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.85)] sm:shadow-[0_30px_90px_-50px_rgba(0,0,0,0.85)]" style={{ transformOrigin: "50% 40%" }}>
+                  <div className="absolute left-0 top-0 w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_20px_60px_-30px_rgba(0,0,0,0.85)] sm:shadow-[0_30px_90px_-50px_rgba(0,0,0,0.85)]" style={{ transformOrigin: "50% 40%" }}>
                     <Image src="/images/Profile/Profile.png" alt="Nikshith profile" fill className="object-cover" style={{ objectPosition: "30% 12%" }} priority />
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute inset-0"
-                      style={{ background: "linear-gradient(to bottom, transparent 56%, rgba(8,6,20,0.78) 100%), linear-gradient(to right, transparent 76%, rgba(8,6,20,0.55) 100%)" }}
-                    />
                   </div>
                 </div>
               </div>
@@ -315,13 +309,6 @@ export default function Home() {
               <div className="md:col-span-7 flex items-center justify-center md:justify-end order-2 md:order-none">
                 <div ref={cardRef} className="w-full md:max-w-[820px] rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-7 md:pt-9 bg-[rgba(255,255,255,0.03)] backdrop-blur-md border border-white/5 transform transition will-change-transform">
                   <div className="flex flex-col gap-3 sm:gap-4">
-                    <div className="inline-flex items-center gap-2 self-start rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">
-                      <span className="relative flex h-2 w-2">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-                      </span>
-                      Open to AI &amp; SWE roles
-                    </div>
                     <div>
                       <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight">
                         <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
