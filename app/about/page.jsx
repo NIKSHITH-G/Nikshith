@@ -7,6 +7,7 @@ import Navbar from "../../components/Navbar";
 import Timeline from "../../components/Timeline";
 import ProjectsGrid from "../../components/ProjectsGrid";
 import InteractiveMeshGrid from "../../components/InteractiveMeshGrid";
+import GitHubStats from "../../components/GitHubStats";
 
 export default function About() {
   // ---- DATA ----
@@ -459,6 +460,15 @@ const experience = [
             <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Things I&apos;ve built</h2>
           </div>
           <ProjectsGrid projects={projects} />
+        </section>
+
+        {/* ===== GITHUB ACTIVITY ===== */}
+        <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12">
+          <div className="mb-4 sm:mb-6">
+            <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// currently building</div>
+            <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">What I&apos;ve been shipping</h2>
+          </div>
+          <GitHubStats />
         </section>
 
         {/* ===== SKILLS & CERTIFICATIONS ===== */}

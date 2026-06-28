@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Compass, Ghost, NotebookText, Send, Library, Snowflake, Camera, BookOpen } from "lucide-react";
 import Navbar from "../components/Navbar";
-import GitHubContributions from "../components/GitHubContributions";
 import InteractiveMeshGrid from "../components/InteractiveMeshGrid";
 
 /* -------------------------
@@ -124,63 +123,6 @@ function ExpandedTerminalPanel({ open, onClose, logs = [], whoami = "" }) {
 }
 
 /* -------------------------
-   GitHubStatsRow
-------------------------- */
-function GitHubStatsRow({ username = "NIKSHITH-G" }) {
-  const [stats, setStats] = useState(null);
-  const [repos, setRepos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    async function fetchStats() {
-      try {
-        const res = await fetch("/api/github");
-        if (!res.ok) throw new Error("API failed");
-
-        const data = await res.json();
-
-        setStats(data.stats);
-        setRepos(data.repos);
-      } catch {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchStats();
-  }, []);
-
-  const statItems = stats
-    ? [
-        { label: "Repositories", value: stats.publicRepos },
-        { label: "Followers", value: stats.followers },
-        { label: "Stars earned", value: stats.totalStars },
-      ]
-    : [];
-
-  return (
-  <>
-    {loading ? (
-      <div className="text-white/30 text-xs sm:text-sm">Loading...</div>
-    ) : error ? (
-      <div className="text-white/30 text-xs sm:text-sm">GitHub stats unavailable</div>
-    ) : (
-      statItems.map((s) => (
-        <div
-          key={s.label}
-          className="px-2 sm:px-3 py-1 bg-white/5 rounded-full text-xs sm:text-sm whitespace-nowrap"
-        >
-          {s.value} {s.label}
-        </div>
-      ))
-    )}
-  </>
-);
-}
-
-/* -------------------------
    Home
 ------------------------- */
 export default function Home() {
@@ -212,6 +154,14 @@ export default function Home() {
     { name: "Shelf", role: "Drag & drop stash", icon: Library },
     { name: "Ice", role: "Menu bar", icon: Snowflake },
   ];
+
+  // Cursor-following spotlight for the "off the clock" cards.
+  const handleSpotlight = (e) => {
+    const el = e.currentTarget;
+    const r = el.getBoundingClientRect();
+    el.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    el.style.setProperty("--my", `${e.clientY - r.top}px`);
+  };
 
   const heroSub = "Poke around — everything here is a work in progress.";
   const heroRef = useRef(null);
@@ -416,86 +366,62 @@ export default function Home() {
               href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 transition-all hover:-translate-y-1 hover:border-indigo-500/40"
+              onMouseMove={handleSpotlight}
+              className="group relative flex overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 transition-all hover:-translate-y-1 hover:border-indigo-500/40"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-indigo-300 transition-colors group-hover:border-indigo-400/40">
-                <Camera className="h-5 w-5" strokeWidth={1.7} />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                style={{ background: "radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(99,102,241,0.18), transparent 60%)" }}
+              />
+              <div className="relative z-10 flex flex-1 flex-col">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-indigo-300 transition-colors group-hover:border-indigo-400/40">
+                  <Camera className="h-5 w-5" strokeWidth={1.7} />
+                </div>
+                <h3 className="mt-4 text-base sm:text-lg font-semibold tracking-tight">Photography</h3>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/60">
+                  When I&apos;m not shipping code, I&apos;m chasing light — the frames I&apos;m
+                  proud of live on Instagram.
+                </p>
+                <span className="mt-auto inline-flex items-center gap-1.5 pt-4 font-mono text-xs text-indigo-300">
+                  @enigma_view
+                  <span className="transition-transform group-hover:translate-x-0.5">↗</span>
+                </span>
               </div>
-              <h3 className="mt-4 text-base sm:text-lg font-semibold tracking-tight">Photography</h3>
-              <p className="mt-2 text-sm leading-relaxed text-foreground/60">
-                When I&apos;m not shipping code, I&apos;m chasing light — the frames I&apos;m proud
-                of live on Instagram.
-              </p>
-              <span className="mt-auto inline-flex items-center gap-1.5 pt-4 font-mono text-xs text-indigo-300">
-                @enigma_view
-                <span className="transition-transform group-hover:translate-x-0.5">↗</span>
-              </span>
             </a>
 
             {/* Reading */}
-            <div className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 transition-colors hover:border-indigo-500/40">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-indigo-300 transition-colors group-hover:border-indigo-400/40">
-                <BookOpen className="h-5 w-5" strokeWidth={1.7} />
-              </div>
-              <h3 className="mt-4 text-base sm:text-lg font-semibold tracking-tight">Reading</h3>
-              <p className="mt-2 text-sm leading-relaxed text-foreground/60">
-                Always mid-book on my Kindle — fantasy worlds and ideas that rewire how I think.
-              </p>
-              <ul className="mt-4 space-y-2">
-                {books.map((b) => (
-                  <li key={b.title} className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="text-indigo-400/60">→</span>
-                    <span className="text-sm text-foreground/85">{b.title}</span>
-                    <span className="font-mono text-[11px] text-foreground/40">{b.author}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* GITHUB STATS ROW */}
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 pt-8 sm:pt-12 pb-4">
-          {/* Section intro — frames the data so it doesn't feel pasted-in */}
-          <div className="mb-4 sm:mb-6">
-            <div className="font-mono text-xs sm:text-sm text-emerald-300/80">
-              // currently building
-            </div>
-            <h2 className="mt-2 text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-foreground/90">
-              A live look at what I&apos;ve been shipping lately.
-            </h2>
-            <p className="mt-1.5 text-xs sm:text-sm text-foreground/50 max-w-[60ch]">
-              Pulled straight from GitHub — repositories, stars, and the last
-              year of commits, updated automatically.
-            </p>
-          </div>
-
-          <div className="rounded-xl sm:rounded-2xl border border-white/5 bg-[rgba(255,255,255,0.02)] backdrop-blur-md px-4 sm:px-6 py-4 sm:py-6">
-
-            {/* HEADER */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
-              <a
-                href="https://github.com/NIKSHITH-G"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs sm:text-sm font-mono text-white/40 hover:text-white/70 transition-colors"
-              >
-                @NIKSHITH-G
-              </a>
-
-              <div className="flex gap-2 flex-wrap w-full sm:w-auto">
-                <GitHubStatsRow username="NIKSHITH-G" />
+            <div
+              onMouseMove={handleSpotlight}
+              className="group relative flex overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 transition-colors hover:border-indigo-500/40"
+            >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                style={{ background: "radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(99,102,241,0.18), transparent 60%)" }}
+              />
+              <div className="relative z-10 flex flex-1 flex-col">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-indigo-300 transition-colors group-hover:border-indigo-400/40">
+                  <BookOpen className="h-5 w-5" strokeWidth={1.7} />
+                </div>
+                <h3 className="mt-4 text-base sm:text-lg font-semibold tracking-tight">Reading</h3>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/60">
+                  Always mid-book on my Kindle — fantasy worlds and ideas that rewire how I think.
+                </p>
+                <ul className="mt-4 space-y-2">
+                  {books.map((b) => (
+                    <li
+                      key={b.title}
+                      className="group/book flex flex-wrap items-baseline gap-x-2 transition-transform duration-200 hover:translate-x-1"
+                    >
+                      <span className="text-indigo-400/60 transition-colors group-hover/book:text-indigo-300">→</span>
+                      <span className="text-sm text-foreground/85 transition-colors group-hover/book:text-white">{b.title}</span>
+                      <span className="font-mono text-[11px] text-foreground/40">{b.author}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
-
-            {/* DIVIDER */}
-            <div className="h-px bg-white/6 my-3 sm:my-4" />
-
-            {/* CONTRIBUTIONS */}
-            <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-              <GitHubContributions />
-            </div>
-
           </div>
         </section>
 
