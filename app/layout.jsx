@@ -1,19 +1,65 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, DM_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const dmMono = DM_Mono({
+  weight: ["300", "400", "500"],
+  subsets: ["latin"],
+  variable: "--font-dm-mono",
+});
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-instrument-serif",
+});
 
 export const metadata = {
-  title: "NIKSHITH",
-  description: "My portfolio",
+  metadataBase: new URL("https://nikshith.online"),
+  title: {
+    default: "Nikshith G — AI & Full-Stack Engineer",
+    template: "%s — Nikshith G",
+  },
+  description:
+    "Master's in Artificial Intelligence at Monash. I build, break, and fix things — full-stack engineering, AI/ML, and everything in between.",
+  keywords: [
+    "Nikshith",
+    "Nikshith G",
+    "AI Engineer",
+    "Full-Stack Developer",
+    "Machine Learning",
+    "Monash",
+    "Portfolio",
+  ],
+  authors: [{ name: "Nikshith G", url: "https://github.com/NIKSHITH-G" }],
+  openGraph: {
+    title: "Nikshith G — AI & Full-Stack Engineer",
+    description:
+      "Master's in AI at Monash. I build, break, and fix things.",
+    url: "https://nikshith.online",
+    siteName: "Nikshith G",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Nikshith G — AI & Full-Stack Engineer",
+    description: "Master's in AI at Monash. I build, break, and fix things.",
+  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0a0a0a",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0a0a0a] text-[#ededed]`}
+        className={`${geistSans.variable} ${geistMono.variable} ${dmMono.variable} ${instrumentSerif.variable} antialiased bg-[#0a0a0a] text-[#ededed]`}
       >
         {children}
       </body>

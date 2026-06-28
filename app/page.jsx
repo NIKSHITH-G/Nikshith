@@ -347,14 +347,33 @@ export default function Home() {
         </section>
 
         {/* GITHUB STATS ROW */}
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 pt-4 sm:pt-6 pb-4">
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 pt-8 sm:pt-12 pb-4">
+          {/* Section intro — frames the data so it doesn't feel pasted-in */}
+          <div className="mb-4 sm:mb-6">
+            <div className="font-mono text-xs sm:text-sm text-emerald-300/80">
+              // currently building
+            </div>
+            <h2 className="mt-2 text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-foreground/90">
+              A live look at what I&apos;ve been shipping lately.
+            </h2>
+            <p className="mt-1.5 text-xs sm:text-sm text-foreground/50 max-w-[60ch]">
+              Pulled straight from GitHub — repositories, stars, and the last
+              year of commits, updated automatically.
+            </p>
+          </div>
+
           <div className="rounded-xl sm:rounded-2xl border border-white/5 bg-[rgba(255,255,255,0.02)] backdrop-blur-md px-4 sm:px-6 py-4 sm:py-6">
 
             {/* HEADER */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
-              <span className="text-xs sm:text-sm font-mono text-white/40">
-                GitHub stats
-              </span>
+              <a
+                href="https://github.com/NIKSHITH-G"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs sm:text-sm font-mono text-white/40 hover:text-white/70 transition-colors"
+              >
+                @NIKSHITH-G
+              </a>
 
               <div className="flex gap-2 flex-wrap w-full sm:w-auto">
                 <GitHubStatsRow username="NIKSHITH-G" />

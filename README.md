@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Nikshith G — Portfolio
 
-## Getting Started
+My personal portfolio, live at **[nikshith.online](https://nikshith.online)**.
 
-First, run the development server:
+Built with Next.js 16 (App Router) and a focus on interactive, hand-built motion
+— an animated mesh-grid background (React Three Fiber), a typing micro-terminal,
+magnetic skill chips, and a live GitHub contribution graph.
+
+## Tech stack
+
+- **Framework:** Next.js 16 (App Router), React 19
+- **Styling:** Tailwind CSS v4
+- **Motion / 3D:** Framer Motion, anime.js, React Three Fiber + drei + postprocessing
+- **Email:** EmailJS (contact form, client-side)
+- **Data:** GitHub REST + GraphQL APIs (stats + contribution calendar)
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env.local` (not committed):
 
-## Learn More
+```bash
+# Fine-grained, READ-ONLY token (public repos + read:user) for GitHub stats
+GITHUB_TOKEN=your_token_here
+```
 
-To learn more about Next.js, take a look at the following resources:
+The EmailJS service/template/public keys live in `app/contact/page.jsx`
+(the public key is safe to expose by design).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+app/
+  page.jsx          # Home — hero, terminal, GitHub stats
+  about/            # Experience, education, projects, skills & certs
+  contact/          # Contact form (EmailJS) + animations
+  api/github/       # GitHub stats + contribution calendar (cached daily)
+components/         # Navbar, mesh grid, timeline, project cards, contributions
+```
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deployed on Vercel with `nikshith.online` as the custom domain. Pushes to `main`
+trigger a production deploy.

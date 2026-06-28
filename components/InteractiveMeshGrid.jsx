@@ -20,17 +20,34 @@ export default function InteractiveMeshGrid({
   const rafRef = useRef(0);
   const gridRef = useRef({ pts: [], w: 0, h: 0 });
   const pointer = useRef({ x: -9999, y: -9999, active: false });
-  const visibleRef = useRef(true);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d", { alpha: true });
     let mounted = true;
 
+    // Skip the whole simulation on small screens or when the user prefers
+    // reduced motion — saves battery and CPU on phones.
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (window.innerWidth < disableBelow || prefersReduced) {
+      return () => {
+        mounted = false;
+      };
+    }
+
     function buildGrid(w, h) {
-      const eff = Math.max(40, spacing * density);
-      const cols = Math.ceil(w / eff) + 1;
-      const rows = Math.ceil(h / eff) + 1;
+      let eff = Math.max(40, spacing * density);
+      let cols = Math.ceil(w / eff) + 1;
+      let rows = Math.ceil(h / eff) + 1;
+
+      // Cap total points so low-power / high-DPI devices don't choke.
+      while (cols * rows > maxPoints && eff < 2000) {
+        eff *= 1.15;
+        cols = Math.ceil(w / eff) + 1;
+        rows = Math.ceil(h / eff) + 1;
+      }
 
       const pts = [];
       for (let r = 0; r < rows; r++) {
@@ -169,6 +186,17 @@ export default function InteractiveMeshGrid({
     }
     loop(last);
 
+    // Pause the loop when the tab/app is backgrounded.
+    function onVisibility() {
+      if (document.hidden) {
+        cancelAnimationFrame(rafRef.current);
+      } else {
+        last = performance.now();
+        rafRef.current = requestAnimationFrame(loop);
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+
     return () => {
       mounted = false;
       cancelAnimationFrame(rafRef.current);
@@ -176,6 +204,7 @@ export default function InteractiveMeshGrid({
       window.removeEventListener("pointermove", pointerMove);
       window.removeEventListener("pointerleave", pointerLeave);
       window.removeEventListener("touchmove", pointerMove);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 

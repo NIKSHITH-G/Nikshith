@@ -13,7 +13,7 @@ const EMAILJS_SERVICE_ID  = "service_mc8ysnm";
 const EMAILJS_TEMPLATE_ID_MAIN = "template_gedrp5l";
 const EMAILJS_TEMPLATE_ID_AUTO = "template_rowmn13";
 const EMAILJS_PUBLIC_KEY  = "UyM8c_VmTl027Xvxk";
-const YOUR_EMAIL          = "nikshith.online@email.com";
+const YOUR_EMAIL          = "nikshith.online@gmail.com";
 const MAX_CHARS           = 500;
 
 // ── Social links ──────────────────────────────────────────────────────────────
@@ -127,7 +127,7 @@ function Toast({ message, type, onClose }) {
       background: type === "success" ? "rgba(109,40,217,0.28)" : "rgba(153,27,27,0.28)",
       backdropFilter: "blur(20px)",
       color: type === "success" ? "#e9d5ff" : "#fca5a5",
-      fontFamily: "'DM Mono', monospace",
+      fontFamily: "var(--font-dm-mono), monospace",
       fontSize: "12px", letterSpacing: "0.06em",
       maxWidth: "320px",
       boxShadow: "0 8px 40px rgba(0,0,0,0.6)",
@@ -191,6 +191,7 @@ function useScrollReveal() {
 export default function Contact() {
   const formRef = useRef(null);
   const [form, setForm]       = useState({ name: "", email: "", subject: "", message: "" });
+  const honeypot = useRef("");  // spam trap — real users never fill this
   const [status, setStatus]   = useState("idle");
   const [toast, setToast]     = useState(null);
   const [focused, setFocused] = useState(null);
@@ -218,6 +219,13 @@ export default function Contact() {
 
 const handleSubmit = async (e) => {
   e.preventDefault();
+
+  // 🐝 honeypot — if filled, it's a bot. Fake success and bail silently.
+  if (honeypot.current) {
+    setStatus("sent");
+    setForm({ name: "", email: "", subject: "", message: "" });
+    return;
+  }
 
   // ✅ validation
   if (!form.name || !form.email || !form.message) {
@@ -282,7 +290,7 @@ const handleSubmit = async (e) => {
     padding: "12px 6px",
     color: "#ffffff",
     fontSize: "14px",
-    fontFamily: "'DM Mono', 'Courier New', monospace",
+    fontFamily: "var(--font-dm-mono), 'Courier New', monospace",
     outline: "none",
     transition: "border-color 0.25s, background 0.25s",
     boxSizing: "border-box",
@@ -296,13 +304,12 @@ const handleSubmit = async (e) => {
     textTransform: "uppercase",
     color: "rgba(255,255,255,0.5)",
     marginBottom: "6px",
-    fontFamily: "'DM Mono', monospace",
+    fontFamily: "var(--font-dm-mono), monospace",
   };
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap');
         *, *::before, *::after { box-sizing: border-box; }
 
         /* ── Scroll reveal ── */
@@ -322,7 +329,7 @@ const handleSubmit = async (e) => {
           min-height: 100vh;
           background: transparent;
           color: #fff;
-          font-family: 'DM Mono', 'Courier New', monospace;
+          font-family: var(--font-dm-mono), 'Courier New', monospace;
           position: relative;
           z-index: 10;
         }
@@ -352,7 +359,7 @@ const handleSubmit = async (e) => {
 
         /* ── Headline ── */
         .headline {
-          font-family: 'Instrument Serif', Georgia, serif;
+          font-family: var(--font-instrument-serif), Georgia, serif;
           font-size: clamp(3.4rem, 8.5vw, 6.8rem);
           font-weight: 400;
           line-height: 1.02;
@@ -402,7 +409,7 @@ const handleSubmit = async (e) => {
           background: rgba(255,255,255,0.04);
           backdrop-filter: blur(8px);
           transition: border-color .2s, color .2s, background .2s, transform .2s;
-          font-family: 'DM Mono', monospace;
+          font-family: var(--font-dm-mono), monospace;
         }
         .sp:hover {
           border-color: #a78bfa; color: #e9d5ff;
@@ -413,7 +420,7 @@ const handleSubmit = async (e) => {
           padding: 8px 16px; border: 1px solid rgba(52,211,153,0.4);
           border-radius: 100px; color: #6ee7b7; font-size: 11px;
           letter-spacing: 0.08em; background: rgba(52,211,153,0.08);
-          font-family: 'DM Mono', monospace;
+          font-family: var(--font-dm-mono), monospace;
         }
         .dot {
           width: 6px; height: 6px; border-radius: 50%;
@@ -440,6 +447,12 @@ const handleSubmit = async (e) => {
         @media(max-width:700px) {
           .mg { grid-template-columns: 1fr; }
           .ip { border-right: none !important; border-bottom: 1px solid rgba(167,139,250,0.15); }
+          .fr { grid-template-columns: 1fr; gap: 1.4rem; }
+          .ip, .fp { padding: 2rem 1.5rem; }
+          .cw { padding: 4rem 1.25rem 3rem; }
+          .ip { min-height: auto; }
+          .sr { flex-direction: column; align-items: stretch; gap: 1.25rem; }
+          .sbtn { justify-content: center; }
         }
 
         /* ── Info panel ── */
@@ -451,7 +464,7 @@ const handleSubmit = async (e) => {
         }
         .ii { font-size: 9px; letter-spacing: 0.26em; text-transform: uppercase; color: rgba(167,139,250,0.7); }
         .ist {
-          font-family: 'Instrument Serif', serif; font-size: 1.4rem;
+          font-family: var(--font-instrument-serif), serif; font-size: 1.4rem;
           font-weight: 400; font-style: italic; color: #f0ece4; margin: 0 0 0.6rem;
         }
         .ib { font-size: 12px; line-height: 2.1; color: rgba(255,255,255,0.65); letter-spacing: 0.03em; }
@@ -473,7 +486,7 @@ const handleSubmit = async (e) => {
         .cbw { margin-top: 8px; display: flex; align-items: center; gap: 10px; }
         .cbb { flex: 1; height: 2px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
         .cbf { height: 100%; border-radius: 2px; transition: width .2s, background .3s; }
-        .ccl { font-size: 10px; letter-spacing: 0.08em; min-width: 64px; text-align: right; font-family: 'DM Mono', monospace; transition: color .3s; }
+        .ccl { font-size: 10px; letter-spacing: 0.08em; min-width: 64px; text-align: right; font-family: var(--font-dm-mono), monospace; transition: color .3s; }
 
         /* ── Submit row ── */
         .sr { display: flex; align-items: center; justify-content: space-between; margin-top: 2.5rem; gap: 1rem; flex-wrap: wrap; }
@@ -485,7 +498,7 @@ const handleSubmit = async (e) => {
           padding: 13px 30px;
           background: linear-gradient(135deg, #6d28d9, #9333ea);
           color: #fff; border: none; border-radius: 100px;
-          font-family: 'DM Mono', monospace; font-size: 11px;
+          font-family: var(--font-dm-mono), monospace; font-size: 11px;
           letter-spacing: 0.16em; text-transform: uppercase;
           cursor: pointer; overflow: hidden;
           box-shadow: 0 4px 28px rgba(109,40,217,0.55);
@@ -625,6 +638,16 @@ const handleSubmit = async (e) => {
               </div>
 
               <form ref={formRef} onSubmit={handleSubmit}>
+                {/* Honeypot — hidden from humans, catches bots */}
+                <input
+                  type="text"
+                  name="company"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  onChange={(e) => (honeypot.current = e.target.value)}
+                  style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+                />
                 <div className="fr">
                   <div>
                     <label htmlFor="name" style={labelStyle}>Name</label>

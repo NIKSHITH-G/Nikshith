@@ -121,7 +121,7 @@ function ProjectsGrid({ projects }) {
                   className="absolute inset-0 rounded-xl border border-indigo-500/40 pointer-events-none"
                   style={{ boxSizing: "border-box" }}
                 />
-                <div className="relative flex flex-col project-content z-10" style={{ padding: "1cm" }}>
+                <div className="relative flex flex-col project-content z-10" style={{ padding: "clamp(16px, 4vw, 1cm)" }}>
                   <div className="flex-1">
                     <div className="flex items-start justify-between gap-4">
                       <h3 className="font-semibold text-xl">{p.name}</h3>
@@ -272,12 +272,12 @@ function ProjectsGrid({ projects }) {
               </div>
 
               {/* Footer: shot indicator, Prev/Next buttons and dots */}
-              <div className="flex items-center justify-between gap-4 px-6 pb-5 pt-3 md:px-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-2 sm:px-6 pb-4 pt-3 md:px-8">
                 <div className="truncate text-sm text-white/70">
                   {projects[pIdx]?.name} — <span className="text-white/60">shot {sIdx + 1} of {slides.length}</span>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between sm:justify-end gap-3">
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); prevSlide(); }}

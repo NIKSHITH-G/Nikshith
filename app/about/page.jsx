@@ -5,7 +5,6 @@ import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../../components/Navbar";
 import Timeline from "../../components/Timeline";
-import ProjectCard from "../../components/ProjectCard";
 import ProjectsGrid from "../../components/ProjectsGrid";
 import InteractiveMeshGrid from "../../components/InteractiveMeshGrid";
 
@@ -603,7 +602,7 @@ const experience = [
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true, amount: 0.3 }}
                     transition={{ duration: 0.3, delay: i * 0.05 }}
-                    className="relative group overflow-hidden rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-center select-none"
+                    className="relative group overflow-hidden rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-center select-none flex items-center justify-center min-h-[52px] sm:min-h-[56px]"
                     style={{
                       transform: "translateY(0) scale(1)",
                       border: "1px solid rgba(99,102,241,0.4)",
@@ -623,7 +622,7 @@ const experience = [
               <div
                 className="space-y-2 sm:space-y-3 overflow-y-auto pr-2 sm:pr-6 certs-scroll"
                 style={{
-                  maxHeight: "320px",
+                  maxHeight: "380px",
                   scrollbarGutter: "stable both-edges",
                 }}
               >
@@ -634,7 +633,7 @@ const experience = [
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true, amount: 0.3 }}
                     transition={{ duration: 0.35, delay: i * 0.1 }}
-                    className="relative overflow-hidden rounded-lg border border-indigo-500/40 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm bg-background/60 transition-all hover:translate-x-[2px] before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0 hover:before:w-[4px] sm:hover:before:w-[6px] before:bg-indigo-500/70 before:transition-[width] before:duration-200"
+                    className="relative overflow-hidden rounded-lg border border-indigo-500/40 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm bg-background/60 transition-all hover:translate-x-[2px] flex items-center min-h-[52px] sm:min-h-[56px] before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0 hover:before:w-[4px] sm:hover:before:w-[6px] before:bg-indigo-500/70 before:transition-[width] before:duration-200"
                     onMouseEnter={(e) => showCertPreview(e, c)}
                     onMouseMove={moveCertPreview}
                     onMouseLeave={hideCertPreview}
