@@ -397,48 +397,52 @@ const experience = [
       <main className="text-foreground relative z-10">
         {/* ===== INTRO / STATS ===== */}
         <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-12 sm:pt-16 md:pt-20 pb-6 sm:pb-8">
-          <div className="relative rounded-xl sm:rounded-2xl p-4 sm:p-6 border-2 border-white/6 bg-black/20 backdrop-blur-sm overflow-hidden">
-            <div
-              aria-hidden
-              style={{
-                position: "absolute",
-                inset: 0,
-                pointerEvents: "none",
-                background:
-                  "radial-gradient(ellipse at 10% 20%, rgba(99,102,241,0.06), transparent 15%), radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.04), transparent 20%)",
-              }}
-            />
+          <div className="font-mono text-xs sm:text-sm text-emerald-300/80 mb-3 sm:mb-4">
+            // about me
+          </div>
 
-            <div className="relative z-10 text-center mb-4 sm:mb-6">
-              <h2 className="mx-auto max-w-3xl text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight px-2">
-                <span className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
-                  There Are Miles To Go Before We Sleep
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-[1.5fr_1fr] lg:gap-8 items-stretch">
+            {/* Bio */}
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-[radial-gradient(circle,rgba(124,58,237,0.20),transparent_70%)] blur-2xl"
+              />
+              <h2 className="relative text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-[1.1]">
+                Engineer by training,{" "}
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
+                  tinkerer by instinct.
                 </span>
               </h2>
-              <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-foreground/70 px-2">
-                A short reminder to keep building — one step at a time.
+              <p className="relative mt-4 sm:mt-5 max-w-[58ch] text-sm sm:text-base leading-relaxed text-foreground/70">
+                I&apos;m a Master&apos;s student in Artificial Intelligence at Monash, with two
+                years building core banking systems at TCS. I move between full-stack engineering
+                and applied ML — and I learn fastest by building things, breaking them, and
+                figuring out exactly why.
+              </p>
+              <p className="relative mt-4 text-sm italic text-foreground/45">
+                &ldquo;There are miles to go before we sleep.&rdquo;
               </p>
             </div>
 
-            <div
-              ref={statsRef}
-              className="relative z-10 mt-4 sm:mt-6 grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 text-center items-center"
-            >
-              <div className="rounded-lg p-3 sm:p-4 bg-white/3 border border-white/6 transition-transform duration-200 transform">
-                <div className="text-2xl sm:text-3xl md:text-4xl font-bold">
+            {/* Stats */}
+            <div ref={statsRef} className="grid grid-cols-3 gap-3 lg:grid-cols-1">
+              <div className="flex flex-col justify-center rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 transition-colors hover:border-indigo-500/40">
+                <div className="text-3xl sm:text-4xl font-bold tracking-tight">
                   {years}
-                  <span className="text-sm sm:text-lg ml-1">+</span>
+                  <span className="text-indigo-400">+</span>
                 </div>
-                <div className="mt-1 text-[10px] sm:text-xs md:text-sm text-foreground/70">
-                  Years Experience
+                <div className="mt-1 text-[11px] sm:text-sm text-foreground/60">
+                  Years experience
                 </div>
               </div>
 
-              <div className="rounded-lg p-3 sm:p-4 bg-white/3 border border-white/6 transition-transform duration-200 transform">
-                <div className="text-2xl sm:text-3xl md:text-4xl font-bold">
-                  {certCount}+
+              <div className="flex flex-col justify-center rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 transition-colors hover:border-indigo-500/40">
+                <div className="text-3xl sm:text-4xl font-bold tracking-tight">
+                  {certCount}
+                  <span className="text-indigo-400">+</span>
                 </div>
-                <div className="mt-1 text-[10px] sm:text-xs md:text-sm text-foreground/70">
+                <div className="mt-1 text-[11px] sm:text-sm text-foreground/60">
                   Certifications
                 </div>
               </div>
@@ -447,11 +451,15 @@ const experience = [
                 href="https://github.com/NIKSHITH-G"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg p-3 sm:p-4 bg-white/3 border border-white/6 hover:bg-white/5 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                className="group flex flex-col justify-center rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 transition-colors hover:border-indigo-500/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                 aria-label="Open my GitHub profile in a new tab"
               >
-                <div className="text-2xl sm:text-3xl md:text-4xl font-bold">10+</div>
-                <div className="mt-1 text-[10px] sm:text-xs md:text-sm text-foreground/70">Projects</div>
+                <div className="text-3xl sm:text-4xl font-bold tracking-tight">
+                  10<span className="text-indigo-400">+</span>
+                </div>
+                <div className="mt-1 text-[11px] sm:text-sm text-foreground/60 group-hover:text-foreground/80">
+                  Projects ↗
+                </div>
               </a>
             </div>
           </div>
@@ -459,9 +467,12 @@ const experience = [
 
         {/* ===== EXPERIENCE ===== */}
         <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Experience</h2>
+          <div className="mb-4 sm:mb-6">
+            <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// experience</div>
+            <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Where I&apos;ve worked</h2>
+          </div>
 
-          <div className="relative rounded-xl sm:rounded-2xl border-2 border-white/30 p-4 sm:p-6">
+          <div className="relative rounded-xl sm:rounded-2xl border border-white/10 p-4 sm:p-6">
             <div
               className="space-y-4 sm:space-y-6 overflow-y-auto pr-2 sm:pr-6"
               style={{
@@ -555,25 +566,34 @@ const experience = [
 
         {/* ===== EDUCATION ===== */}
         <section id="education" className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Education</h2>
-          <div className="rounded-xl sm:rounded-2xl border-2 border-white/30 p-4 sm:p-6">
+          <div className="mb-4 sm:mb-6">
+            <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// education</div>
+            <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Where I studied</h2>
+          </div>
+          <div className="rounded-xl sm:rounded-2xl border border-white/10 p-4 sm:p-6">
             <Timeline milestones={milestones} />
           </div>
         </section>
 
         {/* ===== PROJECTS ===== */}
         <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Featured Projects</h2>
+          <div className="mb-4 sm:mb-6">
+            <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// projects</div>
+            <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Things I&apos;ve built</h2>
+          </div>
           <ProjectsGrid projects={projects} />
         </section>
 
         {/* ===== SKILLS & CERTIFICATIONS ===== */}
         <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12 pt-4 sm:pt-8">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Skills & Certifications</h2>
+          <div className="mb-4 sm:mb-6">
+            <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// stack</div>
+            <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Skills &amp; certifications</h2>
+          </div>
 
           <div
             className="
-      relative rounded-xl sm:rounded-2xl border-2 border-white/30 p-4 sm:p-6 
+      relative rounded-xl sm:rounded-2xl border border-white/10 p-4 sm:p-6 
       grid items-start gap-6 sm:gap-8 md:gap-10 md:grid-cols-2
       before:content-[''] before:absolute before:inset-0 before:rounded-xl sm:before:rounded-2xl
       before:bg-[conic-gradient(from_180deg,rgba(99,102,241,0.16),transparent,rgba(168,85,247,0.14),transparent)]

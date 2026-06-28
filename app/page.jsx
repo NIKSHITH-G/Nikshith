@@ -194,6 +194,12 @@ export default function Home() {
     return () => clearInterval(id);
   }, []);
 
+  const TECH = [
+    "Python", "Java", "React", "Next.js", "TypeScript", "TensorFlow",
+    "PyTorch", "Node.js", "SQL", "Blockchain", "AWS", "Git",
+    "Spring Boot", "Selenium",
+  ];
+
   const heroSub = "Poke around — everything here is a work in progress.";
   const heroRef = useRef(null);
   const cardRef = useRef(null);
@@ -293,8 +299,14 @@ export default function Home() {
               {/* LEFT: portrait - now stacks on top on mobile */}
               <div className="md:col-span-5 flex justify-center md:justify-start items-center order-1 md:order-none">
                 <div className="relative w-[280px] h-[380px] sm:w-[340px] sm:h-[480px] md:w-[380px] md:h-[560px] lg:w-[420px] lg:h-[620px] select-none md:mt-[-32px]">
-                  <div className="absolute left-0 top-0 w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_20px_60px_-30px_rgba(0,0,0,0.85)] sm:shadow-[0_30px_90px_-50px_rgba(0,0,0,0.85)]" style={{ transformOrigin: "50% 40%" }}>
+                  <div aria-hidden className="absolute -inset-8 rounded-[2.5rem] bg-[radial-gradient(circle_at_50%_38%,rgba(124,58,237,0.30),transparent_68%)] blur-2xl" />
+                  <div className="absolute left-0 top-0 w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden ring-1 ring-white/10 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.85)] sm:shadow-[0_30px_90px_-50px_rgba(0,0,0,0.85)]" style={{ transformOrigin: "50% 40%" }}>
                     <Image src="/images/Profile/Profile.png" alt="Nikshith profile" fill className="object-cover" style={{ objectPosition: "30% 12%" }} priority />
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0"
+                      style={{ background: "linear-gradient(to bottom, transparent 56%, rgba(8,6,20,0.78) 100%), linear-gradient(to right, transparent 76%, rgba(8,6,20,0.55) 100%)" }}
+                    />
                   </div>
                 </div>
               </div>
@@ -303,6 +315,13 @@ export default function Home() {
               <div className="md:col-span-7 flex items-center justify-center md:justify-end order-2 md:order-none">
                 <div ref={cardRef} className="w-full md:max-w-[820px] rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-7 md:pt-9 bg-[rgba(255,255,255,0.03)] backdrop-blur-md border border-white/5 transform transition will-change-transform">
                   <div className="flex flex-col gap-3 sm:gap-4">
+                    <div className="inline-flex items-center gap-2 self-start rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">
+                      <span className="relative flex h-2 w-2">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                      </span>
+                      Open to AI &amp; SWE roles
+                    </div>
                     <div>
                       <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight">
                         <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
@@ -330,18 +349,44 @@ export default function Home() {
                       />
                     </div>
 
-                    <div className="mt-4 sm:mt-6 flex justify-start sm:justify-end">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-foreground/60">
-                        <a href="/resume.pdf" download target="_blank" rel="noopener noreferrer" className="hover:text-foreground/90 hover:underline underline-offset-4 transition-colors">Download CV</a>
-                        <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-foreground/40" />
-                        <Link href="/contact" className="inline-flex items-center gap-1 text-emerald-300 hover:text-emerald-200 hover:underline underline-offset-4 transition-colors">
-                          Let&apos;s talk <span>→</span>
-                        </Link>
-                      </div>
+                    <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-3">
+                      <Link
+                        href="/contact"
+                        className="group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2.5 text-sm font-medium text-white shadow-[0_10px_34px_-10px_rgba(99,102,241,0.7)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_44px_-10px_rgba(99,102,241,0.9)]"
+                      >
+                        Let&apos;s talk
+                        <span className="transition-transform group-hover:translate-x-0.5">→</span>
+                      </Link>
+                      <a
+                        href="/resume.pdf"
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-foreground/90 transition-all hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/10"
+                      >
+                        Download CV
+                      </a>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* TECH MARQUEE */}
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 py-4 sm:py-5">
+          <div className="marquee-mask overflow-hidden">
+            <div className="flex w-max animate-marquee gap-10">
+              {[...TECH, ...TECH].map((t, i) => (
+                <span
+                  key={i}
+                  className="flex items-center gap-2.5 whitespace-nowrap text-sm font-mono text-white/35"
+                >
+                  <span className="h-1 w-1 rounded-full bg-indigo-400/60" />
+                  {t}
+                </span>
+              ))}
             </div>
           </div>
         </section>

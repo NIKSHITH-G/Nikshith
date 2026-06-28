@@ -19,7 +19,7 @@ function Milestone({ m, index, active, visited, registerRef }) {
   return (
     <div
       ref={(el) => registerRef(index, el)}
-      className="relative pl-16 lg:pl-0 mb-12 lg:mb-20 last:mb-10"
+      className="relative pl-16 lg:pl-0 mb-10 lg:mb-14 last:mb-8"
     >
       {/* Connector from spine to card (desktop) */}
       <div
