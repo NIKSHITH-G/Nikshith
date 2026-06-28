@@ -194,12 +194,6 @@ export default function Home() {
     return () => clearInterval(id);
   }, []);
 
-  const TECH = [
-    "Python", "Java", "React", "Next.js", "TypeScript", "TensorFlow",
-    "PyTorch", "Node.js", "SQL", "Blockchain", "AWS", "Git",
-    "Spring Boot", "Selenium",
-  ];
-
   const heroSub = "Poke around — everything here is a work in progress.";
   const heroRef = useRef(null);
   const cardRef = useRef(null);
@@ -336,7 +330,7 @@ export default function Home() {
                       />
                     </div>
 
-                    <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-3">
+                    <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-3 sm:justify-end">
                       <Link
                         href="/contact"
                         className="group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2.5 text-sm font-medium text-white shadow-[0_10px_34px_-10px_rgba(99,102,241,0.7)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_44px_-10px_rgba(99,102,241,0.9)]"
@@ -357,23 +351,6 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* TECH MARQUEE */}
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 py-4 sm:py-5">
-          <div className="marquee-mask overflow-hidden">
-            <div className="flex w-max animate-marquee gap-10">
-              {[...TECH, ...TECH].map((t, i) => (
-                <span
-                  key={i}
-                  className="flex items-center gap-2.5 whitespace-nowrap text-sm font-mono text-white/35"
-                >
-                  <span className="h-1 w-1 rounded-full bg-indigo-400/60" />
-                  {t}
-                </span>
-              ))}
             </div>
           </div>
         </section>

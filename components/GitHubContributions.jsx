@@ -102,6 +102,26 @@ export default function GitHubContributions() {
     await fetchFromAPI(true);
   };
 
+  const showCellTooltip = (e, day, count) => {
+    const container = containerRef.current;
+    if (!container) return;
+    const containerRect = container.getBoundingClientRect();
+    const cellRect = e.currentTarget.getBoundingClientRect();
+    const yTop = cellRect.top - containerRect.top;
+    setTooltip({
+      x: cellRect.left - containerRect.left + cellRect.width / 2,
+      y: yTop,
+      h: cellRect.height,
+      flip: yTop < 36, // near the top → render below the cell instead
+      date: day.toLocaleDateString("en-AU", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
+      count,
+    });
+  };
+
   const totalCommits = Object.values(commitMap).reduce((a, b) => a + b, 0);
   const activeDays = Object.values(commitMap).filter((c) => c > 0).length;
 
@@ -156,7 +176,7 @@ export default function GitHubContributions() {
           {/* CONTRIBUTION GRID - Scrollable on mobile */}
           <div
             ref={containerRef}
-            className="relative flex-1 overflow-hidden"
+            className="relative flex-1"
             style={{ minHeight: "110px" }}
           >
             {loading ? (
@@ -177,47 +197,9 @@ export default function GitHubContributions() {
                           <div
                             key={di}
                             className="relative w-[10px] h-[10px] sm:w-[13px] sm:h-[13px] cursor-pointer group"
-                            onMouseEnter={(e) => {
-                              const containerRect =
-                                containerRef.current.getBoundingClientRect();
-                              const cellRect =
-                                e.currentTarget.getBoundingClientRect();
-
-                              setTooltip({
-                                x:
-                                  cellRect.left -
-                                  containerRect.left +
-                                  cellRect.width / 2,
-                                y: cellRect.top - containerRect.top,
-                                date: day.toLocaleDateString("en-AU", {
-                                  day: "numeric",
-                                  month: "short",
-                                  year: "numeric",
-                                }),
-                                count,
-                              });
-                            }}
+                            onMouseEnter={(e) => showCellTooltip(e, day, count)}
                             onMouseLeave={() => setTooltip(null)}
-                            onTouchStart={(e) => {
-                              const containerRect =
-                                containerRef.current.getBoundingClientRect();
-                              const cellRect =
-                                e.currentTarget.getBoundingClientRect();
-
-                              setTooltip({
-                                x:
-                                  cellRect.left -
-                                  containerRect.left +
-                                  cellRect.width / 2,
-                                y: cellRect.top - containerRect.top,
-                                date: day.toLocaleDateString("en-AU", {
-                                  day: "numeric",
-                                  month: "short",
-                                  year: "numeric",
-                                }),
-                                count,
-                              });
-                            }}
+                            onTouchStart={(e) => showCellTooltip(e, day, count)}
                           >
                             <div
                               className="absolute inset-0 rounded-[2px] sm:rounded-[3px] transition-transform group-hover:scale-125"
@@ -238,12 +220,14 @@ export default function GitHubContributions() {
             {/* TOOLTIP - Responsive positioning */}
             {tooltip && (
               <div
-                className="absolute z-50 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-mono text-white border border-white/10 pointer-events-none whitespace-nowrap"
+                className="absolute z-50 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-mono text-white border border-white/10 pointer-events-none whitespace-nowrap shadow-xl"
                 style={{
                   background: "#111",
                   left: tooltip.x,
-                  top: tooltip.y - 8,
-                  transform: "translate(-50%, -100%)",
+                  top: tooltip.flip ? tooltip.y + tooltip.h + 8 : tooltip.y - 8,
+                  transform: tooltip.flip
+                    ? "translate(-50%, 0)"
+                    : "translate(-50%, -100%)",
                 }}
               >
                 <div className="text-white/60">{tooltip.date}</div>
