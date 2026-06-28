@@ -128,7 +128,7 @@ const experience = [
     { key: "languages", items: ["Python", "Java", "TypeScript", "PHP", "SQL"] },
     { key: "frameworks", items: ["React", "Next.js", "HTML", "CSS"] },
     { key: "tools", items: ["Git", "OOP", "DBMS", "Blockchain"] },
-    { key: "ai_ml", items: ["AI", "ML"] },
+    { key: "ai_ml", items: ["TensorFlow", "Keras", "NumPy", "Pandas", "Matplotlib"] },
   ];
 
   const certs = [
@@ -473,51 +473,66 @@ const experience = [
             <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Skills &amp; certifications</h2>
           </div>
 
-          <div className="grid items-start gap-4 sm:gap-6 lg:grid-cols-2 lg:gap-8">
+          <div className="grid items-stretch gap-4 sm:gap-6 lg:grid-cols-2 lg:gap-8">
             {/* SKILLS — rendered as a code object in an editor window */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.45 }}
-              className="overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b12]"
+              className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b12] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
             >
               {/* window chrome */}
-              <div className="flex items-center gap-2 border-b border-white/8 px-4 py-2.5">
+              <div className="flex items-center gap-2 border-b border-white/8 bg-white/[0.015] px-4 py-2.5">
                 <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
                 <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
                 <span className="h-3 w-3 rounded-full bg-[#28c840]" />
                 <span className="ml-2 font-mono text-xs text-white/40">stack.js</span>
               </div>
 
-              {/* code body */}
-              <div className="overflow-x-auto p-4 sm:p-6 font-mono text-[12px] sm:text-sm leading-7">
-                <div>
-                  <span className="text-violet-300">const</span>{" "}
-                  <span className="text-sky-300">stack</span>{" "}
-                  <span className="text-white/45">= {"{"}</span>
-                </div>
-                {skillGroups.map((g) => (
-                  <div key={g.key} className="pl-4 sm:pl-6">
-                    <span className="text-emerald-300">{g.key}</span>
-                    <span className="text-white/45">: [</span>
-                    {g.items.map((s, i) => (
-                      <span key={s}>
-                        <span className="cursor-default text-amber-200/90 transition-colors hover:text-white">
-                          &quot;{s}&quot;
-                        </span>
-                        {i < g.items.length - 1 && (
-                          <span className="text-white/40">, </span>
-                        )}
+              {/* code body with line-number gutter */}
+              <div className="flex-1 overflow-x-auto p-4 sm:p-5 font-mono text-[12px] leading-6 sm:text-sm sm:leading-7">
+                {(() => {
+                  const lines = [
+                    <>
+                      <span className="text-violet-300">const</span>{" "}
+                      <span className="text-sky-300">stack</span>{" "}
+                      <span className="text-white/45">= {"{"}</span>
+                    </>,
+                    ...skillGroups.map((g) => (
+                      <span className="pl-4">
+                        <span className="text-emerald-300">{g.key}</span>
+                        <span className="text-white/45">: [</span>
+                        {g.items.map((s, i) => (
+                          <span key={s}>
+                            <span className="cursor-default text-amber-200/90 transition-colors hover:text-white">
+                              &quot;{s}&quot;
+                            </span>
+                            {i < g.items.length - 1 && (
+                              <span className="text-white/40">, </span>
+                            )}
+                          </span>
+                        ))}
+                        <span className="text-white/45">],</span>
                       </span>
-                    ))}
-                    <span className="text-white/45">],</span>
-                  </div>
-                ))}
-                <div className="text-white/45">
-                  {"}"}
-                  <span className="ml-1 inline-block h-4 w-[7px] translate-y-[2px] animate-pulse bg-violet-300/70" />
-                </div>
+                    )),
+                    <>
+                      <span className="text-white/45">{"}"}</span>
+                      <span className="ml-1 inline-block h-4 w-[7px] translate-y-[2px] animate-pulse bg-violet-300/70 align-middle" />
+                    </>,
+                    <span className="text-white/25">{"// always learning, always shipping"}</span>,
+                  ];
+                  return lines.map((ln, i) => (
+                    <div key={i} className="flex">
+                      <span className="w-6 shrink-0 select-none pr-3 text-right text-white/20 sm:w-7">
+                        {i + 1}
+                      </span>
+                      <span className="min-w-0 flex-1 whitespace-pre-wrap break-words">
+                        {ln}
+                      </span>
+                    </div>
+                  ));
+                })()}
               </div>
             </motion.div>
 
@@ -527,10 +542,10 @@ const experience = [
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.45 }}
-              className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b12]"
+              className="relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b12] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
             >
               {/* panel header */}
-              <div className="flex items-center justify-between border-b border-white/8 px-4 py-2.5">
+              <div className="flex items-center justify-between border-b border-white/8 bg-white/[0.015] px-4 py-2.5">
                 <div className="flex items-center gap-2 font-mono text-xs text-white/45">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400" aria-hidden>
                     <path d="M12 2 4 5v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V5l-8-3Z" />
@@ -544,7 +559,7 @@ const experience = [
               </div>
 
               {/* credential rows */}
-              <div className="divide-y divide-white/5">
+              <div className="flex-1 divide-y divide-white/5">
                 {certs.map((c, i) => {
                   const [title, issuer] = c.split(" — ");
                   return (
