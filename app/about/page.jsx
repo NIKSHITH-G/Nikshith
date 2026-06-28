@@ -354,95 +354,90 @@ const experience = [
             <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Where I&apos;ve worked</h2>
           </div>
 
-          <div className="relative rounded-xl sm:rounded-2xl border border-white/10 p-4 sm:p-6">
-            <div
-              className="space-y-4 sm:space-y-6 overflow-y-auto pr-2 sm:pr-6"
-              style={{
-                maxHeight: "420px",
-                scrollbarGutter: "stable both-edges",
-              }}
-            >
-              {experience.map((exp, i) => {
-                const expanded = openExpIndex === i;
-                const showPreviewBullets = 2;
+          <div className="space-y-4">
+            {experience.map((exp, i) => {
+              const expanded = openExpIndex === i;
+              const showPreviewBullets = 2;
+              const [role, company] = exp.title.split(" — ");
+              const [dates, location] = exp.period.split(" • ");
 
-                return (
-                  <motion.div
-                    key={`exp-${i}`}
-                    initial={{ opacity: 0, y: 12 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.36, delay: i * 0.06 }}
-                    className="relative rounded-lg sm:rounded-xl border border-indigo-500/40 p-4 sm:p-5 bg-[rgba(255,255,255,0.02)] backdrop-blur-sm group transform transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_12px_40px_-18px_rgba(99,102,241,0.25)]"
-                    style={{ WebkitBackdropFilter: "blur(6px)" }}
-                  >
-                    <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                          <h3 className="font-semibold text-base sm:text-lg tracking-tight">
-                            {exp.title}
-                          </h3>
-
-                          {isPresent(exp.period) && (
-                            <span
-                              className="inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-xs font-medium bg-gradient-to-r from-indigo-500/30 to-violet-500/20 text-indigo-200 ring-1 ring-indigo-400/10 shadow-[0_6px_20px_-12px_rgba(99,102,241,0.45)] self-start sm:self-auto"
-                              aria-hidden
-                            >
-                              Present
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="text-xs sm:text-sm text-foreground/70 mt-1">
-                          {exp.period}
-                        </div>
-                      </div>
-
-                      <div className="w-full sm:w-auto sm:ml-auto flex items-center gap-2">
-                        <button
-                          onClick={() => toggleExp(i)}
-                          aria-expanded={expanded}
-                          aria-controls={`exp-details-${i}`}
-                          className="text-xs sm:text-sm rounded-md px-3 py-1.5 bg-white/5 hover:bg-white/6 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 whitespace-nowrap"
-                        >
-                          {expanded ? "Collapse" : "Read more"}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 sm:mt-4" id={`exp-details-${i}`}>
-                      <ul className="list-disc pl-4 sm:pl-5 text-xs sm:text-sm space-y-1.5 sm:space-y-2 text-foreground/90">
-                        {exp.bullets
-                          .slice(0, showPreviewBullets)
-                          .map((b, j) => (
-                            <li key={`exp-${i}-b-${j}`}>{b}</li>
-                          ))}
-                      </ul>
-
-                      <AnimatePresence initial={false}>
-                        {expanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.28 }}
-                            className="overflow-hidden"
-                          >
-                            <ul className="list-disc pl-4 sm:pl-5 text-xs sm:text-sm mt-2 sm:mt-3 space-y-1.5 sm:space-y-2 text-foreground/90">
-                              {exp.bullets
-                                .slice(showPreviewBullets)
-                                .map((b, j) => (
-                                  <li key={`exp-${i}-more-${j}`}>{b}</li>
-                                ))}
-                            </ul>
-                          </motion.div>
+              return (
+                <motion.div
+                  key={`exp-${i}`}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.36, delay: i * 0.06 }}
+                  className="group rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 transition-colors hover:border-indigo-500/40"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-base sm:text-lg font-semibold tracking-tight">
+                          {role}
+                        </h3>
+                        {isPresent(exp.period) && (
+                          <span className="inline-flex items-center rounded-full bg-emerald-400/10 px-2 py-0.5 text-[11px] font-medium text-emerald-300 ring-1 ring-emerald-400/20">
+                            Present
+                          </span>
                         )}
-                      </AnimatePresence>
+                      </div>
+
+                      {company && (
+                        <div className="mt-0.5 text-sm font-medium text-indigo-300/90">
+                          {company}
+                        </div>
+                      )}
+
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-foreground/45">
+                        <span>{dates}</span>
+                        {location && (
+                          <>
+                            <span className="text-foreground/25">•</span>
+                            <span>{location}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+
+                    <button
+                      onClick={() => toggleExp(i)}
+                      aria-expanded={expanded}
+                      aria-controls={`exp-details-${i}`}
+                      className="shrink-0 whitespace-nowrap rounded-md bg-white/5 px-3 py-1.5 text-xs sm:text-sm transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                    >
+                      {expanded ? "Collapse" : "Read more"}
+                    </button>
+                  </div>
+
+                  <div className="mt-4" id={`exp-details-${i}`}>
+                    <ul className="list-disc space-y-1.5 pl-4 text-xs text-foreground/80 marker:text-indigo-400/60 sm:space-y-2 sm:pl-5 sm:text-sm">
+                      {exp.bullets.slice(0, showPreviewBullets).map((b, j) => (
+                        <li key={`exp-${i}-b-${j}`}>{b}</li>
+                      ))}
+                    </ul>
+
+                    <AnimatePresence initial={false}>
+                      {expanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.28 }}
+                          className="overflow-hidden"
+                        >
+                          <ul className="mt-2 list-disc space-y-1.5 pl-4 text-xs text-foreground/80 marker:text-indigo-400/60 sm:mt-3 sm:space-y-2 sm:pl-5 sm:text-sm">
+                            {exp.bullets.slice(showPreviewBullets).map((b, j) => (
+                              <li key={`exp-${i}-more-${j}`}>{b}</li>
+                            ))}
+                          </ul>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </section>
 
