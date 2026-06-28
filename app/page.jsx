@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Brain, Layers, Wrench } from "lucide-react";
+import { Compass, Ghost, Code2, Send, Library, Camera } from "lucide-react";
 import Navbar from "../components/Navbar";
 import GitHubContributions from "../components/GitHubContributions";
 import InteractiveMeshGrid from "../components/InteractiveMeshGrid";
@@ -195,25 +195,15 @@ export default function Home() {
     return () => clearInterval(id);
   }, []);
 
-  const focusAreas = [
-    {
-      icon: Brain,
-      title: "AI & Machine Learning",
-      desc: "Training and deploying models — from hand-drawn shape recognition to applied ML. Now going deeper with a Master's at Monash.",
-      tags: ["TensorFlow", "Keras", "NumPy"],
-    },
-    {
-      icon: Layers,
-      title: "Full-Stack Engineering",
-      desc: "End-to-end products and REST APIs — two years building high-volume core banking systems at TCS.",
-      tags: ["React", "Next.js", "Java", "Spring Boot"],
-    },
-    {
-      icon: Wrench,
-      title: "Build · Break · Fix",
-      desc: "I learn by shipping, breaking things, and chasing down exactly why. Automated testing, debugging, and CI/CD.",
-      tags: ["Git", "Selenium", "CI/CD"],
-    },
+  // Photography — replace with your real Instagram handle
+  const INSTAGRAM_URL = "https://instagram.com/";
+
+  const apps = [
+    { name: "Arc", role: "Browser", icon: Compass, color: "from-rose-500 to-orange-400" },
+    { name: "Ghostty", role: "Terminal", icon: Ghost, color: "from-violet-500 to-fuchsia-500" },
+    { name: "VS Code", role: "Editor", icon: Code2, color: "from-sky-500 to-blue-600" },
+    { name: "Blip", role: "File transfer", icon: Send, color: "from-cyan-400 to-teal-500" },
+    { name: "Shelf", role: "Stash", icon: Library, color: "from-amber-400 to-orange-500" },
   ];
 
   const heroSub = "Poke around — everything here is a work in progress.";
@@ -377,44 +367,85 @@ export default function Home() {
           </div>
         </section>
 
-        {/* WHAT I DO */}
+        {/* DAILY DRIVERS — app dock */}
         <section className="mx-auto max-w-7xl px-4 sm:px-6 pt-8 sm:pt-12 pb-2">
           <div className="mb-6 sm:mb-8">
-            <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// what i do</div>
-            <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Where I focus</h2>
+            <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// daily drivers</div>
+            <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Tools I reach for</h2>
+            <p className="mt-1.5 text-sm text-foreground/50">The apps that live on my dock.</p>
           </div>
 
-          <div className="grid gap-4 sm:gap-5 md:grid-cols-3">
-            {focusAreas.map((f) => {
-              const Icon = f.icon;
-              return (
-                <div
-                  key={f.title}
-                  className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 transition-colors hover:border-indigo-500/40"
-                >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-300 transition-colors group-hover:bg-indigo-500/25">
-                    <Icon className="h-5 w-5" strokeWidth={1.8} />
+          <div className="flex justify-center sm:justify-start">
+            <div className="inline-flex items-end gap-4 sm:gap-5 rounded-3xl border border-white/10 bg-white/[0.03] px-5 sm:px-7 py-4 sm:py-5 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              {apps.map((app) => {
+                const Icon = app.icon;
+                return (
+                  <div key={app.name} className="group relative flex flex-col items-center">
+                    {/* tooltip (role) */}
+                    <div className="pointer-events-none absolute -top-9 whitespace-nowrap rounded-md border border-white/10 bg-[#111] px-2 py-1 font-mono text-[10px] text-white/70 opacity-0 transition-all duration-200 group-hover:-top-10 group-hover:opacity-100">
+                      {app.role}
+                    </div>
+                    {/* tile */}
+                    <div
+                      className={`flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${app.color} text-white shadow-[0_10px_30px_-10px_rgba(0,0,0,0.7)] transition-transform duration-200 ease-out group-hover:-translate-y-2.5 group-hover:scale-110`}
+                    >
+                      <Icon className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={1.8} />
+                    </div>
+                    {/* name */}
+                    <div className="mt-2.5 font-mono text-[11px] text-foreground/45">{app.name}</div>
                   </div>
-                  <h3 className="mt-4 text-base sm:text-lg font-semibold tracking-tight">
-                    {f.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-foreground/60">
-                    {f.desc}
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-1.5">
-                    {f.tags.map((t) => (
-                      <span
-                        key={t}
-                        className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 font-mono text-[11px] text-foreground/55"
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
+        </section>
+
+        {/* OFF THE CLOCK — photography */}
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 pt-8 sm:pt-12 pb-2">
+          <div className="mb-6 sm:mb-8">
+            <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// off the clock</div>
+            <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Beyond the code</h2>
+          </div>
+
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative block overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-8 transition-colors hover:border-fuchsia-400/40"
+          >
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(236,72,153,0.18),transparent_70%)] blur-2xl"
+            />
+            <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-amber-400 text-white">
+                  <Camera className="h-6 w-6" strokeWidth={1.8} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold tracking-tight">I shoot photos, too.</h3>
+                  <p className="mt-1.5 max-w-md text-sm leading-relaxed text-foreground/60">
+                    When I&apos;m not shipping code, I&apos;m chasing light. I keep a photography
+                    page for the frames I&apos;m proud of.
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-gradient-to-r from-fuchsia-500 to-amber-400 px-5 py-2.5 text-sm font-medium text-white transition-transform group-hover:-translate-y-0.5 sm:self-auto">
+                View on Instagram
+                <span className="transition-transform group-hover:translate-x-0.5">↗</span>
+              </span>
+            </div>
+
+            {/* film-strip decoration */}
+            <div className="relative mt-6 flex gap-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-12 flex-1 rounded-md border border-white/10 bg-gradient-to-br from-white/[0.05] to-transparent transition-colors group-hover:border-fuchsia-400/20"
+                />
+              ))}
+            </div>
+          </a>
         </section>
 
         {/* GITHUB STATS ROW */}
