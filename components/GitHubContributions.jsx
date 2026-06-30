@@ -174,46 +174,35 @@ export default function GitHubContributions() {
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
 
           {/* CONTRIBUTION GRID - Scrollable on mobile */}
-          <div
-            ref={containerRef}
-            className="relative flex-1"
-            style={{ minHeight: "110px" }}
-          >
+          <div ref={containerRef} className="relative flex-1">
             {loading ? (
               <div className="text-white/30 text-xs font-mono">
                 loading commits...
               </div>
             ) : (
-              <div className="overflow-x-auto overflow-y-hidden pb-2 -mx-2 px-2">
-                <div className="flex gap-[2px] sm:gap-[3px] min-w-max">
+              <div className="flex w-full gap-[2px] sm:gap-[3px]">
+                {weeks.map((week, wi) => (
+                  <div key={wi} className="flex flex-1 flex-col gap-[2px] sm:gap-[3px]">
+                    {week.map((day, di) => {
+                      const key = toKey(day);
+                      const count = commitMap[key] || 0;
 
-                  {weeks.map((week, wi) => (
-                    <div key={wi} className="flex flex-col gap-[2px] sm:gap-[3px]">
-                      {week.map((day, di) => {
-                        const key = toKey(day);
-                        const count = commitMap[key] || 0;
-
-                        return (
-                          <div
-                            key={di}
-                            className="relative w-[10px] h-[10px] sm:w-[13px] sm:h-[13px] cursor-pointer group"
-                            onMouseEnter={(e) => showCellTooltip(e, day, count)}
-                            onMouseLeave={() => setTooltip(null)}
-                            onTouchStart={(e) => showCellTooltip(e, day, count)}
-                          >
-                            <div
-                              className="absolute inset-0 rounded-[2px] sm:rounded-[3px] transition-transform group-hover:scale-125"
-                              style={{
-                                backgroundColor: getColor(count),
-                                border: "1px solid rgba(255,255,255,0.08)",
-                              }}
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
+                      return (
+                        <div
+                          key={di}
+                          className="aspect-square rounded-[2px] sm:rounded-[3px] cursor-pointer transition-transform hover:scale-150"
+                          style={{
+                            backgroundColor: getColor(count),
+                            border: "1px solid rgba(255,255,255,0.08)",
+                          }}
+                          onMouseEnter={(e) => showCellTooltip(e, day, count)}
+                          onMouseLeave={() => setTooltip(null)}
+                          onTouchStart={(e) => showCellTooltip(e, day, count)}
+                        />
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             )}
 
