@@ -350,7 +350,7 @@ const experience = [
         </section>
 
         {/* ===== EXPERIENCE ===== */}
-        <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12">
+        <section id="experience" className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12 scroll-mt-24">
           <div className="mb-4 sm:mb-6">
             <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// experience</div>
             <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Where I&apos;ve worked</h2>
@@ -444,7 +444,7 @@ const experience = [
         </section>
 
         {/* ===== EDUCATION ===== */}
-        <section id="education" className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12">
+        <section id="education" className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12 scroll-mt-24">
           <div className="mb-4 sm:mb-6">
             <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// education</div>
             <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Where I studied</h2>
@@ -455,7 +455,7 @@ const experience = [
         </section>
 
         {/* ===== PROJECTS ===== */}
-        <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12">
+        <section id="projects" className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12 scroll-mt-24">
           <div className="mb-4 sm:mb-6">
             <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// projects</div>
             <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Things I&apos;ve built</h2>
@@ -464,7 +464,7 @@ const experience = [
         </section>
 
         {/* ===== GITHUB ACTIVITY ===== */}
-        <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12">
+        <section id="github" className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12 scroll-mt-24">
           <div className="mb-4 sm:mb-6">
             <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// currently building</div>
             <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">What I&apos;ve been shipping</h2>
@@ -473,7 +473,7 @@ const experience = [
         </section>
 
         {/* ===== SKILLS & CERTIFICATIONS ===== */}
-        <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12 pt-4 sm:pt-8">
+        <section id="skills" className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-12 pt-4 sm:pt-8 scroll-mt-24">
           <div className="mb-4 sm:mb-6">
             <div className="font-mono text-xs sm:text-sm text-emerald-300/80">// stack</div>
             <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">Skills &amp; certifications</h2>

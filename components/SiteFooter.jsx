@@ -110,14 +110,29 @@ export default function SiteFooter() {
             © {new Date().getFullYear()} Nikshith — Built with ❤️ using Next.js
             &amp; Tailwind
           </div>
-          <button
-            type="button"
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="group inline-flex items-center gap-1.5 self-start text-xs text-foreground/45 hover:text-foreground/80 transition-colors sm:self-auto"
-          >
-            Back to top
-            <ArrowUp className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5" />
-          </button>
+          <div className="flex items-center gap-4 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() =>
+                window.dispatchEvent(new Event("open-command-palette"))
+              }
+              className="group inline-flex items-center gap-2 text-xs text-foreground/45 transition-colors hover:text-foreground/80"
+              aria-label="Open command menu"
+            >
+              <span>Command menu</span>
+              <kbd className="rounded border border-white/15 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-foreground/60 group-hover:border-white/25">
+                ⌘K
+              </kbd>
+            </button>
+            <button
+              type="button"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="group inline-flex items-center gap-1.5 text-xs text-foreground/45 transition-colors hover:text-foreground/80"
+            >
+              Back to top
+              <ArrowUp className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5" />
+            </button>
+          </div>
         </div>
       </div>
     </footer>
