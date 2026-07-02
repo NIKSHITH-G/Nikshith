@@ -65,10 +65,13 @@ export async function GET() {
         headers,
         next: { revalidate: ONE_DAY },
       }),
-      fetch(`https://api.github.com/users/${USERNAME}/repos?per_page=100`, {
-        headers,
-        next: { revalidate: ONE_DAY },
-      }),
+      fetch(
+        `https://api.github.com/users/${USERNAME}/repos?per_page=100&sort=pushed`,
+        {
+          headers,
+          next: { revalidate: ONE_DAY },
+        }
+      ),
       fetchContributions(headers),
     ]);
 
@@ -88,7 +91,20 @@ export async function GET() {
       0
     );
 
-    const topRepos = repos.filter((r) => !r.fork).slice(0, 3);
+    // Recently pushed, own work only (skip forks), trimmed to what a card shows.
+    const recentRepos = repos
+      .filter((r) => !r.fork)
+      .sort((a, b) => new Date(b.pushed_at) - new Date(a.pushed_at))
+      .slice(0, 4)
+      .map((r) => ({
+        name: r.name,
+        description: r.description,
+        language: r.language,
+        stars: r.stargazers_count || 0,
+        forks: r.forks_count || 0,
+        pushedAt: r.pushed_at,
+        url: r.html_url,
+      }));
 
     return Response.json({
       stats: {
@@ -96,7 +112,7 @@ export async function GET() {
         publicRepos: user.public_repos,
         totalStars,
       },
-      repos: topRepos,
+      repos: recentRepos,
       commitMap,
     });
   } catch {

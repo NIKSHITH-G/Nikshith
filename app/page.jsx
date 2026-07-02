@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Compass, Ghost, NotebookText, Send, Library, Snowflake, Camera, BookOpen } from "lucide-react";
 import Navbar from "../components/Navbar";
 import InteractiveMeshGrid from "../components/InteractiveMeshGrid";
+import SiteFooter from "../components/SiteFooter";
 
 /* -------------------------
    MicroTerminal
@@ -67,19 +68,20 @@ function MicroTerminal({
   };
 
   return (
-    <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+    <div className="mt-3 flex flex-col xl:flex-row items-start xl:items-center gap-2 xl:gap-4">
       <button
         onClick={handleClick}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
-        className="w-full sm:w-auto rounded-lg bg-[rgba(0,0,0,0.8)] border border-white/8 px-3 sm:px-4 py-2 text-xs sm:text-sm font-mono flex items-center gap-2 sm:gap-3 hover:scale-[1.01] active:scale-[0.99] transition-transform transition-colors"
+        className="w-full xl:w-[290px] xl:flex-shrink-0 rounded-lg bg-[rgba(0,0,0,0.8)] border border-white/8 px-3 sm:px-4 py-2 text-xs sm:text-sm font-mono flex items-center gap-2 sm:gap-3 hover:scale-[1.01] active:scale-[0.99] transition-transform transition-colors"
         aria-label="Terminal — click to open"
       >
         <span className="text-green-300 select-none flex-shrink-0">$</span>
-        <span className="select-text flex-1 overflow-hidden text-ellipsis whitespace-nowrap" aria-live="polite" style={{ minWidth: "140px" }}>{display}</span>
-        <span className="ml-1 animate-blink flex-shrink-0">|</span>
+        <span className="select-text min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-left" aria-live="polite">{display}</span>
+        <span className="animate-blink flex-shrink-0">|</span>
+        <span aria-hidden className="flex-1" />
       </button>
-      <div className="text-xs sm:text-sm text-foreground/60 pl-1 sm:pl-0">Deployed something, Probably works.</div>
+      <div className="text-xs sm:text-sm text-foreground/60 pl-1 xl:pl-0">Deployed something, Probably works.</div>
     </div>
   );
 }
@@ -235,8 +237,8 @@ export default function Home() {
         spacing={84}
         density={0.72}
         lineColor="rgba(255,255,255,0.02)"
-        pointColor="rgba(168,85,247,0.95)"
-        pointSize={1.6}
+        pointColor="rgba(168,85,247,0.28)"
+        pointSize={1.5}
         warp={0.14}
         pointerSmoothing={0.16}
         spring={0.08}
@@ -426,17 +428,7 @@ export default function Home() {
         </section>
 
         {/* FOOTER */}
-        <footer className="mx-auto max-w-7xl px-4 sm:px-6 pb-8 sm:pb-12 pt-6 sm:pt-10 text-xs sm:text-sm text-foreground/70">
-          <div className="pt-4 sm:pt-6 border-t border-white/6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 flex-wrap">
-              <div>© {new Date().getFullYear()} Nikshith — Built with ❤️</div>
-              <div className="flex items-center gap-3 sm:gap-4">
-                <a href="/about" className="underline hover:text-foreground/90 transition-colors">About</a>
-                <a href="/contact" className="underline hover:text-foreground/90 transition-colors">Contact</a>
-              </div>
-            </div>
-          </div>
-        </footer>
+        <SiteFooter />
       </main>
 
       <ExpandedTerminalPanel

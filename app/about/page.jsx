@@ -8,6 +8,7 @@ import Timeline from "../../components/Timeline";
 import ProjectsGrid from "../../components/ProjectsGrid";
 import InteractiveMeshGrid from "../../components/InteractiveMeshGrid";
 import GitHubStats from "../../components/GitHubStats";
+import SiteFooter from "../../components/SiteFooter";
 
 export default function About() {
   // ---- DATA ----
@@ -267,8 +268,8 @@ const experience = [
         spacing={96}
         density={0.78}
         lineColor="rgba(255,255,255,0.03)"
-        pointColor="rgba(168,85,247,0.95)"
-        pointSize={1.6}
+        pointColor="rgba(168,85,247,0.28)"
+        pointSize={1.5}
         warp={0.16}
         pointerSmoothing={0.16}
         spring={0.10}
@@ -630,6 +631,8 @@ const experience = [
             </motion.div>
           </div>
         </section>
+
+        <SiteFooter />
       </main>
     </>
   );

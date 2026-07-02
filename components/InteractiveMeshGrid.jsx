@@ -2,6 +2,15 @@
 "use client";
 import { useEffect, useRef } from "react";
 
+// Pull the channels out of an rgb/rgba string so we can vary the alpha per
+// point at runtime (dim ambient dots, bright near the cursor).
+function parseRGBA(str) {
+  const m = String(str).match(/rgba?\(([^)]+)\)/);
+  if (!m) return { r: 168, g: 85, b: 247, a: 1 };
+  const p = m[1].split(",").map((s) => parseFloat(s.trim()));
+  return { r: p[0] || 0, g: p[1] || 0, b: p[2] || 0, a: p[3] ?? 1 };
+}
+
 export default function InteractiveMeshGrid({
   spacing = 100,
   density = 0.8,
@@ -25,6 +34,10 @@ export default function InteractiveMeshGrid({
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d", { alpha: true });
     let mounted = true;
+
+    // Base dot colour + a bright target the dots ramp toward under the cursor.
+    const pc = parseRGBA(pointColor);
+    const GLOW_ALPHA = 0.95;
 
     // Skip the whole simulation on small screens or when the user prefers
     // reduced motion — saves battery and CPU on phones.
@@ -104,11 +117,25 @@ export default function InteractiveMeshGrid({
       }
       ctx.stroke();
 
-      ctx.fillStyle = pointColor;
-      for (const p of pts) {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, pointSize, 0, Math.PI * 2);
-        ctx.fill();
+      // Idle: one faint fill for every dot (cheap, keeps text readable).
+      // Active: dots near the cursor brighten and swell into a soft pool.
+      if (!active) {
+        ctx.fillStyle = `rgba(${pc.r},${pc.g},${pc.b},${pc.a})`;
+        for (const p of pts) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, pointSize, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else {
+        for (const p of pts) {
+          const dist = Math.hypot(p.x - px, p.y - py);
+          const glow = Math.max(0, 1 - dist / glowRadius);
+          const a = pc.a + (GLOW_ALPHA - pc.a) * glow;
+          ctx.fillStyle = `rgba(${pc.r},${pc.g},${pc.b},${a})`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, pointSize * (1 + glow * 0.8), 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     }
 

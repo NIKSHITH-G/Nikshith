@@ -551,8 +551,8 @@ const handleSubmit = async (e) => {
       <InteractiveMeshGrid
         spacing={96} density={0.78}
         lineColor="rgba(255,255,255,0.03)"
-        pointColor="rgba(168,85,247,0.95)"
-        pointSize={1.6} warp={0.16}
+        pointColor="rgba(168,85,247,0.28)"
+        pointSize={1.5} warp={0.16}
         pointerSmoothing={0.16} spring={0.1}
         damping={0.84} disableBelow={420} maxPoints={1600}
       />
