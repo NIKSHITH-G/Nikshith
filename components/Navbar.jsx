@@ -27,8 +27,6 @@ const HINTS = [
   <>need help? press <Kbd>⌘K</Kbd> or <Kbd>Ctrl K</Kbd></>,
   <>everything here is a work in progress</>,
   <>psst — the terminal on the home page is real</>,
-  <>built with Next.js + Tailwind</>,
-  <>open to new opportunities</>,
 ];
 
 function NavHint() {
@@ -42,25 +40,27 @@ function NavHint() {
   }, []);
 
   return (
-    <button
-      type="button"
-      onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
-      aria-label="Open command menu"
-      className="group absolute left-1/2 top-1/2 hidden max-w-[42%] -translate-x-1/2 -translate-y-1/2 items-center justify-center lg:flex"
-    >
-      <AnimatePresence mode="wait">
-        <motion.span
-          key={i}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.45, ease: "easeOut" }}
-          className="flex items-center whitespace-nowrap font-mono text-xs text-white/40 transition-colors group-hover:text-white/65"
-        >
-          {HINTS[i]}
-        </motion.span>
-      </AnimatePresence>
-    </button>
+    <div className="pointer-events-none absolute inset-0 hidden items-center justify-center lg:flex">
+      <button
+        type="button"
+        onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
+        aria-label="Open command menu"
+        className="group pointer-events-auto inline-flex items-center"
+      >
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={i}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+            className="flex items-center whitespace-nowrap font-mono text-xs text-white/40 transition-colors group-hover:text-white/65"
+          >
+            {HINTS[i]}
+          </motion.span>
+        </AnimatePresence>
+      </button>
+    </div>
   );
 }
 
@@ -241,9 +241,6 @@ export default function Navbar() {
                 </span>
               </Link>
 
-              {/* ROTATING CENTRE HINT (desktop) */}
-              <NavHint />
-
               {/* DESKTOP NAV LINKS */}
               <ul
                 className="hidden sm:flex relative isolate items-center gap-1 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,.04)] ring-1 ring-white/[0.05] px-1.5 py-1.5 before:absolute before:inset-0 before:rounded-full before:pointer-events-none before:bg-[radial-gradient(120%_200%_at_10%_-40%,rgba(99,102,241,.18),transparent_60%)]"
@@ -307,6 +304,9 @@ export default function Navbar() {
                 />
               </button>
             </div>
+
+            {/* ROTATING CENTRE HINT (desktop) — centred on the whole bar */}
+            <NavHint />
           </nav>
         </div>
       </header>

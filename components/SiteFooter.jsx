@@ -116,7 +116,7 @@ export default function SiteFooter() {
               onClick={() =>
                 window.dispatchEvent(new Event("open-command-palette"))
               }
-              className="group inline-flex items-center gap-2 text-xs text-foreground/45 transition-colors hover:text-foreground/80"
+              className="group hidden sm:inline-flex items-center gap-2 text-xs text-foreground/45 transition-colors hover:text-foreground/80"
               aria-label="Open command menu"
             >
               <span>Command menu</span>
