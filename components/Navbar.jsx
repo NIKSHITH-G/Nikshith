@@ -13,6 +13,57 @@ const NAV = [
   { href: "/contact", label: "Contact" },
 ];
 
+function Kbd({ children }) {
+  return (
+    <kbd className="mx-[3px] rounded border border-white/15 bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] leading-none text-white/70">
+      {children}
+    </kbd>
+  );
+}
+
+// Messages that fade in/out in the centre of the bar. First one nudges people
+// toward the command palette; the rest are little bits of personality.
+const HINTS = [
+  <>need help? press <Kbd>⌘K</Kbd> or <Kbd>Ctrl K</Kbd></>,
+  <>everything here is a work in progress</>,
+  <>psst — the terminal on the home page is real</>,
+  <>built with Next.js + Tailwind</>,
+  <>open to new opportunities</>,
+];
+
+function NavHint() {
+  const [i, setI] = useState(0);
+
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+    const t = setInterval(() => setI((n) => (n + 1) % HINTS.length), 4400);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <button
+      type="button"
+      onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
+      aria-label="Open command menu"
+      className="group absolute left-1/2 top-1/2 hidden max-w-[42%] -translate-x-1/2 -translate-y-1/2 items-center justify-center lg:flex"
+    >
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={i}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          className="flex items-center whitespace-nowrap font-mono text-xs text-white/40 transition-colors group-hover:text-white/65"
+        >
+          {HINTS[i]}
+        </motion.span>
+      </AnimatePresence>
+    </button>
+  );
+}
+
 export default function Navbar() {
   const pathname = usePathname() || "/";
   const activeIndex = NAV.findIndex((n) =>
@@ -189,6 +240,9 @@ export default function Navbar() {
                   ))}
                 </span>
               </Link>
+
+              {/* ROTATING CENTRE HINT (desktop) */}
+              <NavHint />
 
               {/* DESKTOP NAV LINKS */}
               <ul
