@@ -5,7 +5,7 @@ import { Github, Linkedin, Instagram, Mail, ArrowUp } from "lucide-react";
 
 const INSTAGRAM_URL = "https://www.instagram.com/enigma_view/";
 const GITHUB_URL = "https://github.com/NIKSHITH-G";
-const LINKEDIN_URL = "https://linkedin.com/in/nikshith-g";
+const LINKEDIN_URL = "https://www.linkedin.com/in/nikshith-g-08368a246";
 const EMAIL = "nikshith.online@gmail.com";
 
 const NAV = [
