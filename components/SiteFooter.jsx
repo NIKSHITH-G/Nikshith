@@ -33,14 +33,14 @@ export default function SiteFooter() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-14">
         <div className="grid grid-cols-2 gap-8 sm:gap-10 lg:grid-cols-4">
           {/* Brand + tagline + status */}
-          <div className="col-span-2">
-            <div className="flex items-center gap-2">
+          <div className="col-span-2 text-center sm:text-left">
+            <div className="flex items-center justify-center gap-2 sm:justify-start">
               <span className="h-2.5 w-2.5 rounded-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.85)]" />
               <span className="text-base font-semibold text-foreground">
                 Nikshith
               </span>
             </div>
-            <p className="mt-3 max-w-sm text-sm leading-relaxed text-foreground/55">
+            <p className="mt-3 mx-auto max-w-sm text-sm leading-relaxed text-foreground/55 sm:mx-0">
               Master&apos;s in AI @ Monash. I move between full-stack
               engineering and applied ML — building things, breaking them, and
               figuring out exactly why.
@@ -57,7 +57,7 @@ export default function SiteFooter() {
           </div>
 
           {/* Navigate */}
-          <div>
+          <div className="text-center sm:text-left">
             <div className="font-mono text-xs text-white/35">// navigate</div>
             <ul className="mt-4 space-y-2.5 text-sm">
               {NAV.map((n) => (
@@ -84,7 +84,7 @@ export default function SiteFooter() {
           </div>
 
           {/* Elsewhere */}
-          <div>
+          <div className="text-center sm:text-left">
             <div className="font-mono text-xs text-white/35">// elsewhere</div>
             <ul className="mt-4 space-y-2.5 text-sm">
               {SOCIALS.map(({ label, href, Icon }) => (
@@ -105,12 +105,12 @@ export default function SiteFooter() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-10 flex flex-col gap-3 border-t border-white/6 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-xs text-foreground/45">
+        <div className="mt-10 flex flex-col items-center gap-3 border-t border-white/6 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-center text-xs text-foreground/45 sm:text-left">
             © {new Date().getFullYear()} Nikshith — Built with ❤️ using Next.js
             &amp; Tailwind
           </div>
-          <div className="flex items-center gap-4 self-start sm:self-auto">
+          <div className="flex items-center gap-4 self-center sm:self-auto">
             <button
               type="button"
               onClick={() =>
