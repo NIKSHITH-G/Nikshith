@@ -38,7 +38,7 @@ function CameraRig() {
 
   useFrame(({ clock }, rawDt) => {
     const dt = Math.min(rawDt, 0.05);
-    const portrait = size.width / size.height < 0.9;
+    const portrait = size.width / size.height < 0.9 || size.height < 500; // tall phone, or a phone held sideways
     const s = getState();
     const t = clock.elapsedTime;
     const sinceEnter = runtime.powerStart ? now() - runtime.powerStart : 0;

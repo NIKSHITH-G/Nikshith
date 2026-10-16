@@ -31,7 +31,7 @@ export function OnScreen({ base, aspect, portrait, frame, children }) {
         initial={{ opacity: 0, scale: 0.94, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0, transition: { delay: 0.25, type: "spring", stiffness: 260, damping: 28 } }}
         exit={{ opacity: 0, scale: 0.96 }}
-        className={`pointer-events-auto fixed inset-x-3 bottom-3 top-[92px] z-40 overflow-hidden ${frame}`}
+        className={`pointer-events-auto fixed inset-x-3 bottom-3 top-[92px] z-40 mx-auto max-w-[720px] overflow-hidden [@media(max-height:499px)]:top-[76px] ${frame}`}
       >
         <div className="h-full overflow-y-auto overscroll-contain">{children}</div>
       </motion.div>

@@ -29,7 +29,8 @@ export default function World() {
   }, [phase]);
 
   useEffect(() => {
-    const coarse = window.matchMedia("(pointer: coarse)").matches;
+    // ?touch forces the phone controls (for testing on a desktop browser)
+    const coarse = window.matchMedia("(pointer: coarse)").matches || new URLSearchParams(window.location.search).has("touch");
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     window.__reduceMotion = reduce;
     setTouch(coarse);

@@ -196,8 +196,11 @@ export function LearningScreen({ portrait }) {
           {learning.map((l, i) => (
             <li key={l.topic} {...draw()} className="draw flex items-baseline gap-4">
               <span className="inline-block h-6 w-6 shrink-0 translate-y-1 rounded border-[3px]" style={{ borderColor: INK[i % INK.length] }} />
-              <span className="text-[34px] leading-none" style={{ color: INK[i % INK.length] }}>{l.topic}</span>
-              <span className="text-2xl text-[#4b5563]">— {l.detail}</span>
+              {/* on a phone the detail drops under the topic instead of squeezing beside it */}
+              <span className={portrait ? "min-w-0" : "contents"}>
+                <span className="text-[34px] leading-none" style={{ color: INK[i % INK.length] }}>{l.topic}</span>
+                <span className={`text-2xl text-[#4b5563] ${portrait ? "mt-1 block" : ""}`}>{portrait ? "" : "— "}{l.detail}</span>
+              </span>
             </li>
           ))}
         </ul>
@@ -363,7 +366,7 @@ export function PhotoBoothStage({ portrait }) {
       <AnimatePresence>
         {flash > 0 && <motion.div key={flash} className="pointer-events-none fixed inset-0 z-[46] bg-white" initial={{ opacity: 0.9 }} animate={{ opacity: 0 }} transition={{ duration: 0.4 }} />}
       </AnimatePresence>
-      <div className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center overflow-y-auto px-4 pb-6 pt-24">
+      <div className="pointer-events-none fixed inset-0 z-40 flex items-center-safe justify-center overflow-y-auto px-4 pb-6 pt-24">
         <motion.div
           initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1, transition: { delay: 0.2 } }}

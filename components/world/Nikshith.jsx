@@ -7,7 +7,7 @@
 import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Html, RoundedBox } from "@react-three/drei";
-import { runtime, getState } from "./store";
+import { runtime, getState, useWorld } from "./store";
 import { blocked, planPath, ACTIVITIES } from "./layout";
 
 export { ACTIVITIES };
@@ -44,6 +44,8 @@ export function Nikshith() {
   const book = useRef();
   const key = useRef();
   const [bubble, setBubble] = useState(ACTIVITIES[0].bubble);
+  // thought bubbles only while you are walking around (not over the title screen or a panel)
+  const playing = useWorld((s) => s.phase === "playing" && !s.panel);
   const st = useRef({ act: ACTIVITIES[0], path: [], until: 16, walk: 0, greeted: false, wave: 0, stuck: 0 });
 
   useFrame(({ clock }, rawDt) => {
@@ -204,7 +206,7 @@ export function Nikshith() {
         </group>
       </group>
       <pointLight ref={key} position={[0.6, 2.3, 1.6]} color="#ffe2c2" intensity={0} distance={5} decay={2} />
-      {bubble && (
+      {bubble && playing && (
         <Html position={[0, 2.35, 0]} center zIndexRange={[12, 0]} style={{ pointerEvents: "none" }}>
           <div className="label-pop whitespace-nowrap rounded-2xl rounded-bl-sm border border-white/15 bg-white/90 px-3 py-1.5 text-[12px] font-medium text-[#1c1917] shadow-lg">
             {bubble}

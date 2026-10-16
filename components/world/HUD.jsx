@@ -302,7 +302,7 @@ export default function HUD({ ready, touch }) {
           >
             <button onClick={() => goToPanel("about")} className={`flex items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-4 ${glass}`}>
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-fuchsia-400 font-mono text-[11px] font-bold text-black">NG</span>
-              <span className="font-display text-lg italic text-white">Nikshith&apos;s Studio</span>
+              <span className="whitespace-nowrap font-display text-base italic text-white sm:text-lg">Nikshith&apos;s Studio</span>
               <span className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[10px] text-white/70">{floorById(floor).label === "R" ? "ROOF" : `${floorById(floor).label}F`}</span>
             </button>
             <nav className={`hidden items-center gap-0.5 rounded-full p-1 xl:flex ${glass}`} aria-label="Sections">

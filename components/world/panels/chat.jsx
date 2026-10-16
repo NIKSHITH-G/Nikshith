@@ -10,6 +10,7 @@ import { ScrollText, X } from "lucide-react";
 import { profile } from "../../../lib/content";
 import { SUGGESTIONS, FOLLOWUPS, matchOffline } from "../../../lib/persona";
 import { runtime } from "../store";
+import { isShort } from "./index";
 import BlockyAvatar from "../../BlockyAvatar";
 import * as sfx from "../audio";
 
@@ -41,6 +42,8 @@ export function AskChat({ portrait }) {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [showLog, setShowLog] = useState(false);
+  // phone held sideways: a slimmer box off to the right so he stays in view
+  const [short] = useState(isShort);
   const logRef = useRef(null);
 
   const lastReply = [...messages].reverse().find((m) => m.role === "me")?.text;
@@ -115,16 +118,18 @@ export function AskChat({ portrait }) {
 
   return (
     <>
-      {/* cinematic letterbox */}
+      {/* cinematic letterbox (no room for it on a sideways phone) */}
+      {!short && <>
       <motion.div initial={{ height: 0 }} animate={{ height: "7vh" }} exit={{ height: 0 }} transition={{ duration: 0.5, ease: "easeOut" }} className="pointer-events-none fixed inset-x-0 top-0 z-30 bg-black" />
       <motion.div initial={{ height: 0 }} animate={{ height: "7vh" }} exit={{ height: 0 }} transition={{ duration: 0.5, ease: "easeOut" }} className="pointer-events-none fixed inset-x-0 bottom-0 z-30 bg-black" />
+      </>}
       <div className="pointer-events-none fixed inset-0 z-30 bg-[radial-gradient(ellipse_at_50%_35%,transparent_35%,rgba(0,0,0,0.55)_100%)]" />
 
       <motion.div
         initial={{ y: 80, opacity: 0 }}
         animate={{ y: 0, opacity: 1, transition: { delay: 0.35, type: "spring", stiffness: 180, damping: 22 } }}
         exit={{ y: 80, opacity: 0 }}
-        className={`pointer-events-auto fixed inset-x-0 bottom-0 z-40 mx-auto px-3 pb-3 sm:px-6 sm:pb-5 ${portrait ? "" : "max-w-[860px]"}`}
+        className={short ? "pointer-events-auto fixed bottom-0 right-0 z-40 w-[min(560px,64vw)] px-3 pb-2" : `pointer-events-auto fixed inset-x-0 bottom-0 z-40 mx-auto px-3 pb-3 sm:px-6 sm:pb-5 ${portrait ? "" : "max-w-[860px]"}`}
       >
         {/* conversation log */}
         <AnimatePresence>
@@ -139,7 +144,7 @@ export function AskChat({ portrait }) {
                 conversation log
                 <button onClick={() => setShowLog(false)} aria-label="Close log" className="text-white/50 hover:text-white"><X size={14} /></button>
               </div>
-              <div ref={logRef} className="max-h-[32vh] space-y-2.5 overflow-y-auto px-4 py-3 text-[13px] leading-relaxed">
+              <div ref={logRef} className={`${portrait ? "max-h-[20vh]" : "max-h-[32vh]"} space-y-2.5 overflow-y-auto px-4 py-3 text-[13px] leading-relaxed`}>
                 <p className="text-white/75"><span className="font-semibold text-violet-300">Nikshith:</span> {GREETING}</p>
                 {messages.map((m, i) => (
                   <p key={i} className={m.role === "me" ? "text-white/75" : "text-[#e8dcc0]"}>
@@ -162,11 +167,11 @@ export function AskChat({ portrait }) {
             </button>
           )}
 
-          <div className="flex gap-4 p-4 pt-6 sm:gap-5 sm:p-5 sm:pt-7">
-            <BlockyAvatar size={portrait ? 56 : 88} className="shrink-0 rounded-xl border-2 border-[#e8dcc0]/50" />
+          <div className={short ? "flex gap-3 p-3 pt-5" : "flex gap-4 p-4 pt-6 sm:gap-5 sm:p-5 sm:pt-7"}>
+            {!short && <BlockyAvatar size={portrait ? 56 : 88} className="shrink-0 rounded-xl border-2 border-[#e8dcc0]/50" />}
             <div className="min-w-0 flex-1">
-              {lastQuestion && <div className="mb-1.5 truncate font-mono text-[11px] text-[#e8dcc0]/60">you asked: {lastQuestion}</div>}
-              <p className="min-h-[3.4em] text-[15px] leading-relaxed text-white sm:text-[16.5px]" aria-live="polite">
+              {lastQuestion && !short && <div className="mb-1.5 truncate font-mono text-[11px] text-[#e8dcc0]/60">you asked: {lastQuestion}</div>}
+              <p className={short ? "max-h-[30vh] overflow-y-auto text-[14px] leading-snug text-white" : "min-h-[3.4em] text-[15px] leading-relaxed text-white sm:text-[16.5px]"} aria-live="polite">
                 {typed}
                 {done && !busy && <span className="ml-1 inline-block animate-bounce text-[#e8dcc0]">▾</span>}
               </p>
@@ -174,7 +179,7 @@ export function AskChat({ portrait }) {
           </div>
 
           {/* choices + free question */}
-          <div className="min-h-[124px] border-t border-white/10 px-4 pb-4 pt-3 sm:px-5">
+          <div className={short ? "border-t border-white/10 px-3 pb-3 pt-2" : "min-h-[124px] border-t border-white/10 px-4 pb-4 pt-3 sm:px-5"}>
             {!busy && done && choices.length > 0 && (
               <div className={`grid gap-2 ${portrait ? "grid-cols-1" : "grid-cols-2"}`}>
                 {choices.map((c, i) => (
@@ -183,7 +188,7 @@ export function AskChat({ portrait }) {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0, transition: { delay: i * 0.05 } }}
                     onClick={() => send(c)}
-                    className="group flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-left text-[13px] text-white/85 transition hover:border-[#e8dcc0]/60 hover:bg-white/[0.08] hover:text-white"
+                    className={`group flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-left ${short ? "py-1.5 text-[12px]" : "py-2 text-[13px]"} text-white/85 transition hover:border-[#e8dcc0]/60 hover:bg-white/[0.08] hover:text-white`}
                   >
                     <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#e8dcc0]/15 font-mono text-[10px] text-[#e8dcc0] group-hover:bg-[#e8dcc0] group-hover:text-black">{i + 1}</span>
                     {c}
@@ -211,7 +216,7 @@ export function AskChat({ portrait }) {
             </form>
           </div>
         </div>
-        <p className="mt-2 text-center text-[10px] text-white/45">AI version of Nikshith — answers come from his real résumé and can be wrong. For anything important, email {profile.email}.</p>
+        <p className={`mt-2 text-center text-[10px] text-white/45 ${short ? "hidden" : ""}`}>AI version of Nikshith — answers come from his real résumé and can be wrong. For anything important, email {profile.email}.</p>
       </motion.div>
     </>
   );

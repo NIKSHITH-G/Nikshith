@@ -55,7 +55,7 @@ export function ElevatorPanel() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ type: "spring", stiffness: 220, damping: 24 }}
-          className="pointer-events-auto w-[min(360px,92vw)] rounded-2xl border border-white/20 bg-[linear-gradient(135deg,#9ca3af,#e5e7eb_35%,#9ca3af_65%,#d1d5db)] p-[3px] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.9)]"
+          className="pointer-events-auto max-h-[calc(100dvh-96px)] w-[min(360px,92vw)] overflow-y-auto rounded-2xl border border-white/20 bg-[linear-gradient(135deg,#9ca3af,#e5e7eb_35%,#9ca3af_65%,#d1d5db)] p-[3px] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.9)]"
         >
           <div className="rounded-[14px] bg-[linear-gradient(160deg,#2a2c36,#16171f)] px-6 pb-6 pt-5">
             <div className="mx-auto mb-5 flex h-12 w-24 items-center justify-center rounded-md bg-black font-mono text-3xl font-bold text-[#ff9d3c] shadow-inner [text-shadow:0_0_12px_#ff9d3c]">
@@ -678,8 +678,8 @@ export function SnookerGame({ portrait }) {
   return (
     <>
       <Backdrop className="bg-black/70" />
-      <div className="pointer-events-none fixed inset-0 z-40 flex flex-col items-center justify-center px-3 pt-20">
-        <motion.div initial={{ opacity: 0, y: 20, rotateX: 25 }} animate={{ opacity: 1, y: 0, rotateX: 0, transition: { delay: 0.2 } }} exit={{ opacity: 0, y: 20 }} className="pointer-events-auto w-[min(1000px,96vw)]" style={{ perspective: 1200 }}>
+      <div className="pointer-events-none fixed inset-0 z-40 flex flex-col items-center justify-center px-3 pt-20 [@media(max-height:499px)]:pt-14">
+        <motion.div initial={{ opacity: 0, y: 20, rotateX: 25 }} animate={{ opacity: 1, y: 0, rotateX: 0, transition: { delay: 0.2 } }} exit={{ opacity: 0, y: 20 }} className="pointer-events-auto w-[min(1000px,96vw,calc((100dvh-170px)*1.72))]" style={{ perspective: 1200 }}>
           <div className="mb-3 flex flex-wrap items-end justify-between gap-3 font-mono text-white">
             <div className="flex gap-5">
               {[["score", hud.score], ["break", hud.brk], ["shots", hud.shots], ["best", record]].map(([k, v]) => (
@@ -813,7 +813,7 @@ export function ChessGame({ portrait }) {
   return (
     <>
       <Backdrop className="bg-[radial-gradient(ellipse_at_center,rgba(10,15,25,0.55),rgba(5,5,10,0.88)_70%)]" />
-      <div className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center overflow-y-auto px-3 pb-6 pt-24">
+      <div className="pointer-events-none fixed inset-0 z-40 flex items-center-safe justify-center overflow-y-auto px-3 pb-6 pt-24">
         <motion.div
           initial={{ opacity: 0, scale: 0.92, rotateX: 30 }}
           animate={{ opacity: 1, scale: 1, rotateX: 0, transition: { delay: 0.2, type: "spring", stiffness: 160, damping: 20 } }}

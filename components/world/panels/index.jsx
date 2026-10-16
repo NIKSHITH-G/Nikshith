@@ -102,15 +102,20 @@ const VIEWS = {
   ask: AskChat,
 };
 
+// a phone held sideways: wide but too short for content pinned onto a 3D screen
+export const isShort = () => window.innerHeight < 500;
+// views drawn onto a screen in the room; on short screens they open as a card instead
+const SCREEN_VIEWS = new Set(["about", "experience", "projects", "skills", "github", "now", "learning", "kanban"]);
+
 export function usePortrait() {
-  const [portrait, setPortrait] = useState(false);
+  const [mode, setMode] = useState({ portrait: false, short: false });
   useEffect(() => {
-    const check = () => setPortrait(window.innerWidth / window.innerHeight < 0.9 || window.innerWidth < 640);
+    const check = () => setMode({ portrait: window.innerWidth / window.innerHeight < 0.9 || window.innerWidth < 640, short: isShort() });
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
-  return portrait;
+  return mode;
 }
 
 // Shared frame around every view: where you are, the way back, and where to go next.
@@ -158,7 +163,8 @@ function Chrome({ id }) {
 
 export default function Panel({ panel }) {
   const View = VIEWS[panel.id];
-  const portrait = usePortrait();
+  const mode = usePortrait();
+  const portrait = mode.portrait || (mode.short && SCREEN_VIEWS.has(panel.id));
   return (
     <>
       <Chrome id={panel.id} />

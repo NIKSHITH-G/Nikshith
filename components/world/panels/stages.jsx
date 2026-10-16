@@ -178,11 +178,19 @@ function SchoolCover({ e, i, w }) {
       <Image src={e.photo} alt={`${e.school} campus`} fill sizes="320px" className="object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/10" />
       <div className="absolute inset-y-0 left-0 w-3" style={{ background: SPINE[i % SPINE.length] }} />
-      <div className="absolute inset-x-0 bottom-0 p-5 pl-7 text-left text-white">
-        <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/70">{e.years}</div>
-        <div className="mt-1 font-display text-[28px] italic leading-[1.05]">{e.school}</div>
-        <div className="mt-2 text-xs leading-snug text-white/75">{e.degree}</div>
-      </div>
+      {w < 140 ? (
+        // phone-sized cover: short name, no degree line
+        <div className="absolute inset-x-0 bottom-0 p-2.5 pl-5 text-left text-white">
+          <div className="font-mono text-[8px] uppercase tracking-[0.15em] text-white/70">{e.years}</div>
+          <div className="mt-1 font-display text-[18px] italic leading-[1.05]">{e.short ?? e.school}</div>
+        </div>
+      ) : (
+        <div className="absolute inset-x-0 bottom-0 p-5 pl-7 text-left text-white">
+          <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/70">{e.years}</div>
+          <div className="mt-1 font-display text-[28px] italic leading-[1.05]">{e.school}</div>
+          <div className="mt-2 text-xs leading-snug text-white/75">{e.degree}</div>
+        </div>
+      )}
     </div>
   );
 }
@@ -274,7 +282,8 @@ function bookPages(e, chapter) {
 
 export function Bookshelf({ portrait }) {
   const [sel, setSel] = useState(null);
-  const coverW = portrait ? 150 : 230;
+  // three covers side by side always fit the screen (12px gaps, 12px gutters)
+  const coverW = portrait ? Math.min(150, Math.floor((window.innerWidth - 48) / 3)) : 230;
   const pick = (i) => {
     setSel(i);
     sfx.rustle();
