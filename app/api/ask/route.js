@@ -2,15 +2,16 @@
 // set, and falls back to the built-in matcher in lib/persona.js whenever there's no
 // key, the free quota is used up, or Gemini is down — so it never costs money and
 // never goes silent.
-import { SYSTEM_PROMPT, answerOffline } from "../../../lib/persona";
+import { SYSTEM_PROMPT, answerOffline, matchOffline } from "../../../lib/persona";
 import { bump, clientId } from "../../../lib/kv";
 
 export const dynamic = "force-dynamic";
 
 // Tried in order: the free tier sometimes reports "high demand" on one model while
 // another is fine. GEMINI_MODEL (comma-separated) overrides the list.
-const MODELS = (process.env.GEMINI_MODEL || "gemini-3.5-flash,gemini-3.8-flash,gemini-flash-lite-latest").split(",").map((m) => m.trim());
-const BUDGET_MS = 14000; // give up on the LLM entirely after this; the built-in engine answers instead
+const MODELS = (process.env.GEMINI_MODEL || "gemini-3.5-flash,gemini-flash-lite-latest").split(",").map((m) => m.trim());
+const BUDGET_MS = 4000; // nobody waits longer than this: after it, the built-in engine answers
+const PER_MODEL_MS = 3000;
 const PER_VISITOR_PER_HOUR = 40; // messages
 const LLM_PER_DAY = 400; // stays well inside Gemini's free daily limit
 const MAX_TURNS = 8; // conversation history sent to the model
@@ -52,8 +53,8 @@ async function askGemini(history) {
   const started = Date.now();
   for (const model of MODELS) {
     const left = BUDGET_MS - (Date.now() - started);
-    if (left < 1500) break;
-    const text = await callModel(model, key, history, Math.min(left, 9000));
+    if (left < 1200) break;
+    const text = await callModel(model, key, history, Math.min(left, PER_MODEL_MS));
     if (text) return { text, model };
   }
   return null;
@@ -77,6 +78,8 @@ export async function POST(request) {
     return Response.json({ reply: "I need a breather — that's a lot of questions! Try again in a bit, or email me.", source: "limit" }, { status: 429 });
   }
 
+  // clear, direct questions don't need an LLM: answer them instantly
+  if (matchOffline(question).confident) return Response.json({ reply: answerOffline(question), source: "built-in" });
   const llm = await askGemini(history);
   if (llm) return Response.json({ reply: llm.text, source: llm.model });
   return Response.json({ reply: answerOffline(question), source: "built-in" });

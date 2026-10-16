@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ScrollText, X } from "lucide-react";
 import { profile } from "../../../lib/content";
-import { SUGGESTIONS, FOLLOWUPS } from "../../../lib/persona";
+import { SUGGESTIONS, FOLLOWUPS, matchOffline } from "../../../lib/persona";
 import { runtime } from "../store";
 import BlockyAvatar from "../../BlockyAvatar";
 import * as sfx from "../audio";
@@ -75,13 +75,25 @@ export function AskChat({ portrait }) {
     setInput("");
     setBusy(true);
     sfx.blip(true);
-    try {
-      const res = await fetch("/api/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next }) });
-      const data = await res.json();
-      setMessages([...next, { role: "me", text: data.reply || data.error || "Hmm, I lost my train of thought." }]);
-    } catch {
-      setMessages([...next, { role: "me", text: `My brain's offline for a sec — email ${profile.email} instead!` }]);
+    const local = matchOffline(q);
+    if (local.confident) {
+      // a direct question he already knows the answer to: reply right away (a short beat so it feels natural)
+      await new Promise((r) => setTimeout(r, 350));
+      setMessages([...next, { role: "me", text: local.answer }]);
+      setBusy(false);
+      return;
     }
+    // open-ended: ask the LLM, but never make anyone wait more than ~5 seconds
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000);
+    try {
+      const res = await fetch("/api/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next }), signal: ctrl.signal });
+      const data = await res.json();
+      setMessages([...next, { role: "me", text: data.reply || local.answer }]);
+    } catch {
+      setMessages([...next, { role: "me", text: local.answer }]);
+    }
+    clearTimeout(timer);
     setBusy(false);
   };
   const sendRef = useRef(send);
