@@ -385,6 +385,22 @@ export default function HUD({ ready, touch }) {
 
       {playing && touch && !panel && !map && !ride && <Joystick />}
 
+      {/* ask AI Nikshith from anywhere */}
+      <AnimatePresence>
+        {playing && !panel && !map && !ride && (
+          <motion.button
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            onClick={() => goToPanel("ask")}
+            className={`pointer-events-auto absolute right-4 flex items-center gap-2 rounded-full border border-violet-300/30 bg-violet-500/90 py-2 pl-2 pr-4 text-sm font-medium text-white shadow-[0_10px_30px_-8px_rgba(139,92,246,0.8)] backdrop-blur transition hover:bg-violet-500 sm:right-5 ${touch ? "bottom-32" : "bottom-6"}`}
+          >
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-base">💬</span>
+            Ask me
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       {/* controls hint until you first move */}
       <AnimatePresence>
         {playing && !moved && !panel && (

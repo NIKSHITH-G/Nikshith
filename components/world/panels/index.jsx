@@ -9,6 +9,7 @@ const screens = () => import("./screens");
 const stages = () => import("./stages");
 const building = () => import("./building");
 const more = () => import("./more");
+const chat = () => import("./chat");
 const TVScreen = from(screens, "TVScreen");
 const TerminalScreen = from(screens, "TerminalScreen");
 const ArcadeScreen = from(screens, "ArcadeScreen");
@@ -33,6 +34,7 @@ const KanbanScreen = from(more, "KanbanScreen");
 const PhotoBoothStage = from(more, "PhotoBoothStage");
 const ArcadeGames = from(more, "ArcadeGames");
 const GuestbookStage = from(more, "GuestbookStage");
+const AskChat = from(chat, "AskChat");
 
 // warm the panel chunks once the studio is idle, so opening one never waits
 export function preloadPanels() {
@@ -40,6 +42,7 @@ export function preloadPanels() {
   stages();
   building();
   more();
+  chat();
 }
 
 export const PANEL_META = {
@@ -67,6 +70,7 @@ export const PANEL_META = {
   arcade: { kicker: "games room · arcade", title: "Insert coin" },
   kanban: { kicker: "games room · side quests", title: "Side quests" },
   guestbook: { kicker: "rooftop · guestbook", title: "Guestbook" },
+  ask: { kicker: "dining table · laptop", title: "Ask me anything" },
 };
 
 // Each object opens in its own way: screens light up in place, everything else gets a stage.
@@ -95,6 +99,7 @@ const VIEWS = {
   arcade: ArcadeGames,
   kanban: KanbanScreen,
   guestbook: GuestbookStage,
+  ask: AskChat,
 };
 
 export function usePortrait() {

@@ -133,6 +133,7 @@ const STUDIO_ITEMS = [
     shot: [[7.4, 2.0, 2.4], [9.6, 0.9, 5.4]] },
   { id: "contact", name: "Front door", label: "Write me a letter", panel: "contact", pos: [-11.9, 6], stand: [-10.6, 6.4], h: 2.5,
     shot: [[-8.2, 2.1, 4.5], [-11.8, 1.2, 6.2]] },
+  { id: "ask", name: "AI Nikshith", label: "Ask me anything", panel: "ask", pos: [1.0, 5.3], stand: [1.0, 4.2], h: 1.3 },
   { id: "coffee", name: "Coffee machine", label: "Brew a coffee", action: "coffee", pos: [3.55, 5.2], stand: [2.4, 5.2], h: 1.5 },
   elevator(),
 ];
@@ -435,7 +436,7 @@ export const ALL_ITEMS = FLOORS.flatMap((f) => f.items.map((it) => ({ ...it, flo
 
 // The "explore" checklist — every section worth visiting, in tour order.
 export const SECTIONS = [
-  "about", "experience", "github", "education", "projects", "skills", "certs", "now", "library", "music", "contact",
+  "about", "ask", "experience", "github", "education", "projects", "skills", "certs", "now", "library", "music", "contact",
   "treadmill", "bag", "learning", "photos", "photobooth",
   "snooker", "chess", "arcade", "kanban",
   "telescope", "guestbook",

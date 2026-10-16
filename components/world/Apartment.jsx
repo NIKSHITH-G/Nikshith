@@ -1297,6 +1297,11 @@ function Dining() {
       ))}
       <B p={[0.4, 0.77, 0.05]} s={[0.42, 0.02, 0.3]} c="#9ca3af" metal={0.6} rough={0.3} shadow={false} />
       <B p={[0.4, 0.78, -0.1]} s={[0.42, 0.28, 0.015]} c="#9ca3af" metal={0.6} rough={0.3} rot={[-0.3, 0, 0]} shadow={false} />
+      {/* the laptop screen: where AI Nikshith lives */}
+      <mesh position={[0.4, 0.915, -0.085]} rotation-x={-0.3}>
+        <planeGeometry args={[0.38, 0.24]} />
+        <meshStandardMaterial color="#1e1b4b" emissive="#8b5cf6" emissiveIntensity={1.2} toneMapped={false} />
+      </mesh>
       {/* pendant */}
       <group position={[0, 2.25, 0]}>
         <mesh position={[0, 0.5, 0]}>
