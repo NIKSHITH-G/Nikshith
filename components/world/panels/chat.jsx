@@ -28,7 +28,6 @@ function useTypewriter(text) {
     const id = setInterval(() => {
       i += 2;
       setShown(text.slice(0, i));
-      if (i % 10 === 0) sfx.beep?.(860 + Math.random() * 140, 0.012);
       if (i >= text.length) clearInterval(id);
     }, 22);
     return () => clearInterval(id);
@@ -152,7 +151,7 @@ export function AskChat({ portrait }) {
           )}
 
           <div className="flex gap-4 p-4 pt-6 sm:gap-5 sm:p-5 sm:pt-7">
-            <BlockyAvatar size={portrait ? 56 : 88} talking={!done && !busy} className="shrink-0 rounded-xl border-2 border-[#e8dcc0]/50" />
+            <BlockyAvatar size={portrait ? 56 : 88} className="shrink-0 rounded-xl border-2 border-[#e8dcc0]/50" />
             <div className="min-w-0 flex-1">
               {lastQuestion && <div className="mb-1.5 truncate font-mono text-[11px] text-[#e8dcc0]/60">you asked: {lastQuestion}</div>}
               <p className="min-h-[3.4em] text-[15px] leading-relaxed text-white sm:text-[16.5px]" aria-live="polite">

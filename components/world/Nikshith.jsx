@@ -42,7 +42,6 @@ export function Nikshith() {
   const armR = useRef();
   const mug = useRef();
   const book = useRef();
-  const mouth = useRef();
   const key = useRef();
   const [bubble, setBubble] = useState(ACTIVITIES[0].bubble);
   const st = useRef({ act: ACTIVITIES[0], path: [], until: 16, walk: 0, greeted: false, wave: 0, stuck: 0 });
@@ -148,7 +147,6 @@ export function Nikshith() {
     const tilt = pose === "type" || pose === "piano" || pose === "read" ? 0.25 : near ? -0.1 + (speaking ? Math.sin(t * 5) * 0.05 : 0) : 0;
     head.current.rotation.x += (tilt - head.current.rotation.x) * k;
     head.current.rotation.z = speaking ? Math.sin(t * 1.3) * 0.05 : head.current.rotation.z * 0.9;
-    if (mouth.current) mouth.current.scale.y = speaking ? 1 + Math.abs(Math.sin(t * 17)) * 2.4 : 1;
     // a warm key light on his face while you're talking to him
     if (key.current) key.current.intensity += ((talking ? 7 : 0) - key.current.intensity) * Math.min(1, dt * 4);
     if (mug.current) mug.current.visible = pose === "coffee";
@@ -199,9 +197,7 @@ export function Nikshith() {
           <Part p={[0.12, 0.37, 0.18]} s={[0.2, 0.08, 0.07]} c="#1a1410" r={0.03} />
           <Part p={[-0.09, 0.22, 0.2]} s={[0.055, 0.07, 0.02]} c="#111" r={0.009} />
           <Part p={[0.09, 0.22, 0.2]} s={[0.055, 0.07, 0.02]} c="#111" r={0.009} />
-          <group ref={mouth} position={[0, 0.1, 0.2]}>
-            <Part p={[0, -0.012, 0]} s={[0.12, 0.025, 0.02]} c="#7c2d12" r={0.008} />
-          </group>
+          <Part p={[0, 0.088, 0.2]} s={[0.12, 0.025, 0.02]} c="#7c2d12" r={0.008} />
           <Part p={[0, 0.5, 0]} s={[0.52, 0.05, 0.08]} c="#e5e7eb" r={0.02} />
           <Part p={[-0.24, 0.22, 0]} s={[0.07, 0.2, 0.17]} c="#e5e7eb" r={0.03} />
           <Part p={[0.24, 0.22, 0]} s={[0.07, 0.2, 0.17]} c="#e5e7eb" r={0.03} />
