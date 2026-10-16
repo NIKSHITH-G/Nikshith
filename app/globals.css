@@ -1,118 +1,134 @@
 @import "tailwindcss";
 
-/* Dark-only design tokens */
 :root {
-  --background: #0a0a0a;
+  --background: #0b0d16;
   --foreground: #ededed;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-dm-mono);
+  --font-display: var(--font-instrument-serif);
+  --font-hand: var(--font-caveat);
+  --font-pixel: var(--font-silkscreen);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+  font-family: var(--font-sans), system-ui, sans-serif;
 }
 
-/* ===== Film grain texture (sits above the mesh bg, below content) ===== */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 160px 160px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body::after { display: none; }
-}
-
-/* ===== Animations used on About page ===== */
-
-/* Floating preview fade/scale (cert preview) */
-@keyframes previewIn {
-  from { opacity: 0; transform: translateY(4px) scale(0.5); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-/* ========== Projects scroller styling ========== */
-/* Horizontal scroller wrapper */
-.projects-scroller {
-  display: flex;
-  gap: 24px;                 /* space between cards */
-  overflow-x: auto;          /* bottom scrollbar appears */
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  scroll-snap-stop: always;  /* stronger snap */
-  -webkit-overflow-scrolling: touch;
-  padding-left: 0;           /* align left card flush with container */
-  /* optional small right padding so last card doesn't touch edge */
-  padding-right: 12px;
-  scroll-behavior: smooth;
-  align-items: stretch;      /* make cards stretch vertically if we set heights */
-}
-
-/* Each article layout inside the scroller */
-.project-card {
-  flex: 0 0 calc(50% - 12px); /* two cards per viewport; subtract half the gap */
-  box-sizing: border-box;
-  scroll-snap-align: start;
-  min-width: 320px;          /* optional floor for very narrow screens */
-  align-self: stretch;
-  /* NOTE: heights are set programmatically by the component to match tallest card */
-}
-
-/* On small screens fall back to single card per view */
-@media (max-width: 900px) {
-  .project-card { flex: 0 0 100%; min-width: auto; }
-  .projects-scroller { gap: 16px; padding-right: 8px; }
-}
-
-/* Custom scroller styling (webkit) - optional, tweak to match theme */
-.projects-scroller::-webkit-scrollbar { height: 10px; }
-.projects-scroller::-webkit-scrollbar-thumb {
-  border-radius: 6px;
-  background: rgba(200,200,255,0.08);
-  border: 2px solid rgba(0,0,0,0.2);
-}
-.projects-scroller::-webkit-scrollbar-track { background: transparent; }
-
-/* Ensure card internals stretch to the card height, so footer aligns across cards */
-.project-card {
-  display: flex;          /* make article a flex container */
-  flex-direction: column;
-  align-items: stretch;
-}
-
-/* Outer inner wrapper (m-3 rounded-xl) stretches to fill the article */
-.project-card > .project-inner {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-/* The content area (with padding:1cm) becomes the main column that stretches,
-   and uses space-between so the footer (preview row) sits at the bottom. */
-.project-card .project-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-}
-
-/* ensure the top area keeps growing as previously intended */
-.project-card .project-content > .flex-1 {
-  flex: 1 1 auto;
-}
-/* in global.css */
-main.relative.z-10::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.22), rgba(0,0,0,0.06));
-  pointer-events: none;
-  z-index: -1;
+::selection {
+  background: rgba(167, 139, 250, 0.35);
 }
 
 /* SVG reset — keeps inline icons from sitting on the text baseline */
 svg { display: block; }
+
+/* ── studio effects ───────────────────────────────── */
+
+/* arcade panel: scanlines + a soft CRT vignette */
+.crt {
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+  animation: crt-flicker 4s infinite steps(1);
+}
+@keyframes crt-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 0.85; }
+  93% { opacity: 1; }
+}
+
+/* trophy cards: a sheen sweeps across on hover */
+.shine {
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 240, 200, 0.55) 50%, transparent 65%);
+  transform: translateX(-120%);
+  transition: transform 0.7s ease;
+}
+.group:hover .shine { transform: translateX(120%); }
+
+/* little equaliser next to the single */
+.eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+.eq i { width: 3px; background: #a78bfa; border-radius: 1px; animation: eq 0.9s ease-in-out infinite; }
+.eq i:nth-child(2) { animation-delay: -0.3s; }
+.eq i:nth-child(3) { animation-delay: -0.6s; }
+.eq i:nth-child(4) { animation-delay: -0.15s; }
+@keyframes eq { 0%, 100% { height: 3px; } 50% { height: 12px; } }
+
+/* floating name tags in the 3D scene */
+.label-pop { animation: label-pop 0.28s cubic-bezier(0.2, 1.4, 0.4, 1); }
+@keyframes label-pop {
+  from { opacity: 0; transform: translateY(6px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+
+/* screens: an old CRT switching on — a bright line that snaps open */
+.crt-on { animation: crt-on 0.65s cubic-bezier(0.2, 0.7, 0.2, 1) 0.35s both; transform-origin: center; }
+@keyframes crt-on {
+  0% { transform: scale(0.7, 0.004); filter: brightness(6); opacity: 0; }
+  35% { transform: scale(1, 0.006); filter: brightness(4); opacity: 1; }
+  70% { transform: scale(1, 1.02); filter: brightness(1.4); }
+  100% { transform: none; filter: none; }
+}
+.crt-lines {
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.18) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+/* TV news ticker */
+.ticker { animation: ticker 30s linear infinite; }
+@keyframes ticker { to { transform: translateX(-50%); } }
+
+/* whiteboard: lines get drawn on left-to-right */
+.draw { animation: draw 0.55s ease-out both; }
+@keyframes draw {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+.draw-stroke { stroke-dasharray: 700; stroke-dashoffset: 700; animation: draw-stroke 0.9s ease-out forwards; }
+@keyframes draw-stroke { to { stroke-dashoffset: 0; } }
+
+/* arcade "press start" */
+.blink { animation: blink 1.2s steps(1) infinite; }
+@keyframes blink { 50% { filter: brightness(0.75); } }
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* trophy: a gleam that keeps sweeping across the front card */
+.shine-loop {
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 240, 200, 0.6) 50%, transparent 60%);
+  background-size: 250% 100%;
+  animation: shine-loop 3.2s ease-in-out infinite;
+}
+@keyframes shine-loop {
+  0% { background-position: 150% 0; }
+  60%, 100% { background-position: -100% 0; }
+}
+
+/* sheet music staff */
+.staff { background: repeating-linear-gradient(180deg, #2a211833 0 1px, transparent 1px 10px); }
+.eq-dark i { background: #6d28d9; }
+
+/* writing paper */
+.paper {
+  background:
+    linear-gradient(90deg, transparent 38px, rgba(220, 80, 80, 0.25) 38px 39px, transparent 39px),
+    repeating-linear-gradient(180deg, transparent 0 31px, rgba(120, 150, 200, 0.18) 31px 32px),
+    #f6efdf;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .crt, .eq i, .label-pop, .crt-on, .ticker, .draw, .draw-stroke, .blink, .shine-loop { animation: none; }
+  .draw-stroke { stroke-dashoffset: 0; }
+}

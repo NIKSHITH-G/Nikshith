@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, DM_Mono, Instrument_Serif } from "next/font/google";
+import { Geist, Geist_Mono, DM_Mono, Instrument_Serif, Caveat, Silkscreen } from "next/font/google";
 import "./globals.css";
 import CommandPalette from "../components/CommandPalette";
 
@@ -9,6 +9,9 @@ const dmMono = DM_Mono({
   subsets: ["latin"],
   variable: "--font-dm-mono",
 });
+// handwriting (whiteboard, letter) and pixel (arcade) faces for the studio
+const caveat = Caveat({ subsets: ["latin"], variable: "--font-caveat" });
+const silkscreen = Silkscreen({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-silkscreen" });
 const instrumentSerif = Instrument_Serif({
   weight: "400",
   style: ["normal", "italic"],
@@ -52,7 +55,7 @@ export const metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0a0a0a",
+  themeColor: "#0b0d16",
   colorScheme: "dark",
 };
 
@@ -83,7 +86,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${dmMono.variable} ${instrumentSerif.variable} antialiased bg-[#0a0a0a] text-[#ededed]`}
+        className={`${geistSans.variable} ${geistMono.variable} ${dmMono.variable} ${instrumentSerif.variable} ${caveat.variable} ${silkscreen.variable} antialiased bg-background text-foreground`}
       >
         <script
           type="application/ld+json"

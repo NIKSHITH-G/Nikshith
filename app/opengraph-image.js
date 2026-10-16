@@ -81,7 +81,7 @@ export default function OpengraphImage() {
             color: "rgba(255,255,255,0.5)",
           }}
         >
-          <span>AI & Full-Stack Engineer · Master's in AI @ Monash</span>
+          <span>AI & Full-Stack Engineer · Master&apos;s in AI @ Monash</span>
           <span style={{ color: "#a78bfa" }}>nikshith.online</span>
         </div>
       </div>

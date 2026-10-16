@@ -12,6 +12,11 @@ import {
   Linkedin,
   Instagram,
   Mail,
+  Music,
+  Swords,
+  Circle,
+  Dumbbell,
+  Telescope,
   FileText,
   Terminal,
   Search,
@@ -39,6 +44,16 @@ export default function CommandPalette() {
     [router]
   );
 
+  // Sections live inside the 3D studio: travel there if we're on it, otherwise deep-link.
+  const travel = useCallback(
+    (section) => {
+      setOpen(false);
+      if (window.location.pathname === "/") window.dispatchEvent(new CustomEvent("world:go", { detail: section }));
+      else router.push(`/?go=${section}`);
+    },
+    [router]
+  );
+
   const openExternal = useCallback((href) => {
     setOpen(false);
     window.open(href, "_blank", "noopener,noreferrer");
@@ -47,20 +62,27 @@ export default function CommandPalette() {
   // The command set. `keywords` widens what a search term will match.
   const commands = useMemo(
     () => [
-      { group: "Navigate", label: "Home", icon: Home, keywords: "start intro hero", run: () => go("/") },
-      { group: "Navigate", label: "About", icon: User, keywords: "bio me story", run: () => go("/about") },
-      { group: "Navigate", label: "Experience", icon: Briefcase, keywords: "work tcs job roles", run: () => go("/about#experience") },
-      { group: "Navigate", label: "Education", icon: GraduationCap, keywords: "study monash degree", run: () => go("/about#education") },
-      { group: "Navigate", label: "Projects", icon: FolderGit2, keywords: "work built portfolio shipped", run: () => go("/about#projects") },
-      { group: "Navigate", label: "Skills & certifications", icon: Terminal, keywords: "stack tech tools languages", run: () => go("/about#skills") },
-      { group: "Navigate", label: "Contact", icon: Mail, keywords: "hire talk reach message", run: () => go("/contact") },
+      { group: "Navigate", label: "Studio (3D home)", icon: Home, keywords: "start intro hero world", run: () => go("/") },
+      { group: "Navigate", label: "About", icon: User, keywords: "bio me story", run: () => travel("about") },
+      { group: "Navigate", label: "Experience", icon: Briefcase, keywords: "work tcs job roles", run: () => travel("experience") },
+      { group: "Navigate", label: "Education", icon: GraduationCap, keywords: "study monash degree", run: () => travel("education") },
+      { group: "Navigate", label: "Projects", icon: FolderGit2, keywords: "work built portfolio shipped modo", run: () => travel("projects") },
+      { group: "Navigate", label: "Skills & certifications", icon: Terminal, keywords: "stack tech tools languages", run: () => travel("skills") },
+      { group: "Navigate", label: "Music", icon: Music, keywords: "song piano airplane mode", run: () => travel("music") },
+      { group: "Navigate", label: "Contact", icon: Mail, keywords: "hire talk reach message", run: () => travel("contact") },
+      { group: "Floors", label: "Play chess — The World vs Nikshith", icon: Swords, keywords: "chess game board move games room floor 3", run: () => travel("chess") },
+      { group: "Floors", label: "Snooker", icon: Circle, keywords: "pool billiards cue games room", run: () => travel("snooker") },
+      { group: "Floors", label: "Gym — 100 m sprint", icon: Dumbbell, keywords: "gym treadmill run workout floor 2 punching bag", run: () => travel("treadmill") },
+      { group: "Floors", label: "Rooftop — stargazing", icon: Telescope, keywords: "roof sky stars telescope radio top", run: () => travel("telescope") },
+      { group: "Floors", label: "What I'm shipping (GitHub)", icon: Github, keywords: "github commits repos activity ship log", run: () => travel("github") },
+      { group: "Navigate", label: "Classic text version", icon: FileText, keywords: "plain recruiter text", run: () => go("/about") },
+      { group: "Actions", label: "Download résumé (PDF)", icon: FileText, keywords: "resume cv pdf download", run: () => openExternal("/resume.pdf") },
       { group: "Links", label: "Open GitHub", icon: Github, keywords: "code repos source", run: () => openExternal(GITHUB_URL) },
       { group: "Links", label: "Open LinkedIn", icon: Linkedin, keywords: "professional network", run: () => openExternal(LINKEDIN_URL) },
       { group: "Links", label: "Open Instagram", icon: Instagram, keywords: "photography enigma view photos", run: () => openExternal(INSTAGRAM_URL) },
       { group: "Actions", label: "Email me", icon: Mail, keywords: "mail contact write", run: () => { setOpen(false); window.location.href = `mailto:${EMAIL}`; } },
-      { group: "Actions", label: "Download CV / Résumé", icon: FileText, keywords: "resume pdf cv download", run: () => openExternal("/resume.pdf") },
     ],
-    [go, openExternal]
+    [go, travel, openExternal]
   );
 
   const results = useMemo(() => {
