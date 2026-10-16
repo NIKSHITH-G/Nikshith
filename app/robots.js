@@ -4,7 +4,7 @@ export default function robots() {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://nikshith.online/sitemap.xml",
-    host: "https://nikshith.online",
+    sitemap: "https://nikshith.dev/sitemap.xml",
+    host: "https://nikshith.dev",
   };
 }

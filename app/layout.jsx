@@ -20,7 +20,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata = {
-  metadataBase: new URL("https://nikshith.online"),
+  metadataBase: new URL("https://nikshith.dev"),
   title: {
     default: "Nikshith G — AI & Full-Stack Engineer",
     template: "%s — Nikshith G",
@@ -41,7 +41,7 @@ export const metadata = {
     title: "Nikshith G — AI & Full-Stack Engineer",
     description:
       "Master's in AI at Monash. I build, break, and fix things.",
-    url: "https://nikshith.online",
+    url: "https://nikshith.dev",
     siteName: "Nikshith G",
     type: "website",
   },
@@ -65,8 +65,8 @@ const personLd = {
   "@context": "https://schema.org",
   "@type": "Person",
   name: "Nikshith G",
-  url: "https://nikshith.online",
-  image: "https://nikshith.online/opengraph-image",
+  url: "https://nikshith.dev",
+  image: "https://nikshith.dev/opengraph-image",
   jobTitle: "AI & Full-Stack Engineer",
   alumniOf: { "@type": "CollegeOrUniversity", name: "Monash University" },
   worksFor: { "@type": "Organization", name: "Tata Consultancy Services" },

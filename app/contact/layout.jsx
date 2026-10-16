@@ -7,7 +7,7 @@ export const metadata = {
     title: "Contact — Nikshith G",
     description:
       "Open to opportunities in AI/ML and full-stack engineering. Let's talk.",
-    url: "https://nikshith.online/contact",
+    url: "https://nikshith.dev/contact",
     type: "website",
   },
 };

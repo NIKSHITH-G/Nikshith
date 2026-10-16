@@ -1,6 +1,6 @@
 # Nikshith G — Portfolio
 
-My personal portfolio, live at **[nikshith.online](https://nikshith.online)**.
+My personal portfolio, live at **[nikshith.dev](https://nikshith.dev)**.
 
 Built with Next.js 16 (App Router) and a focus on interactive, hand-built motion
 — an animated mesh-grid background (React Three Fiber), a typing micro-terminal,
@@ -48,5 +48,5 @@ components/         # Navbar, mesh grid, timeline, project cards, contributions
 
 ## Deployment
 
-Deployed on Vercel with `nikshith.online` as the custom domain. Pushes to `main`
+Deployed on Vercel with `nikshith.dev` as the custom domain. Pushes to `main`
 trigger a production deploy.

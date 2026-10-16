@@ -7,7 +7,7 @@ export const metadata = {
     title: "About — Nikshith G",
     description:
       "Master's in AI at Monash, ex-TCS. Experience, education, projects, and the stack I build with.",
-    url: "https://nikshith.online/about",
+    url: "https://nikshith.dev/about",
     type: "profile",
   },
 };

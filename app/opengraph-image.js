@@ -82,7 +82,7 @@ export default function OpengraphImage() {
           }}
         >
           <span>AI & Full-Stack Engineer · Master&apos;s in AI @ Monash</span>
-          <span style={{ color: "#a78bfa" }}>nikshith.online</span>
+          <span style={{ color: "#a78bfa" }}>nikshith.dev</span>
         </div>
       </div>
     ),

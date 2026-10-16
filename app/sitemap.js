@@ -1,4 +1,4 @@
-const BASE = "https://nikshith.online";
+const BASE = "https://nikshith.dev";
 
 export default function sitemap() {
   const now = new Date();
