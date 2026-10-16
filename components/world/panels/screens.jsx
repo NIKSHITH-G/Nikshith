@@ -80,7 +80,7 @@ export function TVScreen({ portrait }) {
         <div className={`gap-9 px-10 pt-6 ${portrait ? "flex flex-col pb-20" : "grid grid-cols-[190px_1fr] pb-14"}`}>
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1, transition: { delay: 0.7 } }}>
             {profile.tvPhoto ? (
-              <Image src={profile.tvPhoto} alt={profile.name} width={190} height={230} className="h-[230px] w-[190px] rounded-2xl object-cover ring-1 ring-white/20" />
+              <Image src={profile.tvPhoto} alt={profile.name} width={380} height={460} className="h-[230px] w-[190px] rounded-2xl object-cover object-top ring-1 ring-white/20" />
             ) : (
               <BlockyAvatar size={190} className="rounded-2xl ring-1 ring-white/20" />
             )}
