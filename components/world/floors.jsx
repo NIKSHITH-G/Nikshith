@@ -4,10 +4,9 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Sparkles, Stars } from "@react-three/drei";
 import * as THREE from "three";
-import { B, C, MONO, Plant, Elevator, Print, useTex } from "./Apartment";
+import { B, C, MONO, Plant, Elevator, HungPhotos, useTex } from "./Apartment";
 import { WALL_H, floorById, blocked } from "./layout";
 import { runtime, now, getState, interact } from "./store";
-import { photography } from "../../lib/content";
 import { useChess, boardFromFen } from "./chess";
 
 /* ── shared shell: slab, floor, walls with light caps ── */
@@ -552,20 +551,9 @@ export function GymFloor() {
       ))}
 
       {/* ───── photo studio (north-east) ───── */}
-      {/* Nikshith's own photos: seven along the back wall (salon-hung), then two by
-          the booth and two in the dog lounge, on the east wall */}
-      {photography.photos.slice(0, 7).map((ph, i) => (
-        <Print key={ph.src} src={ph.src} position={[0.95 + i * 1.22, 1.85, -7.84]} w={0.96} h={1.28} />
-      ))}
-      {photography.photos.slice(7, 11).map((ph, i) => (
-        <Print key={ph.src} src={ph.src} position={[11.84, 1.85, [-4.3, -2.75, 4.6, 6.15][i]]} rotation={[0, -Math.PI / 2, 0]} w={0.96} h={1.28} />
-      ))}
-      {[1.6, 4.65, 7.7].map((x) => (
-        <pointLight key={x} position={[x, 2.7, -6.9]} intensity={3} distance={3.2} decay={2} color="#fff1d6" />
-      ))}
-      {[-3.5, 5.4].map((z) => (
-        <pointLight key={z} position={[11.0, 2.7, z]} intensity={3} distance={3.2} decay={2} color="#fff1d6" />
-      ))}
+      {/* the animal portraits live here; the other prints hang around the building */}
+      <HungPhotos where="photo" />
+      <HungPhotos where="gym" />
       <Neon text="DARKROOM" position={[4.7, 2.95, -7.85]} width={1.8} color="#f43f5e" />
       {/* camera on a tripod, aimed at the prints */}
       <group position={[6.0, 0, -5.2]} rotation-y={Math.PI / 2}>
@@ -1471,6 +1459,7 @@ export function GamesFloor() {
       <Plant x={4.3} z={-7.3} s={0.9} kind={1} />
 
       <Neon text="GAMES ROOM" position={[-4.5, 2.75, -7.85]} width={2.8} color="#22d3ee" />
+      <HungPhotos where="games" />
       <Elevator position={[-11.9, 0]} label="3" />
       <Lamp position={[0, 3.0, 0]} intensity={10} distance={12} color="#ffd9a8" />
       <Lamp position={[-8, 2.8, 4.5]} intensity={8} distance={8} color="#a7f3d0" />

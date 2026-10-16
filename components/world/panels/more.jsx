@@ -4,6 +4,7 @@
 // arcade cabinets and rooftop guestbook.
 
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { Camera, Download, RotateCcw, Check, Trash2, X } from "lucide-react";
 import { now, learning, quests, reading, profile } from "../../../lib/content";
@@ -32,14 +33,20 @@ function Backdrop({ className = "" }) {
 
 /* ═════════════ Kindle: the library ═════════════ */
 
-// A generated cover: the book's two colours, title and author. (Not the real artwork.)
+// The book's real cover (from Open Library), or a designed stand-in if there isn't one.
 function Cover({ book, big }) {
   const [bg, ink] = book.colors;
+  const size = big ? "h-40 w-28" : "h-[92px] w-16";
+  if (book.cover) {
+    return (
+      <div className={`relative shrink-0 overflow-hidden rounded-[3px] bg-black shadow-[2px_3px_8px_rgba(0,0,0,0.35)] ${size}`}>
+        <Image src={book.cover} alt={`${book.title} cover`} fill sizes={big ? "112px" : "64px"} className="object-cover" />
+        <div className="absolute inset-y-0 left-0 w-[3px] bg-black/25" />
+      </div>
+    );
+  }
   return (
-    <div
-      className={`relative flex shrink-0 flex-col justify-between overflow-hidden rounded-[3px] shadow-[2px_3px_8px_rgba(0,0,0,0.35)] ${big ? "h-40 w-28 p-3" : "h-[92px] w-16 p-1.5"}`}
-      style={{ background: bg, color: ink }}
-    >
+    <div className={`relative flex shrink-0 flex-col justify-between overflow-hidden rounded-[3px] shadow-[2px_3px_8px_rgba(0,0,0,0.35)] ${size} ${big ? "p-3" : "p-1.5"}`} style={{ background: bg, color: ink }}>
       <div className="absolute inset-y-0 left-0 w-[3px] bg-black/25" />
       <div className={`font-display italic leading-[1.05] ${big ? "text-lg" : "text-[10px]"}`}>{book.title}</div>
       <div className={`font-mono uppercase leading-tight opacity-75 ${big ? "text-[8px]" : "text-[5.5px]"}`}>{book.author}</div>

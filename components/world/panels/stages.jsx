@@ -367,6 +367,21 @@ export function Viewfinder({ portrait }) {
     setSel(i);
     setFlash((f) => f + 1);
   };
+  const step = (d) => take((sel + d + SHOTS.length) % SHOTS.length);
+  const stepRef = useRef(step);
+  stepRef.current = step;
+  const swipe = useRef(null);
+
+  // ← → / A D flip through the photos, like the trophy case
+  useEffect(() => {
+    const onKey = (e) => {
+      const k = e.key.toLowerCase();
+      if (k === "arrowright" || k === "d") stepRef.current(1);
+      if (k === "arrowleft" || k === "a") stepRef.current(-1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <>
@@ -402,8 +417,24 @@ export function Viewfinder({ portrait }) {
           initial={{ opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1, transition: { delay: 0.9 } }}
           exit={{ opacity: 0 }}
-          className="pointer-events-auto relative w-[min(330px,62vw,40vh)]"
+          className="pointer-events-auto relative w-[min(330px,62vw,40vh)] touch-pan-y"
+          onPointerDown={(e) => (swipe.current = e.clientX)}
+          onPointerUp={(e) => {
+            const dx = swipe.current == null ? 0 : e.clientX - swipe.current;
+            swipe.current = null;
+            if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1);
+          }}
         >
+          {[-1, 1].map((d) => (
+            <button
+              key={d}
+              onClick={() => step(d)}
+              aria-label={d < 0 ? "Previous photo" : "Next photo"}
+              className={`absolute top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/20 bg-black/40 px-3 py-2 text-lg text-white/85 backdrop-blur transition hover:bg-white/15 ${d < 0 ? "-left-14" : "-right-14"}`}
+            >
+              {d < 0 ? "←" : "→"}
+            </button>
+          ))}
           <AnimatePresence mode="wait">
             <motion.div key={sel} initial={{ opacity: 0, filter: "blur(8px)" }} animate={{ opacity: 1, filter: "blur(0px)" }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}>
               <Shot s={SHOTS[sel]} className="aspect-[3/4] w-full rounded-sm" sizes="420px" />
@@ -417,6 +448,7 @@ export function Viewfinder({ portrait }) {
           </div>
           <div className="mt-2 flex items-center justify-between font-mono text-[11px] text-white/60">
             <span>{SHOTS[sel].title}</span>
+            <span className="hidden text-white/35 sm:inline">← → or A D</span>
             <span>{String(sel + 1).padStart(3, "0")} / {String(SHOTS.length).padStart(3, "0")}</span>
           </div>
         </motion.div>

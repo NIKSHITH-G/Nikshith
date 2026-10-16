@@ -8,7 +8,7 @@ import { WALLS, PART_H, POWER } from "./layout";
 import { usePower } from "./power";
 import { runtime, getState } from "./store";
 import { WHITE, BLACK } from "./notes";
-import { projects, music } from "../../lib/content";
+import { projects, music, photography } from "../../lib/content";
 
 export const C = {
   wallOuter: "#2b2e48",
@@ -1015,7 +1015,39 @@ function Trophies() {
   );
 }
 
-/* ───────────────────────── prints (also used on floor 2) ───────────────────────── */
+/* ───────────────────────── prints (hung on every floor) ───────────────────────── */
+
+// Where each named spot is: [position, rotationY, width]. Height follows the 3:4 photos.
+const HANG = {
+  "studio-living": [[-11.84, 1.85, 4.45], Math.PI / 2, 0.96], // living-room west wall, by the front door
+  "studio-music": [[8.0, 2.05, -7.84], 0, 0.96], // music room, above the piano
+  "studio-dining": [[3.88, 0.8, 3.45], -Math.PI / 2, 0.52], // small print on the half-wall, just north of the kitchen counter
+  gym: [[-11.84, 1.85, -2.2], Math.PI / 2, 0.96],
+  "games-west": [[-11.84, 1.85, -3.7], Math.PI / 2, 0.96],
+  "games-east": [[11.84, 1.85, 6.7], -Math.PI / 2, 0.96],
+  ...Object.fromEntries([1, 2, 3, 4, 5].map((n) => [`photo-${n}`, [[0.9 + n * 1.45, 1.85, -7.84], 0, 0.96]])),
+};
+
+// Every print whose `hang` spot starts with this prefix ("studio", "gym", "games", "photo").
+export function HungPhotos({ where }) {
+  return photography.photos
+    .filter((ph) => ph.hang?.startsWith(where))
+    .map((ph) => {
+      const [position, ry, w] = HANG[ph.hang];
+      return (
+        <group key={ph.src}>
+          <Print src={ph.src} position={position} rotation={[0, ry, 0]} w={w} h={w * 1.333} />
+          <pointLight
+            position={[position[0] + Math.sin(ry) * 0.9, position[1] + 0.85, position[2] + Math.cos(ry) * 0.9]}
+            intensity={w > 0.8 ? 2.5 : 1.2}
+            distance={2.6}
+            decay={2}
+            color="#fff1d6"
+          />
+        </group>
+      );
+    });
+}
 
 // A real photo, loaded as a texture.
 function usePhoto(src) {
@@ -1498,6 +1530,7 @@ export default function Apartment() {
       <Living />
       <Library />
       <Extras />
+      <HungPhotos where="studio" />
     </group>
   );
 }
