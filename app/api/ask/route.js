@@ -3,7 +3,7 @@
 // key, the free quota is used up, or Gemini is down — so it never costs money and
 // never goes silent.
 import { SYSTEM_PROMPT, answerOffline, matchOffline } from "../../../lib/persona";
-import { bump, clientId } from "../../../lib/kv";
+import { bump, clientId, get, set } from "../../../lib/kv";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +49,8 @@ async function askGemini(history) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
   const today = new Date().toISOString().slice(0, 10);
+  // if every model just failed (quota / overload), don't make the next visitors wait on it
+  if (await get("ask:llm:cooldown")) return null;
   if ((await bump(`ask:llm:${today}`, 86400)) > LLM_PER_DAY) return null;
   const started = Date.now();
   for (const model of MODELS) {
@@ -57,6 +59,7 @@ async function askGemini(history) {
     const text = await callModel(model, key, history, Math.min(left, PER_MODEL_MS));
     if (text) return { text, model };
   }
+  await set("ask:llm:cooldown", "1", { ex: 300 });
   return null;
 }
 
