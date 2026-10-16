@@ -4,9 +4,9 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Sparkles, Stars } from "@react-three/drei";
 import * as THREE from "three";
-import { B, C, MONO, Plant, Elevator, useTex } from "./Apartment";
-import { WALL_H, floorById } from "./layout";
-import { runtime, now } from "./store";
+import { B, C, MONO, Plant, Elevator, Print, useTex } from "./Apartment";
+import { WALL_H, floorById, blocked } from "./layout";
+import { runtime, now, getState, interact } from "./store";
 import { useChess, boardFromFen } from "./chess";
 
 /* ── shared shell: slab, floor, walls with light caps ── */
@@ -118,7 +118,7 @@ function Dumbbell({ p, col, len = 0.32, r = 0.07 }) {
   );
 }
 
-function PunchingBag() {
+function PunchingBag({ x = -1.4, z = -2.8 }) {
   const pivot = useRef();
   useFrame(() => {
     const t = now();
@@ -132,10 +132,15 @@ function PunchingBag() {
   });
   return (
     <group>
-      {/* bracket off the east wall */}
-      <B p={[10.85, 3.0, -1.2]} s={[2.1, 0.1, 0.1]} c="#222" />
-      <B p={[11.85, 2.5, -1.2]} s={[0.12, 0.6, 0.3]} c="#222" />
-      <group ref={pivot} position={[9.8, 3.0, -1.2]}>
+      {/* free-standing A-frame */}
+      {[-0.55, 0.55].map((dz) => (
+        <group key={dz}>
+          <B p={[x - 0.45, 0, z + dz]} s={[0.07, 3.1, 0.07]} c="#222" rot={[0, 0, -0.14]} />
+          <B p={[x + 0.45, 0, z + dz]} s={[0.07, 3.1, 0.07]} c="#222" rot={[0, 0, 0.14]} />
+        </group>
+      ))}
+      <B p={[x, 3.0, z]} s={[0.1, 0.1, 1.3]} c="#222" />
+      <group ref={pivot} position={[x, 3.0, z]}>
         <mesh position={[0, -0.35, 0]}>
           <cylinderGeometry args={[0.012, 0.012, 0.7, 6]} />
           <meshStandardMaterial color="#888" metalness={0.8} />
@@ -189,7 +194,7 @@ function Tape({ x, z, w, d, color = "#facc15" }) {
   );
 }
 
-function BoxingRing() {
+function BoxingRing({ cx = 3.5, cz = 0.6, W = 5.2, D = 4.6 }) {
   const canvas = useTex(512, 512, (g, w, h) => {
     g.fillStyle = "#1e3a8a";
     g.fillRect(0, 0, w, h);
@@ -206,7 +211,6 @@ function BoxingRing() {
     g.fillStyle = "rgba(255,255,255,0.6)";
     g.fillText("· FIGHT CLUB ·", w / 2, h / 2 + 62);
   });
-  const [cx, cz, W, D] = [3.5, 0.6, 5.2, 4.6];
   const H = 0.45;
   const posts = [[-1, -1, "#dc2626"], [1, -1, "#f8fafc"], [-1, 1, "#f8fafc"], [1, 1, "#2563eb"]];
   return (
@@ -259,9 +263,9 @@ function BoxingRing() {
   );
 }
 
-function Rower() {
+function Rower({ x = -1.2, z = -6.6 }) {
   return (
-    <group position={[-1.2, 0, -6.6]}>
+    <group position={[x, 0, z]}>
       <B p={[0, 0.1, 0]} s={[0.12, 0.1, 2.0]} c="#334155" />
       <B p={[0, 0, -0.95]} s={[0.4, 0.12, 0.12]} c="#111" />
       <B p={[0, 0, 0.95]} s={[0.4, 0.12, 0.12]} c="#111" />
@@ -279,92 +283,164 @@ function Rower() {
   );
 }
 
-function CableMachine() {
-  return (
-    <group position={[11.3, 0, -5.4]}>
-      <B p={[0, 0, -0.8]} s={[0.12, 2.5, 0.12]} c="#1f2937" />
-      <B p={[0, 0, 0.8]} s={[0.12, 2.5, 0.12]} c="#1f2937" />
-      <B p={[0, 2.4, 0]} s={[0.14, 0.12, 1.75]} c="#1f2937" />
-      <B p={[0.1, 0.2, 0]} s={[0.3, 1.1, 0.4]} c="#374151" />
-      {Array.from({ length: 10 }, (_, i) => (
-        <B key={i} p={[0.1, 0.22 + i * 0.1, 0]} s={[0.32, 0.08, 0.42]} c={i % 2 ? "#111" : "#1e1e1e"} shadow={false} />
-      ))}
-      {[-0.65, 0.65].map((z) => (
-        <mesh key={z} position={[-0.25, 1.3, z]}>
-          <cylinderGeometry args={[0.006, 0.006, 2.2, 4]} />
-          <meshStandardMaterial color="#9ca3af" />
-        </mesh>
-      ))}
-      <B p={[-0.3, 0.3, -0.65]} s={[0.08, 0.06, 0.2]} c="#dc2626" shadow={false} />
-      <B p={[-0.3, 0.3, 0.65]} s={[0.08, 0.06, 0.2]} c="#dc2626" shadow={false} />
-    </group>
-  );
-}
+// Pixel the studio dog: wanders the east half, comes over to say hi, wags.
+const DOG_AREA = [1.2, -2.8, 11.2, 6.2];
 
-function PlateTree() {
-  return (
-    <group position={[5.0, 0, -4.9]}>
-      <B p={[0, 0, 0]} s={[0.55, 0.06, 0.55]} c="#111" />
-      <mesh position={[0, 0.6, 0]}>
-        <cylinderGeometry args={[0.03, 0.03, 1.2, 8]} />
-        <meshStandardMaterial color="#9ca3af" metalness={0.7} />
-      </mesh>
-      {[[0.3, 0.32, "#dc2626"], [0.7, 0.26, "#2563eb"], [1.05, 0.2, "#eab308"]].map(([y, r, col]) => (
-        <mesh key={y} position={[0.06, y, 0]} rotation-z={Math.PI / 2}>
-          <cylinderGeometry args={[r, r, 0.05, 22]} />
-          <meshStandardMaterial color={col} roughness={0.5} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
+export function Dog() {
+  const root = useRef();
+  const tail = useRef();
+  const head = useRef();
+  const legs = useRef([]);
+  const st = useRef({ tx: 7, tz: 3, wait: 1.5, heading: 0, walk: 0 });
 
-function PullUpRig() {
+  useFrame(({ clock }, rawDt) => {
+    const dt = Math.min(rawDt, 0.05);
+    const d = runtime.dog;
+    const m = st.current;
+    const toPlayer = Math.hypot(runtime.x - d.x, runtime.z - d.z);
+    let moving = false;
+    if (toPlayer < 1.5) {
+      m.heading = Math.atan2(runtime.x - d.x, runtime.z - d.z);
+    } else if (m.wait > 0) {
+      m.wait -= dt;
+    } else {
+      const dx = m.tx - d.x;
+      const dz = m.tz - d.z;
+      const dist = Math.hypot(dx, dz);
+      if (dist < 0.12) {
+        m.wait = 1.5 + Math.random() * 3.5;
+        // dogs like company: often trot over if you're on this side of the wall
+        const toYou = runtime.x > 0.5 && Math.random() < 0.55;
+        m.tx = toYou ? runtime.x - 0.9 : DOG_AREA[0] + Math.random() * (DOG_AREA[2] - DOG_AREA[0]);
+        m.tz = toYou ? runtime.z + 0.7 : DOG_AREA[1] + Math.random() * (DOG_AREA[3] - DOG_AREA[1]);
+      } else {
+        const sp = 2.0 * dt;
+        let ok = false;
+        if (!blocked(d.x + (dx / dist) * sp, d.z, 0.28)) { d.x += (dx / dist) * sp; ok = true; }
+        if (!blocked(d.x, d.z + (dz / dist) * sp, 0.28)) { d.z += (dz / dist) * sp; ok = true; }
+        if (!ok) { m.wait = 0.4; m.tx = d.x; m.tz = d.z; }
+        m.heading = Math.atan2(dx, dz);
+        moving = true;
+      }
+    }
+    m.walk += moving ? dt * 14 : 0;
+    const g = root.current;
+    if (!g) return;
+    g.position.set(d.x, moving ? Math.abs(Math.sin(m.walk)) * 0.03 : 0, d.z);
+    const diff = Math.atan2(Math.sin(m.heading - g.rotation.y), Math.cos(m.heading - g.rotation.y));
+    g.rotation.y += diff * Math.min(1, dt * 8);
+    const t = clock.elapsedTime;
+    if (tail.current) tail.current.rotation.z = Math.sin(t * (toPlayer < 1.5 ? 18 : 6)) * 0.6;
+    if (head.current) head.current.rotation.x = toPlayer < 1.5 ? -0.3 : Math.sin(t * 0.8) * 0.08;
+    legs.current.forEach((l, i) => {
+      if (l) l.rotation.x = moving ? Math.sin(m.walk + (i % 2 ? Math.PI : 0) + (i > 1 ? Math.PI : 0)) * 0.5 : 0;
+    });
+  });
+
+  const fur = "#c8935a";
+  const part = (p, sz, c = fur, r = 0.05) => (
+    <mesh position={p} castShadow>
+      <boxGeometry args={sz} />
+      <meshStandardMaterial color={c} roughness={0.85} />
+    </mesh>
+  );
   return (
-    <group position={[6.6, 0, 6.3]}>
-      {[[-1, -0.35], [1, -0.35], [-1, 0.35], [1, 0.35]].map(([x, z], i) => (
-        <B key={i} p={[x, 0, z]} s={[0.08, 2.6, 0.08]} c="#111827" />
-      ))}
-      <B p={[0, 2.5, -0.35]} s={[2.1, 0.08, 0.08]} c="#111827" />
-      <B p={[0, 2.5, 0.35]} s={[2.1, 0.08, 0.08]} c="#111827" />
-      <mesh position={[0, 2.35, 0]} rotation-z={Math.PI / 2}>
-        <cylinderGeometry args={[0.02, 0.02, 2.0, 8]} />
-        <meshStandardMaterial color="#d1d5db" metalness={0.8} />
+    <group
+      ref={root}
+      position={[runtime.dog.x, 0, runtime.dog.z]}
+      onClick={(e) => {
+        e.stopPropagation();
+        const s = getState();
+        if (s.phase === "playing" && !s.panel && !runtime.justDragged) interact("dog");
+      }}
+    >
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.012, 0]}>
+        <circleGeometry args={[0.38, 18]} />
+        <meshBasicMaterial color="#000" transparent opacity={0.28} depthWrite={false} />
       </mesh>
-      {/* gymnastic rings */}
-      {[-0.3, 0.3].map((x) => (
-        <group key={x} position={[x, 1.75, 0]}>
-          <mesh position={[0, 0.3, 0]}>
-            <cylinderGeometry args={[0.006, 0.006, 0.6, 4]} />
-            <meshStandardMaterial color="#facc15" />
-          </mesh>
-          <mesh rotation-y={Math.PI / 2}>
-            <torusGeometry args={[0.09, 0.015, 6, 16]} />
-            <meshStandardMaterial color="#a16207" />
-          </mesh>
+      {part([0, 0.38, 0], [0.3, 0.28, 0.62])}
+      {part([0, 0.36, 0.05], [0.31, 0.2, 0.3], "#f5e6d3")}
+      {/* collar */}
+      {part([0, 0.5, 0.27], [0.27, 0.06, 0.08], "#dc2626")}
+      <group ref={head} position={[0, 0.58, 0.36]}>
+        {part([0, 0, 0], [0.26, 0.24, 0.26])}
+        {part([0, -0.05, 0.17], [0.15, 0.12, 0.14], "#f5e6d3")}
+        {part([0, -0.02, 0.25], [0.06, 0.05, 0.03], "#111")}
+        {part([-0.07, 0.05, 0.135], [0.04, 0.05, 0.01], "#111")}
+        {part([0.07, 0.05, 0.135], [0.04, 0.05, 0.01], "#111")}
+        {part([-0.14, 0.02, -0.02], [0.05, 0.16, 0.12], "#8b5a2b")}
+        {part([0.14, 0.02, -0.02], [0.05, 0.16, 0.12], "#8b5a2b")}
+      </group>
+      {[[-0.1, 0.2], [0.1, 0.2], [-0.1, -0.2], [0.1, -0.2]].map(([x, z], i) => (
+        <group key={i} ref={(l) => (legs.current[i] = l)} position={[x, 0.26, z]}>
+          {part([0, -0.13, 0], [0.08, 0.26, 0.08], i < 2 ? fur : "#b07c45")}
         </group>
       ))}
+      <group ref={tail} position={[0, 0.48, -0.32]}>
+        {part([0, 0.1, -0.03], [0.06, 0.22, 0.06])}
+      </group>
     </group>
   );
 }
 
-function BattleRopes() {
-  const pts = useMemo(() => {
-    const out = [];
-    for (let i = 0; i <= 18; i++) out.push(i);
-    return out;
-  }, []);
+// A four-shot photo booth with a curtain and a glowing sign.
+function PhotoBooth() {
+  const sign = useRef();
+  useFrame(({ clock }) => {
+    if (sign.current) sign.current.emissiveIntensity = 1.6 + Math.sin(clock.elapsedTime * 3) * 0.4;
+  });
+  const strip = useTex(64, 192, (g, w, h) => {
+    g.fillStyle = "#fafaf9";
+    g.fillRect(0, 0, w, h);
+    ["#fda4af", "#93c5fd", "#fcd34d", "#c4b5fd"].forEach((c, i) => {
+      g.fillStyle = c;
+      g.fillRect(6, 6 + i * 44, w - 12, 38);
+      g.fillStyle = "rgba(0,0,0,0.35)";
+      g.beginPath(); g.arc(w / 2, 22 + i * 44, 9, 0, Math.PI * 2); g.fill();
+      g.fillRect(w / 2 - 13, 32 + i * 44, 26, 10);
+    });
+  });
   return (
-    <group>
-      <B p={[11.5, 0, 4.8]} s={[0.3, 0.6, 0.3]} c="#374151" r={0.03} />
-      {[-0.12, 0.12].map((dz) =>
-        pts.map((i) => (
-          <mesh key={`${dz}${i}`} position={[11.3 - i * 0.2, 0.05, 4.8 + dz + Math.sin(i * 0.9) * 0.12]}>
-            <sphereGeometry args={[0.045, 6, 5]} />
-            <meshStandardMaterial color="#1f2937" roughness={0.9} />
-          </mesh>
-        ))
-      )}
+    <group position={[10.4, 0, -6.2]}>
+      <B p={[0, 0, 0]} s={[2.0, 2.3, 1.8]} c="#be123c" r={0.04} />
+      <B p={[0, 2.3, 0]} s={[2.1, 0.14, 1.9]} c="#881337" r={0.03} />
+      <mesh position={[0, 2.62, 0.4]}>
+        <boxGeometry args={[1.5, 0.4, 0.1]} />
+        <meshStandardMaterial ref={sign} color="#fde68a" emissive="#fbbf24" emissiveIntensity={1.6} toneMapped={false} />
+      </mesh>
+      {/* curtain doorway on the south side */}
+      <mesh position={[-0.35, 1.05, 0.91]}>
+        <planeGeometry args={[0.9, 1.9]} />
+        <meshStandardMaterial color="#4c0519" roughness={1} side={THREE.DoubleSide} />
+      </mesh>
+      {Array.from({ length: 6 }, (_, i) => (
+        <B key={i} p={[-0.75 + i * 0.16, 0.12, 0.915]} s={[0.02, 1.85, 0.01]} c="#6b0f2a" shadow={false} />
+      ))}
+      {/* sample strips pinned outside */}
+      {[0.35, 0.6].map((x, i) => (
+        <mesh key={x} position={[x, 1.45, 0.91]} rotation-z={(i - 0.5) * 0.12}>
+          <planeGeometry args={[0.18, 0.54]} />
+          <meshStandardMaterial map={strip} />
+        </mesh>
+      ))}
+      <B p={[0.8, 0.95, 0.9]} s={[0.25, 0.25, 0.05]} c="#111" shadow={false} />
+      <pointLight position={[0, 1.6, 1.4]} color="#fecdd3" intensity={4} distance={4} decay={2} />
+    </group>
+  );
+}
+
+function Softbox({ x, z, rot }) {
+  return (
+    <group position={[x, 0, z]} rotation-y={rot}>
+      {[0, 2.1, 4.2].map((a) => (
+        <B key={a} p={[Math.sin(a) * 0.2, 0, Math.cos(a) * 0.2]} s={[0.03, 1.1, 0.03]} c="#111" rot={[Math.cos(a) * 0.3, 0, -Math.sin(a) * 0.3]} shadow={false} />
+      ))}
+      <B p={[0, 0.9, 0]} s={[0.04, 0.9, 0.04]} c="#111" shadow={false} />
+      <B p={[0, 1.55, 0]} s={[0.7, 0.7, 0.35]} c="#111" r={0.03} />
+      <mesh position={[0, 1.9, -0.18]}>
+        <planeGeometry args={[0.62, 0.62]} />
+        <meshStandardMaterial color="#fff" emissive="#ffffff" emissiveIntensity={1.4} toneMapped={false} side={THREE.DoubleSide} />
+      </mesh>
     </group>
   );
 }
@@ -382,18 +458,15 @@ export function GymFloor() {
     g.strokeRect(0, 0, w, h);
   });
   repeatTex(rubber, 12, 8);
-  const turf = useTex(512, 128, (g, w, h) => {
-    g.fillStyle = "#2f6b3a";
+  const concrete = useTex(256, 256, (g, w, h) => {
+    g.fillStyle = "#cfc9be";
     g.fillRect(0, 0, w, h);
-    for (let x = 0; x < w; x += 8) {
-      g.fillStyle = x % 16 ? "#357a42" : "#2b6236";
-      g.fillRect(x, 0, 4, h);
+    for (let i = 0; i < 1500; i++) {
+      g.fillStyle = i % 2 ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.08)";
+      g.fillRect((i * 97) % w, (i * 53 + (i >> 3)) % h, 3, 3);
     }
-    g.fillStyle = "#f5f5f5";
-    for (let x = 32; x < w; x += 96) g.fillRect(x, 0, 4, h);
-    g.fillRect(0, 6, w, 4);
-    g.fillRect(0, h - 10, w, 4);
   });
+  repeatTex(concrete, 4, 5);
   const mirror = useTex(512, 128, (g, w, h) => {
     const grd = g.createLinearGradient(0, 0, w, h);
     grd.addColorStop(0, "#5a6680");
@@ -408,70 +481,48 @@ export function GymFloor() {
       g.fill();
     }
   });
-  const stats = useTex(256, 144, (g, w, h) => {
-    g.fillStyle = "#050a08";
+  const board = useTex(256, 160, (g, w, h) => {
+    g.fillStyle = "#f6f4ee";
     g.fillRect(0, 0, w, h);
-    g.fillStyle = "#4ade80";
-    g.font = `bold 46px ${MONO}`;
-    g.fillText("128", 20, 64);
-    g.font = `16px ${MONO}`;
-    g.fillStyle = "#86efac";
-    g.fillText("BPM · ZONE 4", 22, 92);
-    g.strokeStyle = "#22c55e";
-    g.lineWidth = 3;
-    g.beginPath();
-    for (let x = 0; x < w; x += 4) g.lineTo(x, 122 + Math.sin(x * 0.12) * 6 + (x % 52 < 6 ? -18 : 0));
-    g.stroke();
+    g.fillStyle = "#c2410c";
+    g.font = `bold 18px ${MONO}`;
+    g.fillText("TRAINING PLAN", 14, 28);
+    g.strokeStyle = "#1f2937";
+    g.lineWidth = 2;
+    for (let i = 0; i < 5; i++) {
+      g.beginPath(); g.moveTo(14, 52 + i * 20); g.lineTo(150 + (i % 3) * 30, 52 + i * 20); g.stroke();
+      g.strokeRect(220, 44 + i * 20, 12, 12);
+    }
   });
-  const poster = useTex(200, 280, (g, w, h) => {
-    g.fillStyle = "#f97316";
+  const backdrop = useTex(64, 256, (g, w, h) => {
+    const grd = g.createLinearGradient(0, 0, 0, h);
+    grd.addColorStop(0, "#fda4af");
+    grd.addColorStop(1, "#c084fc");
+    g.fillStyle = grd;
     g.fillRect(0, 0, w, h);
-    g.fillStyle = "#111";
-    g.font = `bold 40px ${MONO}`;
-    g.fillText("NO", 20, 70);
-    g.fillText("DAYS", 20, 115);
-    g.fillText("OFF.", 20, 160);
-    g.font = `14px ${MONO}`;
-    g.fillText("(except sundays)", 20, 240);
   });
 
   return (
     <group>
       <Room id="gym" floorTex={rubber} cap="#f97316" wall="#2a2c36" />
-
-      {/* zones: tape around the cardio row, stretch area and turf */}
-      <Tape x={-6} z={-5.9} w={11} d={3.4} />
-      <Tape x={-6.4} z={1.0} w={7.4} d={5.2} color="#38bdf8" />
-      <mesh rotation-x={-Math.PI / 2} position={[-6.4, 0.006, 1.0]}>
-        <planeGeometry args={[7.3, 5.1]} />
-        <meshStandardMaterial color="#2c3a4a" roughness={1} />
-      </mesh>
-      <mesh rotation-x={-Math.PI / 2} position={[-4.5, 0.006, 6.75]} receiveShadow>
-        <planeGeometry args={[13, 1.9]} />
-        <meshStandardMaterial map={turf} roughness={1} />
+      {/* the east half is a bright concrete photo studio */}
+      <mesh rotation-x={-Math.PI / 2} position={[6, 0.004, 0]} receiveShadow>
+        <planeGeometry args={[12, 16]} />
+        <meshStandardMaterial map={concrete} roughness={0.9} />
       </mesh>
 
-      {/* north wall: mirrors, neon, heart-rate screens */}
-      <mesh position={[-1, 1.45, -7.87]}>
-        <planeGeometry args={[19, 2.3]} />
+      {/* ───── gym (west) ───── */}
+      <Tape x={-6} z={-5.9} w={11.6} d={3.4} />
+      <mesh position={[-6, 1.45, -7.87]}>
+        <planeGeometry args={[11.6, 2.3]} />
         <meshStandardMaterial map={mirror} metalness={0.6} roughness={0.15} emissive="#1d2333" emissiveMap={mirror} emissiveIntensity={0.25} />
       </mesh>
-      <Neon text="ONE MORE REP" position={[-1, 2.85, -7.85]} width={3.6} color="#f97316" />
-      {[-8.8, 2.6].map((x) => (
-        <group key={x} position={[x, 2.55, -7.83]}>
-          <B p={[0, -0.27, 0]} s={[0.98, 0.58, 0.04]} c="#111" shadow={false} />
-          <mesh position={[0, 0, 0.025]}>
-            <planeGeometry args={[0.9, 0.5]} />
-            <meshBasicMaterial map={stats} toneMapped={false} />
-          </mesh>
-        </group>
-      ))}
-
-      {/* cardio row */}
+      <Neon text="ONE MORE REP" position={[-6, 2.85, -7.85]} width={3.4} color="#f97316" />
       <Treadmill x={-9.9} z={-6.4} />
       <Treadmill x={-7.6} z={-6.4} active />
       <Treadmill x={-5.3} z={-6.4} />
-      <group position={[-3.2, 0, -6.8]}>
+      <Rower x={-3.2} z={-6.6} />
+      <group position={[-1.3, 0, -6.8]}>
         <B p={[0, 0, 0]} s={[0.5, 0.06, 1.1]} c="#222" />
         <mesh position={[0, 0.42, -0.35]} rotation-z={Math.PI / 2}>
           <cylinderGeometry args={[0.28, 0.28, 0.08, 24]} />
@@ -482,10 +533,8 @@ export function GymFloor() {
         <B p={[0, 0.06, -0.45]} s={[0.07, 1.0, 0.07]} c="#dc2626" rot={[0.2, 0, 0]} />
         <B p={[0, 1.06, -0.62]} s={[0.5, 0.05, 0.08]} c="#111" />
       </group>
-      <Rower />
-
-      {/* weights corner */}
-      <group position={[2.6, 0, -6.7]}>
+      {/* squat rack */}
+      <group position={[-8.6, 0, -2.6]}>
         {[[-1, -0.6], [1, -0.6], [-1, 0.6], [1, 0.6]].map(([x, z], i) => (
           <B key={i} p={[x, 0, z]} s={[0.09, 2.4, 0.09]} c="#1f2937" />
         ))}
@@ -505,72 +554,46 @@ export function GymFloor() {
           ))
         )}
       </group>
-      <PlateTree />
-      <group>
-        <B p={[7.6, 0, -7.45]} s={[2.9, 0.5, 0.5]} c="#1f2937" r={0.02} />
-        <B p={[7.6, 0.5, -7.55]} s={[2.9, 0.4, 0.3]} c="#1f2937" r={0.02} />
-        {Array.from({ length: 7 }, (_, i) => (
-          <Dumbbell key={i} p={[6.4 + i * 0.4, 0.58, -7.35]} col={["#dc2626", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#8b5cf6", "#111"][i]} />
-        ))}
-        {Array.from({ length: 6 }, (_, i) => (
-          <Dumbbell key={`t${i}`} p={[6.55 + i * 0.4, 0.98, -7.55]} col="#2a2a33" r={0.06} />
-        ))}
-        <B p={[7.6, 0.42, -5.3]} s={[0.4, 0.1, 1.4]} c="#111" r={0.04} />
-        <B p={[7.6, 0, -5.8]} s={[0.35, 0.42, 0.08]} c="#4b5563" />
-        <B p={[7.6, 0, -4.8]} s={[0.35, 0.42, 0.08]} c="#4b5563" />
-        <Dumbbell p={[7.9, 0.08, -4.3]} col="#dc2626" />
-      </group>
-      <CableMachine />
-      <mesh position={[11.86, 1.6, -2.6]} rotation-y={-Math.PI / 2}>
-        <planeGeometry args={[0.9, 1.26]} />
-        <meshStandardMaterial map={poster} />
-      </mesh>
-
-      {/* centrepiece */}
-      <BoxingRing />
-      <PunchingBag />
-      {/* wall-mounted speed bag */}
-      <group position={[11.6, 1.8, 1.8]}>
-        <B p={[0, 0.35, 0]} s={[0.5, 0.06, 0.7]} c="#3b2a1e" />
-        <B p={[0.2, -0.3, 0]} s={[0.08, 0.7, 0.3]} c="#3b2a1e" />
-        <mesh position={[-0.05, 0.12, 0]} scale={[1, 1.4, 1]}>
-          <sphereGeometry args={[0.1, 14, 12]} />
-          <meshStandardMaterial color="#b91c1c" roughness={0.4} />
+      <BoxingRing cx={-4.6} cz={1.2} W={4.2} D={3.8} />
+      <PunchingBag x={-1.4} z={-2.8} />
+      {/* training-plan whiteboard on the west wall (its content opens on it) */}
+      <group position={[-11.86, 1.6, -4.4]} rotation-y={Math.PI / 2}>
+        <B p={[0, -0.64, 0]} s={[1.95, 1.28, 0.05]} c="#9ca3af" shadow={false} />
+        <mesh position={[0, 0, 0.03]}>
+          <planeGeometry args={[1.8, 1.15]} />
+          <meshStandardMaterial map={board} roughness={0.4} />
         </mesh>
       </group>
-
-      {/* stretch zone */}
-      {[["#8b5cf6", -8.6], ["#14b8a6", -7.3], ["#f472b6", -6.0]].map(([col, x]) => (
-        <group key={x}>
-          <B p={[x, 0, 1.0]} s={[0.65, 0.025, 1.8]} c={col} shadow={false} />
-          <mesh position={[x, 0.08, 2.15]} rotation-z={Math.PI / 2}>
-            <cylinderGeometry args={[0.08, 0.08, 0.6, 12]} />
-            <meshStandardMaterial color="#1f2937" />
-          </mesh>
+      {/* lockers, mats, balls, plyo, kettlebells, dumbbells */}
+      {Array.from({ length: 5 }, (_, i) => (
+        <group key={i}>
+          <B p={[-11.7, 0, 3.4 + i * 0.55]} s={[0.5, 2.1, 0.52]} c={i % 2 ? "#334155" : "#3f4f66"} r={0.015} />
+          <B p={[-11.44, 1.75, 3.4 + i * 0.55]} s={[0.01, 0.06, 0.18]} c="#94a3b8" shadow={false} />
         </group>
       ))}
-      {[[-4.3, 2.4, 0.36, "#38bdf8"], [-3.9, 3.25, 0.32, "#a78bfa"]].map(([x, z, r, col]) => (
+      <B p={[-10.9, 0.38, 4.6]} s={[0.4, 0.06, 2.4]} c={C.wood} r={0.02} />
+      <B p={[-10.9, 0, 3.7]} s={[0.32, 0.38, 0.06]} c="#111" />
+      <B p={[-10.9, 0, 5.5]} s={[0.32, 0.38, 0.06]} c="#111" />
+      <group position={[-11.6, 0, 7.2]}>
+        <B p={[0, 0, 0]} s={[0.42, 1.0, 0.42]} c="#e5e7eb" r={0.04} />
+        <mesh position={[0, 1.25, 0]}>
+          <cylinderGeometry args={[0.17, 0.17, 0.5, 18]} />
+          <meshStandardMaterial color="#7dd3fc" transparent opacity={0.6} roughness={0.1} />
+        </mesh>
+      </group>
+      {[["#8b5cf6", -8.6], ["#14b8a6", -7.3], ["#f472b6", -6.0]].map(([col, x]) => (
+        <B key={x} p={[x, 0, 5.4]} s={[0.65, 0.025, 1.8]} c={col} shadow={false} />
+      ))}
+      {[[-3.2, 5.0, 0.36, "#38bdf8"], [-2.7, 5.5, 0.3, "#a78bfa"]].map(([x, z, r, col]) => (
         <mesh key={x} position={[x, r, z]} castShadow>
           <sphereGeometry args={[r, 24, 18]} />
           <meshStandardMaterial color={col} roughness={0.35} />
         </mesh>
       ))}
-      {/* wall bars north of the elevator */}
-      <group position={[-11.84, 0, -2.6]}>
-        {[-0.5, 0.5].map((z) => (
-          <B key={z} p={[0, 0, z]} s={[0.08, 2.6, 0.08]} c={C.wood} />
-        ))}
-        {Array.from({ length: 10 }, (_, i) => (
-          <mesh key={i} position={[0.03, 0.2 + i * 0.25, 0]} rotation-x={Math.PI / 2}>
-            <cylinderGeometry args={[0.02, 0.02, 1.0, 6]} />
-            <meshStandardMaterial color="#c49a6c" />
-          </mesh>
-        ))}
-      </group>
-
-      {/* functional: kettlebells, plyo boxes, sled, rig, ropes */}
+      <B p={[-1.0, 0, 4.4]} s={[0.75, 0.6, 0.75]} c="#a16207" r={0.03} />
+      <B p={[-1.0, 0.6, 4.4]} s={[0.55, 0.42, 0.55]} c="#ca8a04" r={0.03} />
       {Array.from({ length: 6 }, (_, i) => (
-        <group key={i} position={[-7.2 + i * 0.32, 0, 5.3]}>
+        <group key={i} position={[-5.8 + i * 0.32, 0, 7.3]}>
           <mesh position={[0, 0.12 + i * 0.01, 0]} castShadow>
             <sphereGeometry args={[0.11 + i * 0.012, 14, 12]} />
             <meshStandardMaterial color={i === 5 ? "#dc2626" : "#1f2937"} roughness={0.5} />
@@ -581,53 +604,110 @@ export function GymFloor() {
           </mesh>
         </group>
       ))}
-      <B p={[-3.4, 0, 5.4]} s={[0.75, 0.6, 0.75]} c="#a16207" r={0.03} />
-      <B p={[-3.4, 0.6, 5.4]} s={[0.6, 0.45, 0.6]} c="#ca8a04" r={0.03} />
-      <B p={[-2.6, 0, 5.6]} s={[0.5, 0.3, 0.5]} c="#854d0e" r={0.03} />
-      <group position={[0.2, 0, 6.9]}>
-        <B p={[0, 0, 0]} s={[0.9, 0.12, 0.8]} c="#111" r={0.03} />
-        <B p={[0.3, 0.12, 0]} s={[0.08, 0.9, 0.6]} c="#dc2626" />
-        {[-0.2, 0.2].map((z) => (
-          <mesh key={z} position={[-0.1, 0.26, z]} rotation-x={Math.PI / 2}>
-            <cylinderGeometry args={[0.22, 0.22, 0.07, 16]} />
-            <meshStandardMaterial color="#111" />
+      <B p={[-2.2, 0, 7.35]} s={[2.0, 0.45, 0.45]} c="#1f2937" r={0.02} />
+      {Array.from({ length: 5 }, (_, i) => (
+        <Dumbbell key={i} p={[-3.0 + i * 0.4, 0.52, 7.35]} col={["#dc2626", "#f97316", "#eab308", "#22c55e", "#3b82f6"][i]} />
+      ))}
+
+      {/* ───── photo studio (north-east) ───── */}
+      <Print position={[2.6, 1.85, -7.84]} w={1.5} h={1.0} palette={["#fb923c", "#db2777", "#312e81"]} seed={1} />
+      <Print position={[5.4, 1.95, -7.84]} w={2.0} h={1.3} palette={["#0ea5e9", "#1e3a8a", "#020617"]} seed={2} />
+      <Print position={[8.2, 1.85, -7.84]} w={1.5} h={1.0} palette={["#fde68a", "#f97316", "#7c2d12"]} seed={5} />
+      {[2.6, 5.4, 8.2].map((x) => (
+        <pointLight key={x} position={[x, 2.7, -7.0]} intensity={3} distance={3} decay={2} color="#fff1d6" />
+      ))}
+      <Neon text="DARKROOM" position={[5.4, 2.9, -7.85]} width={1.8} color="#f43f5e" />
+      {/* camera on a tripod, aimed at the prints */}
+      <group position={[6.0, 0, -5.2]} rotation-y={Math.PI / 2}>
+        {[0, 2.1, 4.2].map((a) => (
+          <mesh key={a} position={[Math.sin(a) * 0.22, 0.6, Math.cos(a) * 0.22]} rotation={[Math.cos(a) * 0.35, 0, -Math.sin(a) * 0.35]} castShadow>
+            <cylinderGeometry args={[0.018, 0.025, 1.25, 6]} />
+            <meshStandardMaterial color="#222" />
           </mesh>
         ))}
-      </group>
-      <PullUpRig />
-      <BattleRopes />
-
-      {/* lockers, bench, water station by the elevator */}
-      <group>
-        {Array.from({ length: 5 }, (_, i) => (
-          <group key={i}>
-            <B p={[-11.7, 0, 3.4 + i * 0.55]} s={[0.5, 2.1, 0.52]} c={i % 2 ? "#334155" : "#3f4f66"} r={0.015} />
-            <B p={[-11.44, 1.3, 3.4 + i * 0.55]} s={[0.01, 0.2, 0.3]} c="#1e293b" shadow={false} />
-            <B p={[-11.44, 1.75, 3.4 + i * 0.55]} s={[0.01, 0.06, 0.18]} c="#94a3b8" shadow={false} />
-          </group>
-        ))}
-        <B p={[-10.9, 0.38, 4.6]} s={[0.4, 0.06, 2.4]} c={C.wood} r={0.02} />
-        <B p={[-10.9, 0, 3.7]} s={[0.32, 0.38, 0.06]} c="#111" />
-        <B p={[-10.9, 0, 5.5]} s={[0.32, 0.38, 0.06]} c="#111" />
-        <B p={[-10.85, 0.44, 4.2]} s={[0.3, 0.06, 0.4]} c="#f8fafc" shadow={false} />
-      </group>
-      <group position={[-11.6, 0, 7.2]}>
-        <B p={[0, 0, 0]} s={[0.42, 1.0, 0.42]} c="#e5e7eb" r={0.04} />
-        <mesh position={[0, 1.25, 0]}>
-          <cylinderGeometry args={[0.17, 0.17, 0.5, 18]} />
-          <meshStandardMaterial color="#7dd3fc" transparent opacity={0.6} roughness={0.1} />
+        <B p={[0, 1.17, 0]} s={[0.36, 0.22, 0.22]} c="#1d1d22" r={0.03} />
+        <mesh position={[0.26, 1.28, 0]} rotation-z={Math.PI / 2} castShadow>
+          <cylinderGeometry args={[0.08, 0.09, 0.2, 20]} />
+          <meshStandardMaterial color="#111" metalness={0.5} roughness={0.35} />
         </mesh>
       </group>
+      <PhotoBooth />
+      {/* portrait corner: paper backdrop on the east wall between two softboxes */}
+      <mesh position={[11.86, 1.45, 1.5]} rotation-y={-Math.PI / 2}>
+        <planeGeometry args={[2.6, 2.9]} />
+        <meshStandardMaterial map={backdrop} roughness={1} />
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[11.2, 0.01, 1.5]}>
+        <planeGeometry args={[1.3, 2.6]} />
+        <meshStandardMaterial map={backdrop} roughness={1} />
+      </mesh>
+      <mesh position={[11.86, 2.95, 1.5]} rotation-x={Math.PI / 2}>
+        <cylinderGeometry args={[0.08, 0.08, 2.8, 12]} />
+        <meshStandardMaterial color="#111" />
+      </mesh>
+      <Softbox x={10.6} z={-0.6} rot={-2.4} />
+      <Softbox x={10.6} z={3.6} rot={-0.7} />
+      <group position={[11.0, 0, 1.5]}>
+        <mesh position={[0, 0.32, 0]}>
+          <cylinderGeometry args={[0.03, 0.03, 0.64, 6]} />
+          <meshStandardMaterial color="#9ca3af" />
+        </mesh>
+        <mesh position={[0, 0.66, 0]}>
+          <cylinderGeometry args={[0.2, 0.2, 0.05, 16]} />
+          <meshStandardMaterial color="#111" />
+        </mesh>
+      </group>
+      <pointLight position={[10.3, 2.2, 1.5]} color="#ffe4e6" intensity={5} distance={5} decay={2} />
+
+      {/* ───── dog lounge (south-east) ───── */}
+      <mesh rotation-x={-Math.PI / 2} position={[6.4, 0.008, 5.2]} receiveShadow>
+        <planeGeometry args={[6.4, 3.6]} />
+        <meshStandardMaterial color="#e2c9a6" roughness={1} />
+      </mesh>
+      <group position={[5.6, 0, 6.9]}>
+        <B p={[0, 0.05, 0]} s={[2.8, 0.42, 0.9]} c="#475569" r={0.08} />
+        <B p={[0, 0.4, 0.33]} s={[2.8, 0.62, 0.24]} c="#475569" r={0.1} />
+        <B p={[-1.3, 0.4, 0]} s={[0.22, 0.32, 0.9]} c="#475569" r={0.08} />
+        <B p={[1.3, 0.4, 0]} s={[0.22, 0.32, 0.9]} c="#475569" r={0.08} />
+        <B p={[-0.6, 0.47, 0.12]} s={[0.4, 0.36, 0.13]} c="#fbbf24" r={0.06} rot={[0.3, 0.2, 0]} />
+      </group>
+      <B p={[3.7, 0, 7.0]} s={[0.5, 0.5, 0.5]} c={C.wood} r={0.03} />
+      <mesh position={[3.7, 0.56, 7.0]}>
+        <cylinderGeometry args={[0.05, 0.045, 0.1, 12]} />
+        <meshStandardMaterial color="#fafaf9" />
+      </mesh>
+      {/* Pixel's bed, bowls and toys */}
+      <group position={[9.6, 0, 6.6]}>
+        <mesh position={[0, 0.1, 0]} rotation-x={-Math.PI / 2} scale={[1, 0.75, 1]}>
+          <torusGeometry args={[0.42, 0.13, 10, 24]} />
+          <meshStandardMaterial color="#7c3aed" roughness={1} />
+        </mesh>
+        <mesh position={[0, 0.04, 0]} rotation-x={-Math.PI / 2} scale={[1, 0.75, 1]}>
+          <circleGeometry args={[0.4, 24]} />
+          <meshStandardMaterial color="#ede9fe" roughness={1} />
+        </mesh>
+      </group>
+      {[8.2, 8.5].map((x, i) => (
+        <mesh key={x} position={[x, 0.04, 7.3]}>
+          <cylinderGeometry args={[0.11, 0.12, 0.08, 16]} />
+          <meshStandardMaterial color={i ? "#38bdf8" : "#f43f5e"} />
+        </mesh>
+      ))}
+      <mesh position={[7.4, 0.07, 4.6]}>
+        <sphereGeometry args={[0.07, 12, 10]} />
+        <meshStandardMaterial color="#facc15" roughness={0.6} />
+      </mesh>
+      <B p={[6.6, 0.03, 4.9]} s={[0.25, 0.05, 0.06]} c="#f5f5f4" rot={[0, 0.6, 0]} shadow={false} />
+      <Dog />
       <Plant x={11.3} z={7.3} s={1.1} />
-      <Plant x={-0.5} z={-3.0} s={0.8} kind={1} />
+      <Plant x={1.0} z={-7.3} s={0.9} kind={1} />
 
       <Elevator position={[-11.9, 0]} label="2" />
-      {/* lighting: LED battens over each zone */}
       <Batten x={-6} z={-5.6} len={6} />
-      <Batten x={6} z={-5.6} len={5} />
-      <Batten x={-6.4} z={1.0} len={4} color="#bae6fd" intensity={8} />
-      <Batten x={-4} z={6.4} len={6} color="#d9f99d" intensity={8} />
-      <Batten x={7} z={5.2} len={3} intensity={7} />
+      <Batten x={-6} z={1.2} len={4} color="#bae6fd" intensity={9} />
+      <Batten x={-5} z={6.0} len={5} color="#d9f99d" intensity={7} />
+      <Lamp position={[6, 3.0, -4]} intensity={12} distance={12} color="#fff7ed" />
+      <Lamp position={[6, 3.0, 4.5]} intensity={10} distance={11} color="#ffedd5" />
     </group>
   );
 }
@@ -1114,6 +1194,102 @@ function LibraryShelves() {
   );
 }
 
+const GAMES = [
+  { name: "SNAKE", color: "#22c55e", art: "snake" },
+  { name: "BREAKOUT", color: "#f97316", art: "breakout" },
+  { name: "PONG", color: "#38bdf8", art: "pong" },
+];
+
+// A playable cabinet: its attract screen hints at the game.
+function GameCabinet({ x, game, index }) {
+  const screen = useTex(160, 128, (g, w, h) => {
+    g.fillStyle = "#020617";
+    g.fillRect(0, 0, w, h);
+    g.fillStyle = game.color;
+    if (game.art === "snake") {
+      [[30, 70], [40, 70], [50, 70], [60, 70], [60, 60], [60, 50], [70, 50], [80, 50]].forEach(([px, py]) => g.fillRect(px, py, 9, 9));
+      g.fillStyle = "#ef4444";
+      g.fillRect(110, 50, 9, 9);
+    } else if (game.art === "breakout") {
+      const cols = ["#ef4444", "#f97316", "#facc15", "#22c55e"];
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 8; c++) { g.fillStyle = cols[r]; g.fillRect(8 + c * 18, 10 + r * 9, 16, 7); }
+      g.fillStyle = "#f8fafc";
+      g.fillRect(60, 110, 40, 5);
+      g.beginPath(); g.arc(90, 80, 4, 0, Math.PI * 2); g.fill();
+    } else {
+      g.fillStyle = "#f8fafc";
+      g.fillRect(10, 40, 5, 30);
+      g.fillRect(w - 15, 60, 5, 30);
+      for (let y = 4; y < h; y += 12) g.fillRect(w / 2 - 1, y, 2, 6);
+      g.fillRect(100, 66, 6, 6);
+    }
+    g.fillStyle = "#f8fafc";
+    g.font = `bold 14px ${MONO}`;
+    g.textAlign = "center";
+    g.fillText(game.name, w / 2, h - 6);
+  }, [game.name]);
+  const marquee = useRef();
+  useFrame(({ clock }) => {
+    if (marquee.current) marquee.current.emissiveIntensity = 1.5 + Math.sin(clock.elapsedTime * 2.4 + index * 2) * 0.5;
+  });
+  return (
+    <group position={[x, 0, 2.2]}>
+      <B p={[0, 0, 0]} s={[1.0, 1.9, 0.9]} c="#111827" r={0.04} />
+      <B p={[0.505, 0.2, 0]} s={[0.01, 1.4, 0.7]} c={game.color} shadow={false} />
+      <B p={[-0.505, 0.2, 0]} s={[0.01, 1.4, 0.7]} c={game.color} shadow={false} />
+      <B p={[0, 1.02, 0.5]} s={[0.86, 0.7, 0.08]} c="#000" rot={[-0.18, 0, 0]} />
+      <mesh position={[0, 1.38, 0.56]} rotation-x={-0.18}>
+        <planeGeometry args={[0.76, 0.6]} />
+        <meshBasicMaterial map={screen} toneMapped={false} />
+      </mesh>
+      <B p={[0, 0.84, 0.66]} s={[1.0, 0.1, 0.4]} c="#1f2937" rot={[0.25, 0, 0]} r={0.02} />
+      <mesh position={[-0.2, 0.97, 0.7]}>
+        <sphereGeometry args={[0.05, 12, 12]} />
+        <meshStandardMaterial color={game.color} roughness={0.3} />
+      </mesh>
+      {[0.1, 0.25].map((bx) => (
+        <mesh key={bx} position={[bx, 0.96, 0.7]}>
+          <cylinderGeometry args={[0.035, 0.035, 0.03, 12]} />
+          <meshStandardMaterial color="#facc15" />
+        </mesh>
+      ))}
+      <mesh position={[0, 2.02, 0.1]}>
+        <boxGeometry args={[1.0, 0.26, 0.72]} />
+        <meshStandardMaterial ref={marquee} color={game.color} emissive={game.color} emissiveIntensity={1.5} toneMapped={false} />
+      </mesh>
+      <pointLight position={[0, 1.4, 1.1]} color={game.color} intensity={1.5} distance={2.4} decay={2} />
+    </group>
+  );
+}
+
+// Kanban-style board on the east wall; its content opens on it.
+function QuestBoard() {
+  const tex = useTex(256, 150, (g, w, h) => {
+    g.fillStyle = "#f6f4ee";
+    g.fillRect(0, 0, w, h);
+    ["SHIPPED", "BUILDING", "NEXT"].forEach((t, i) => {
+      g.fillStyle = "#1f2937";
+      g.font = `bold 12px ${MONO}`;
+      g.fillText(t, 10 + i * 84, 18);
+      const cols = ["#bbf7d0", "#fde68a", "#bfdbfe"];
+      for (let k = 0; k < (i === 0 ? 4 : i === 1 ? 2 : 1); k++) {
+        g.fillStyle = cols[i];
+        g.fillRect(10 + i * 84, 28 + k * 28, 70, 22);
+      }
+    });
+  });
+  return (
+    <group position={[11.86, 1.6, 4.4]} rotation-y={-Math.PI / 2}>
+      <B p={[0, -0.72, 0]} s={[2.35, 1.45, 0.05]} c="#9ca3af" shadow={false} />
+      <mesh position={[0, 0, 0.03]}>
+        <planeGeometry args={[2.2, 1.3]} />
+        <meshStandardMaterial map={tex} roughness={0.4} />
+      </mesh>
+      <pointLight position={[0, 0.9, 0.9]} color="#fff1d6" intensity={3} distance={3.5} decay={2} />
+    </group>
+  );
+}
+
 export function GamesFloor() {
   const planks = useTex(512, 512, (g, w, h) => {
     g.fillStyle = "#3b2a22";
@@ -1298,7 +1474,11 @@ export function GamesFloor() {
         <pointLight position={[0, -0.3, 0]} color="#ffd9a8" intensity={6} distance={5} decay={2} />
       </group>
 
-      {/* arcade corner */}
+      {/* arcade corner: three playable cabinets + pinball and an old cab */}
+      {GAMES.map((game, i) => (
+        <GameCabinet key={game.name} x={-9.6 + i * 1.3} game={game} index={i} />
+      ))}
+      <QuestBoard />
       <Pinball />
       <RetroCab />
       <Foosball />
@@ -1818,6 +1998,39 @@ function StarChart() {
   );
 }
 
+// Guestbook: a wooden notice board along the north parapet, covered in notes.
+function GuestbookBoard() {
+  const notes = useMemo(() => {
+    const cols = ["#fde68a", "#fbcfe8", "#bbf7d0", "#bfdbfe", "#ddd6fe", "#fed7aa"];
+    return Array.from({ length: 14 }, (_, i) => ({
+      x: -1.05 + (i % 7) * 0.35 + ((i * 7) % 3) * 0.02,
+      y: 0.55 + Math.floor(i / 7) * 0.42 + ((i * 3) % 4) * 0.02,
+      r: (((i * 37) % 9) - 4) * 0.05,
+      c: cols[i % cols.length],
+    }));
+  }, []);
+  return (
+    <group position={[1.4, 0, -7.35]}>
+      {[-1.25, 1.25].map((x) => (
+        <B key={x} p={[x, 0, 0]} s={[0.12, 1.9, 0.12]} c={C.woodDark} />
+      ))}
+      <B p={[0, 0.3, 0]} s={[2.6, 1.3, 0.08]} c="#7c5a3a" r={0.02} />
+      <B p={[0, 1.6, 0.05]} s={[2.75, 0.12, 0.25]} c={C.woodDark} />
+      {notes.map((n, i) => (
+        <mesh key={i} position={[n.x, n.y, 0.05]} rotation-z={n.r}>
+          <planeGeometry args={[0.28, 0.28]} />
+          <meshStandardMaterial color={n.c} />
+        </mesh>
+      ))}
+      <mesh position={[0, 1.78, 0.06]}>
+        <boxGeometry args={[1.3, 0.22, 0.05]} />
+        <meshStandardMaterial color="#111" emissive="#fbbf24" emissiveIntensity={1.2} toneMapped={false} />
+      </mesh>
+      <pointLight position={[0, 2.2, 0.8]} color="#ffe0a3" intensity={4} distance={4} decay={2} />
+    </group>
+  );
+}
+
 export function Rooftop() {
   const deck = useTex(512, 512, (g, w, h) => {
     g.fillStyle = "#6b5444";
@@ -1932,6 +2145,8 @@ export function Rooftop() {
         <meshStandardMaterial color="#c084fc" side={THREE.DoubleSide} roughness={0.9} />
       </mesh>
       <B p={[-8.3, 0, 6.2]} s={[0.9, 0.08, 0.6]} c="#a16207" r={0.02} />
+
+      <GuestbookBoard />
 
       {/* stargazing deck */}
       <Telescope />

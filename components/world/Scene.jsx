@@ -192,7 +192,11 @@ function NearbyLabel({ touch }) {
   const panel = useWorld((s) => s.panel);
   const phase = useWorld((s) => s.phase);
   if (!nearby || panel || phase !== "playing") return null;
-  const it = nearby === "cat" ? { name: "Byte", label: "Pet the cat", pos: [runtime.cat.x, runtime.cat.z], h: 0.4 } : activeItems().find((i) => i.id === nearby);
+  const pets = {
+    cat: { name: "Byte", label: "Pet the cat", pos: [runtime.cat.x, runtime.cat.z], h: 0.4 },
+    dog: { name: "Pixel", label: "Pet the dog", pos: [runtime.dog.x, runtime.dog.z], h: 0.6 },
+  };
+  const it = pets[nearby] ?? activeItems().find((i) => i.id === nearby);
   if (!it) return null;
   return (
     <Html position={[it.pos[0], it.h + 0.85, it.pos[1]]} center zIndexRange={[15, 0]} style={{ pointerEvents: "none" }}>
@@ -218,7 +222,9 @@ function Proximity() {
         bestD = d;
       }
     }
-    if (!best && getState().floor === "studio" && Math.hypot(runtime.x - runtime.cat.x, runtime.z - runtime.cat.z) < 1.3) best = "cat";
+    const floor = getState().floor;
+    if (!best && floor === "studio" && Math.hypot(runtime.x - runtime.cat.x, runtime.z - runtime.cat.z) < 1.3) best = "cat";
+    if (!best && floor === "gym" && Math.hypot(runtime.x - runtime.dog.x, runtime.z - runtime.dog.z) < 1.4) best = "dog";
     if (getState().nearby !== best) setState({ nearby: best });
   });
   return null;

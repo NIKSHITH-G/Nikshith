@@ -18,8 +18,8 @@ const NAV = [
   ["projects", "Projects"],
   ["skills", "Skills"],
   ["certs", "Certs"],
+  ["library", "Library"],
   ["music", "Music"],
-  ["photos", "Photos"],
   ["contact", "Contact"],
 ];
 
@@ -285,7 +285,7 @@ export default function HUD({ ready, touch }) {
   const floor = useWorld((s) => s.floor);
   const ride = useWorld((s) => s.ride);
   const playing = phase === "playing";
-  const near = nearby === "cat" ? { name: "Pet Byte" } : floorById(floor).items.find((i) => i.id === nearby);
+  const near = nearby === "cat" ? { name: "Pet Byte" } : nearby === "dog" ? { name: "Pet Pixel" } : floorById(floor).items.find((i) => i.id === nearby);
   const next = nextSuggestion();
 
   return (

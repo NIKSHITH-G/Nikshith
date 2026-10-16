@@ -70,8 +70,12 @@ const STUDIO_FURNITURE = {
   tv: [-4, -0.6, 2.4, 0.6],
   couch: [-4, 3.6, 3.2, 1.1],
   table: [-4, 2, 1.6, 0.7],
-  trophies: [-11.6, 2.5, 0.6, 2.4],
-  tripod: [8, 4.6, 0.7, 0.7],
+  trophies: [-4.42, -4.6, 0.6, 2.4], // study, against its east wall
+  nowBoard: [-11.85, 2.5, 0.15, 1.9],
+  shelvesA: [11.65, 1.4, 0.5, 2.6],
+  shelvesB: [11.65, 5.0, 0.5, 2.6],
+  readChair: [8.3, 5.0, 0.9, 0.9],
+  kindleTable: [9.2, 5.0, 0.45, 0.45],
   bench: [9, 6.8, 1.8, 0.5],
   kitchen: [3.55, 5.6, 0.6, 2.2],
   plantA: [-11.2, 7.4, 0.7, 0.6],
@@ -81,7 +85,6 @@ const STUDIO_FURNITURE = {
   dining: [0.6, 5.3, 1.9, 1.0],
   armchair: [-8.6, 6.8, 0.9, 0.9],
   sideTable: [-7.7, 7.3, 0.45, 0.45],
-  plinth: [9.9, 1.4, 0.6, 0.6],
   globe: [-5.0, -2.0, 0.5, 0.5],
   drums: [9.9, -3.1, 1.7, 1.4],
   robot: [-3.3, -2.0, 0.6, 0.6],
@@ -121,10 +124,13 @@ const STUDIO_ITEMS = [
     surface: { c: [3.26, 1.575, -4.2], n: [-1, 0, 0], w: 1.8, h: 1.15 } },
   { id: "music", name: "Piano", label: "Sit at the piano", panel: "music", pos: [8, -7.3], stand: [8, -5.8], h: 1.7,
     shot: [[8.6, 2.6, -4.6], [8, 0.95, -7.1]] },
-  { id: "photos", name: "Camera", label: "Look through the camera", panel: "photos", pos: [8, 4.6], stand: [8, 3.3], h: 1.6,
-    shot: [[8.4, 1.9, 3.9], [11.9, 1.6, 3.2]] },
-  { id: "certs", name: "Trophy case", label: "Open the trophy case", panel: "certs", pos: [-11.6, 2.5], stand: [-10.3, 2.5], h: 2.4,
-    shot: [[-8.5, 2.2, 3.6], [-11.5, 1.15, 2.5]] },
+  { id: "certs", name: "Trophy case", label: "Open the trophy case", panel: "certs", pos: [-4.42, -4.6], stand: [-5.7, -4.6], h: 2.4,
+    shot: [[-7.9, 2.3, -3.0], [-4.5, 1.15, -4.6]] },
+  { id: "now", name: "Now board", label: "What I'm up to", panel: "now", pos: [-11.85, 2.5], stand: [-10.4, 2.5], h: 2.5,
+    shot: [[-8.6, 2.0, 3.4], [-11.8, 1.6, 2.5]],
+    surface: { c: [-11.76, 1.6, 2.5], n: [1, 0, 0], w: 1.9, h: 1.15 } },
+  { id: "library", name: "Kindle", label: "Browse my library", panel: "library", pos: [9.2, 5.0], stand: [8.3, 3.7], h: 1.4,
+    shot: [[7.4, 2.0, 2.4], [9.6, 0.9, 5.4]] },
   { id: "contact", name: "Front door", label: "Write me a letter", panel: "contact", pos: [-11.9, 6], stand: [-10.6, 6.4], h: 2.5,
     shot: [[-8.2, 2.1, 4.5], [-11.8, 1.2, 6.2]] },
   { id: "coffee", name: "Coffee machine", label: "Brew a coffee", action: "coffee", pos: [3.55, 5.2], stand: [2.4, 5.2], h: 1.5 },
@@ -136,7 +142,7 @@ const STUDIO_ROOMS = [
   { id: "lab", name: "Lab", rect: [-4, -8, 4, -1], spawn: [0, -4], door: 0 },
   { id: "music", name: "Music room", rect: [4, -8, 12, -1], spawn: [8, -4], door: 8 },
   { id: "living", name: "Living room", rect: [-12, -1, 4, 8], spawn: [-1, 5.5] },
-  { id: "gallery", name: "Gallery", rect: [4, -1, 12, 8], spawn: [6.8, 2.6] },
+  { id: "gallery", name: "Library", rect: [4, -1, 12, 8], spawn: [6.8, 2.6] },
 ];
 
 // Rough route through the doorways so click-to-walk doesn't get stuck on the partitions.
@@ -161,47 +167,63 @@ function studioPath([fx, fz], [tx, tz]) {
 }
 let livingDetours = (a, b) => [b]; // set once `detours` is defined below
 
-/* ── floor 2: the gym ─────────────────────────────────────────────────── */
+/* ── floor 2: gym (west) + photo studio & dog lounge (east) ──────────── */
+
+// a low wall down the middle with a doorway at z −1.5 … 1.5
+const GYM_WALLS = [...OUTER, [0, -4.75, T, 6.5, PART_H], [0, 4.75, T, 6.5, PART_H]];
 
 export const GYM_FURNITURE = {
+  // gym
   treadmill2: [-9.9, -6.4, 1.0, 2.1],
   treadmill0: [-7.6, -6.4, 1.0, 2.1],
   treadmill1: [-5.3, -6.4, 1.0, 2.1],
-  bike: [-3.2, -6.8, 0.6, 1.3],
-  rower: [-1.2, -6.6, 0.6, 2.0],
-  squat: [2.6, -6.7, 2.3, 1.4],
-  plateTree: [5.0, -4.9, 0.6, 0.6],
-  dumbbells: [7.6, -7.45, 2.9, 0.6],
-  bench: [7.6, -5.3, 0.55, 1.5],
-  cable: [11.3, -5.4, 0.9, 1.8],
-  ring: [3.5, 0.6, 5.2, 4.6],
-  bag: [9.8, -1.2, 0.7, 0.7],
+  rower: [-3.2, -6.6, 0.6, 2.0],
+  bike: [-1.3, -6.8, 0.6, 1.3],
+  squat: [-8.6, -2.6, 2.3, 1.4],
+  ring: [-4.6, 1.2, 4.2, 3.8],
+  bag: [-1.4, -2.8, 0.9, 0.9],
+  learningBoard: [-11.85, -4.4, 0.15, 1.9],
   lockers: [-11.7, 4.6, 0.5, 2.8],
   lockerBench: [-10.9, 4.6, 0.4, 2.4],
   cooler: [-11.6, 7.2, 0.5, 0.5],
-  balls: [-4.1, 2.8, 0.9, 1.6],
-  kettlebells: [-6.4, 5.3, 1.9, 0.45],
-  plyo: [-3.4, 5.4, 0.8, 0.8],
-  sled: [0.2, 6.9, 0.9, 0.8],
-  rig: [6.6, 6.3, 2.2, 0.8],
-  ropes: [11.5, 4.8, 0.4, 0.4],
+  balls: [-3.0, 5.2, 0.9, 0.9],
+  plyo: [-1.0, 4.4, 0.8, 0.8],
+  kettlebells: [-5.0, 7.3, 1.9, 0.45],
+  dumbbells: [-2.2, 7.35, 2.0, 0.5],
+  // photo studio
+  tripod: [6.0, -5.2, 0.7, 0.7],
+  booth: [10.4, -6.2, 2.0, 1.9],
+  softboxA: [10.6, -0.6, 0.5, 0.5],
+  softboxB: [10.6, 3.6, 0.5, 0.5],
+  stool: [11.0, 1.5, 0.45, 0.45],
+  plantE: [1.0, -7.3, 0.6, 0.6],
+  // dog lounge
+  sofa: [5.6, 6.9, 2.8, 0.9],
+  sideTable: [3.7, 7.0, 0.5, 0.5],
+  dogBed: [9.6, 6.6, 1.0, 0.8],
   plant: [11.3, 7.3, 0.6, 0.6],
 };
 
 const GYM_ITEMS = [
   { id: "treadmill", name: "Treadmill", label: "Sprint 100 m", panel: "treadmill", pos: [-7.6, -6.4], stand: [-7.6, -4.6], h: 1.7,
     shot: [[-5.8, 2.6, -3.4], [-7.6, 0.9, -6.4]] },
-  { id: "bag", name: "Punching bag", label: "Hit the bag", panel: "bag", pos: [9.8, -1.2], stand: [8.5, -1.2], h: 2.5,
-    shot: [[6.9, 2.0, 1.0], [9.8, 1.4, -1.2]] },
+  { id: "bag", name: "Punching bag", label: "Hit the bag", panel: "bag", pos: [-1.4, -2.8], stand: [-2.8, -2.8], h: 2.5,
+    shot: [[-5.2, 2.0, -0.6], [-1.4, 1.3, -2.8]] },
+  { id: "learning", name: "Training plan", label: "Read my training plan", panel: "learning", pos: [-11.85, -4.4], stand: [-10.4, -4.4], h: 2.5,
+    shot: [[-8.6, 2.0, -3.4], [-11.8, 1.6, -4.4]],
+    surface: { c: [-11.76, 1.6, -4.4], n: [1, 0, 0], w: 1.8, h: 1.15 } },
+  { id: "photos", name: "Camera", label: "Look through the camera", panel: "photos", pos: [6.0, -5.2], stand: [6.0, -3.8], h: 1.6,
+    shot: [[6.6, 2.0, -2.6], [6.0, 1.5, -7.8]] },
+  { id: "photobooth", name: "Photo booth", label: "Take a selfie strip", panel: "photobooth", pos: [10.4, -6.2], stand: [10.4, -4.5], h: 2.6,
+    shot: [[8.8, 2.2, -2.0], [10.4, 1.2, -6.2]] },
   elevator(),
 ];
 
 const GYM_ROOMS = [
   { id: "cardio", name: "Cardio", rect: [-12, -8, 0, -3.5], spawn: [-6.5, -3.4] },
-  { id: "weights", name: "Weights", rect: [0, -8, 12, -3.5], spawn: [5, -3.3] },
-  { id: "ring", name: "Boxing ring", rect: [0, -3.5, 12, 3.5], spawn: [8.3, 0.6] },
-  { id: "stretch", name: "Stretch zone", rect: [-12, -3.5, 0, 4.5], spawn: [-6.5, 1] },
-  { id: "turf", name: "Turf & rig", rect: [-12, 4.5, 12, 8], spawn: [-3, 6.6] },
+  { id: "gym", name: "Ring & weights", rect: [-12, -3.5, 0, 8], spawn: [-8.8, 1.4] },
+  { id: "photo", name: "Photo studio", rect: [0, -8, 12, 0.5], spawn: [6, -2.6] },
+  { id: "lounge", name: "Dog lounge", rect: [0, 0.5, 12, 8], spawn: [5, 3.5] },
 ];
 
 /* ── floor 3: the games room ──────────────────────────────────────────── */
@@ -222,6 +244,10 @@ export const GAMES_FURNITURE = {
   foosball: [-6.8, 5.2, 1.4, 0.8],
   pinball: [-11.2, 3.5, 0.9, 1.5],
   arcade: [-11.35, 5.3, 0.8, 0.9],
+  cab0: [-9.6, 2.2, 1.05, 0.95],
+  cab1: [-8.3, 2.2, 1.05, 0.95],
+  cab2: [-7.0, 2.2, 1.05, 0.95],
+  kanban: [11.85, 4.4, 0.15, 2.4],
   beanbagA: [10.5, 6.8, 1, 1],
   beanbagB: [9.3, 7.2, 0.9, 0.9],
   plant: [-11.2, 7.3, 0.6, 0.6],
@@ -232,6 +258,14 @@ const GAMES_ITEMS = [
     shot: [[-4.5, 4.4, 1.4], [-4.5, 0.8, -2.6]] },
   { id: "chess", name: "Chess board", label: "The World vs Nikshith", panel: "chess", pos: [5.5, -3.5], stand: [5.5, -2.1], h: 1.3,
     shot: [[5.5, 2.5, -1.3], [5.5, 0.85, -3.5]] },
+  ...["Snake", "Breakout", "Pong"].map((name, i) => {
+    const x = -9.6 + i * 1.3;
+    return { id: `arcade-${i}`, name, label: `Play ${name}`, panel: "arcade", item: i, pos: [x, 2.2], stand: [x, 3.6], h: 2.3,
+      shot: [[x, 1.9, 4.8], [x, 1.4, 2.3]] };
+  }),
+  { id: "kanban", name: "Side quests", label: "See what I'm building", panel: "kanban", pos: [11.85, 4.4], stand: [10.3, 4.4], h: 2.5,
+    shot: [[8.6, 2.0, 5.6], [11.8, 1.6, 4.4]],
+    surface: { c: [11.76, 1.6, 4.4], n: [-1, 0, 0], w: 2.2, h: 1.3 } },
   elevator(),
 ];
 
@@ -240,7 +274,7 @@ const GAMES_ROOMS = [
   { id: "bar", name: "Bar", rect: [-1, -8, 4.5, -3], spawn: [1.8, -4.6] },
   { id: "chess", name: "Chess library", rect: [4.5, -8, 12, 1.5], spawn: [5.5, -1] },
   { id: "lounge", name: "Lounge", rect: [-3, 1.5, 4, 8], spawn: [0.4, 1.6] },
-  { id: "arcade", name: "Arcade corner", rect: [-12, 1.5, -3, 8], spawn: [-8, 3] },
+  { id: "arcade", name: "Arcade corner", rect: [-12, 1.5, -3, 8], spawn: [-8, 4.0] },
   { id: "pingpong", name: "Ping-pong", rect: [4, 1.5, 12, 8], spawn: [7.4, 2.6] },
 ];
 
@@ -278,6 +312,7 @@ export const ROOF_FURNITURE = {
   loungerA: [4.8, 5.9, 0.8, 1.9],
   loungerB: [6.2, 5.9, 0.8, 1.9],
   planterS: [-6, 7.4, 3.2, 0.6],
+  guestbook: [1.4, -7.35, 2.6, 0.35],
 };
 
 const ROOF_ITEMS = [
@@ -285,6 +320,8 @@ const ROOF_ITEMS = [
     shot: [[4.6, 2.6, -2.2], [7.6, 2.4, -6.2]] },
   { id: "radio", name: "Radio", label: "Change the vibe", panel: "radio", pos: [-2.7, 4.3], stand: [-2.7, 5.5], h: 1.0,
     shot: [[-2.0, 1.9, 6.6], [-2.7, 0.8, 4.3]] },
+  { id: "guestbook", name: "Guestbook", label: "Leave a note", panel: "guestbook", pos: [1.4, -7.35], stand: [1.4, -5.9], h: 2.3,
+    shot: [[1.4, 2.2, -3.4], [1.4, 1.3, -7.35]] },
   elevator([-10.5, 0], [-9.3, 0]),
 ];
 
@@ -348,12 +385,28 @@ function detours(obstacles) {
   return (from, to) => route(from, to, 0);
 }
 
+// Floor 2 is split by a wall: cross it through the doorway at x = 0, z ≈ 0.
+function throughDoorway(route) {
+  return (from, to) => {
+    const legs = (from[0] < 0) !== (to[0] < 0)
+      ? (from[0] < 0 ? [[-0.9, 0], [0.9, 0], to] : [[0.9, 0], [-0.9, 0], to])
+      : [to];
+    const out = [];
+    let cur = from;
+    for (const p of legs) {
+      out.push(...route(cur, p));
+      cur = p;
+    }
+    return out;
+  };
+}
+
 livingDetours = detours([
   [-4, -0.6, 2.4, 0.6], // tv
   [-4, 2.75, 3.4, 2.7], // couch + coffee table
   STUDIO_FURNITURE.dining,
   STUDIO_FURNITURE.armchair,
-  STUDIO_FURNITURE.plinth,
+  STUDIO_FURNITURE.readChair,
   STUDIO_FURNITURE.kitchen,
   [4, 5.5, 0.2, 5], // gallery half-wall
 ]);
@@ -361,11 +414,14 @@ livingDetours = detours([
 /* ── the building ─────────────────────────────────────────────────────── */
 
 export const FLOORS = [
-  { id: "studio", label: "1", name: "Studio", blurb: "work, music & photos", walls: WALLS, furniture: STUDIO_FURNITURE, items: STUDIO_ITEMS, rooms: STUDIO_ROOMS, path: studioPath, arrive: [-10.6, 0] },
-  { id: "gym", label: "2", name: "Gym", blurb: "boxing ring, treadmill sprint", walls: OUTER, furniture: GYM_FURNITURE, items: GYM_ITEMS, rooms: GYM_ROOMS, arrive: [-10.6, 0],
-    path: detours(Object.values(GYM_FURNITURE)) },
+  { id: "studio", label: "1", name: "Studio", blurb: "work, music & library", walls: WALLS, furniture: STUDIO_FURNITURE, items: STUDIO_ITEMS, rooms: STUDIO_ROOMS, path: studioPath, arrive: [-10.6, 0] },
+  { id: "gym", label: "2", name: "Gym & Photo studio", blurb: "gym, photo booth & a dog", walls: GYM_WALLS, furniture: GYM_FURNITURE, items: GYM_ITEMS, rooms: GYM_ROOMS, arrive: [-10.6, 0],
+    path: throughDoorway(detours(Object.values(GYM_FURNITURE))) },
   { id: "games", label: "3", name: "Games room", blurb: "bar, snooker & live chess", walls: OUTER, furniture: GAMES_FURNITURE, items: GAMES_ITEMS, rooms: GAMES_ROOMS, arrive: [-10.6, 0],
-    path: detours(Object.values(GAMES_FURNITURE)) },
+    path: detours([
+      [-8.3, 2.2, 3.85, 0.95], // the arcade row as one block
+      ...Object.entries(GAMES_FURNITURE).filter(([k]) => !["cab0", "cab1", "cab2"].includes(k)).map(([, v]) => v),
+    ]) },
   { id: "roof", label: "R", name: "Rooftop", blurb: "stars, fire pit, hot tub", walls: ROOF_WALLS, furniture: ROOF_FURNITURE, items: ROOF_ITEMS, rooms: ROOF_ROOMS, arrive: [-9.3, 0],
     path: detours([
       [-0.3, 2.7, 6.0, 4.0], // the whole fire-pit lounge as one block
@@ -380,8 +436,10 @@ export const ALL_ITEMS = FLOORS.flatMap((f) => f.items.map((it) => ({ ...it, flo
 
 // The "explore" checklist — every section worth visiting, in tour order.
 export const SECTIONS = [
-  "about", "experience", "github", "education", "projects", "skills", "certs", "music", "photos", "contact",
-  "treadmill", "bag", "snooker", "chess", "telescope",
+  "about", "experience", "github", "education", "projects", "skills", "certs", "now", "library", "music", "contact",
+  "treadmill", "bag", "learning", "photos", "photobooth",
+  "snooker", "chess", "arcade", "kanban",
+  "telescope", "guestbook",
 ];
 
 // You first arrive at the studio's front door, facing into the flat.

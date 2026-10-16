@@ -804,7 +804,7 @@ function Living() {
       <PLight k="living" position={[-6.3, 1.55, 4.2]} color="#ffb870" intensity={8} distance={8.5} />
       <Sparkles count={40} scale={[6, 2.2, 4]} position={[-4.5, 1.3, 3]} size={2} speed={0.18} opacity={0.45} color="#ffd9a0" />
 
-      <Trophies />
+      <NowBoard />
       <Kitchenette />
       <Elevator position={[-11.9, 0]} label="1" />
 
@@ -973,8 +973,10 @@ function FrontDoor() {
 
 function Trophies() {
   const cups = [[0.6, 1.75], [0.6, 2.5], [0.6, 3.25], [1.28, 2.1], [1.28, 2.9]];
+  // built facing +x, then turned round to face into the study from its east wall
   return (
-    <group position={[-11.6, 0, 0]}>
+    <group position={[-4.42, 0, -4.6]} rotation-y={Math.PI}>
+    <group position={[0, 0, -2.5]}>
       {/* hollow cabinet: back, sides, top and plinth so the trophies are on show */}
       <B p={[-0.26, 0, 2.5]} s={[0.08, 2.2, 2.4]} c={C.woodDark} />
       <B p={[0, 0, 1.33]} s={[0.6, 2.2, 0.06]} c={C.woodDark} />
@@ -1009,12 +1011,13 @@ function Trophies() {
       </mesh>
       <PLight k="trophies" position={[0.6, 1.95, 2.5]} color="#ffe0a3" intensity={3} distance={3.2} />
     </group>
+    </group>
   );
 }
 
-/* ───────────────────────── gallery ───────────────────────── */
+/* ───────────────────────── prints (also used on floor 2) ───────────────────────── */
 
-function Photo({ z, w, h, palette, seed }) {
+export function Print({ position, rotation, w, h, palette, seed }) {
   const tex = useTex(320, 220, (g, cw, ch) => {
     const grd = g.createLinearGradient(0, 0, 0, ch);
     palette.forEach((c, i) => grd.addColorStop(i / (palette.length - 1), c));
@@ -1030,62 +1033,173 @@ function Photo({ z, w, h, palette, seed }) {
     g.fill();
   }, [seed]);
   return (
-    <group position={[11.88, 1.65, z]} rotation-y={-Math.PI / 2}>
+    <group position={position} rotation={rotation}>
       <B p={[0, -h / 2 - 0.09, 0]} s={[w + 0.18, h + 0.18, 0.05]} c="#141416" shadow={false} />
       <B p={[0, -h / 2 - 0.03, 0.01]} s={[w + 0.06, h + 0.06, 0.05]} c="#f4f1ea" shadow={false} />
       <mesh position={[0, 0, 0.04]}>
         <planeGeometry args={[w * 0.9, h * 0.88]} />
         <meshStandardMaterial map={tex} roughness={0.5} />
       </mesh>
-      {/* picture light */}
       <mesh position={[0, h / 2 + 0.16, 0.12]}>
         <boxGeometry args={[w * 0.5, 0.04, 0.06]} />
-        <GlowMat k="gallery" color="#fff1d6" intensity={2} base="#888" />
+        <meshStandardMaterial color="#888" emissive="#fff1d6" emissiveIntensity={2} toneMapped={false} />
       </mesh>
     </group>
   );
 }
 
-function Gallery() {
-  const rec = useRef();
+/* ───────────────────────── library ───────────────────────── */
+
+const SPINES = ["#7f1d1d", "#14532d", "#1e3a8a", "#78350f", "#e7e5e4", "#3f3f46", "#a16207", "#581c87", "#0f766e", "#be123c"];
+
+// A tall bookcase against the east wall, centred on z.
+function TallShelf({ z }) {
+  const books = useMemo(() => {
+    const out = [];
+    for (let shelf = 0; shelf < 5; shelf++) {
+      let bz = z - 1.2;
+      let k = shelf * 7 + Math.round(z * 10);
+      while (bz < z + 1.15) {
+        const t = 0.07 + ((k * 37) % 6) / 70;
+        const h = 0.28 + ((k * 13) % 5) / 40;
+        const lean = k % 13 === 4 ? 0.22 : 0;
+        // the odd gap, so the shelves look used rather than stocked
+        if (k % 17 !== 9) out.push({ y: 0.12 + shelf * 0.47, z: bz + t / 2, t, h, c: SPINES[k % SPINES.length], lean });
+        bz += t + 0.012 + (lean ? 0.1 : 0);
+        k++;
+      }
+    }
+    return out;
+  }, [z]);
+  return (
+    <group>
+      <B p={[11.65, 0, z]} s={[0.5, 2.5, 2.6]} c="#3a2a20" r={0.02} />
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <B key={i} p={[11.4, 0.08 + i * 0.47, z]} s={[0.04, 0.04, 2.5]} c="#5a4232" shadow={false} />
+      ))}
+      {books.map((b, i) => (
+        <B key={i} p={[11.5, b.y, b.z]} s={[0.28, b.h, b.t]} c={b.c} shadow={false} rough={0.7} rot={[b.lean, 0, 0]} />
+      ))}
+    </group>
+  );
+}
+
+function Library() {
+  const kindle = useRef();
   useFrame(({ clock }) => {
-    if (rec.current) rec.current.emissiveIntensity = Math.sin(clock.elapsedTime * 4) > 0 ? 3 : 0.2;
+    if (kindle.current) kindle.current.emissiveIntensity = 0.55 + Math.sin(clock.elapsedTime * 1.5) * 0.08;
   });
   return (
     <group>
-      <Photo z={0.6} w={1.5} h={1} palette={["#fb923c", "#db2777", "#312e81"]} seed={1} />
-      <Photo z={3.2} w={2} h={1.3} palette={["#0ea5e9", "#1e3a8a", "#020617"]} seed={2} />
-      <Photo z={5.9} w={1.5} h={1} palette={["#fde68a", "#f97316", "#7c2d12"]} seed={5} />
-      {[0.6, 3.2, 5.9].map((z) => (
-        <PLight key={z} k="gallery" position={[11.1, 2.6, z]} intensity={3.5} distance={3} color="#fff1d6" />
-      ))}
-      {/* camera on a tripod, aimed at the prints */}
-      <group position={[8, 0, 4.6]}>
-        {[0, 2.1, 4.2].map((a) => (
-          <mesh key={a} position={[Math.sin(a) * 0.22, 0.6, Math.cos(a) * 0.22]} rotation={[Math.cos(a) * 0.35, 0, -Math.sin(a) * 0.35]} castShadow>
-            <cylinderGeometry args={[0.018, 0.025, 1.25, 6]} />
-            <meshStandardMaterial color="#222" />
-          </mesh>
+      <Rug x={8.6} z={4.4} w={4.6} d={3.4} color="#3b2f2a" border="#7c5a3a" />
+      <TallShelf z={1.4} />
+      <TallShelf z={5.0} />
+      {/* rolling ladder on the shelves */}
+      <group position={[11.0, 0, 3.2]} rotation-z={0.2}>
+        {[-0.22, 0.22].map((dz) => (
+          <B key={dz} p={[0, 0, dz]} s={[0.05, 2.5, 0.05]} c="#8b5a2b" />
         ))}
-        <B p={[0, 1.17, 0]} s={[0.36, 0.22, 0.22]} c="#1d1d22" r={0.03} />
-        <B p={[-0.05, 1.39, 0]} s={[0.12, 0.06, 0.12]} c="#1d1d22" />
-        <mesh position={[0.26, 1.28, 0]} rotation-z={Math.PI / 2} castShadow>
-          <cylinderGeometry args={[0.08, 0.09, 0.2, 20]} />
-          <meshStandardMaterial color="#111" metalness={0.5} roughness={0.35} />
+        {Array.from({ length: 7 }, (_, i) => (
+          <B key={i} p={[0, 0.3 + i * 0.32, 0]} s={[0.04, 0.03, 0.44]} c="#8b5a2b" shadow={false} />
+        ))}
+      </group>
+      {/* reading chair facing into the room */}
+      <group position={[8.3, 0, 5.0]}>
+        <B p={[0, 0.05, 0]} s={[0.9, 0.4, 0.85]} c="#065f46" r={0.08} />
+        <B p={[0, 0.4, -0.35]} s={[0.9, 0.75, 0.2]} c="#065f46" r={0.08} />
+        <B p={[-0.42, 0.4, 0]} s={[0.16, 0.3, 0.85]} c="#065f46" r={0.06} />
+        <B p={[0.42, 0.4, 0]} s={[0.16, 0.3, 0.85]} c="#065f46" r={0.06} />
+        <B p={[0.05, 0.46, 0.1]} s={[0.55, 0.03, 0.4]} c="#d6d3d1" shadow={false} rot={[0, -0.3, 0]} />
+      </group>
+      {/* side table with the Kindle on a little stand, and tea */}
+      <group position={[9.2, 0, 5.0]}>
+        <mesh position={[0, 0.27, 0]}>
+          <cylinderGeometry args={[0.2, 0.22, 0.54, 16]} />
+          <meshStandardMaterial color={C.woodDark} />
         </mesh>
-        <mesh position={[0.365, 1.28, 0]} rotation-y={Math.PI / 2}>
-          <circleGeometry args={[0.065, 20]} />
-          <meshStandardMaterial color="#1e3a8a" metalness={0.8} roughness={0.1} />
-        </mesh>
-        <mesh position={[-0.1, 1.31, 0.112]}>
-          <sphereGeometry args={[0.018, 8, 8]} />
-          <meshStandardMaterial ref={rec} color="#300" emissive="#ef4444" toneMapped={false} />
+        <B p={[0, 0.54, 0.02]} s={[0.12, 0.03, 0.1]} c="#111" shadow={false} />
+        <group position={[0, 0.66, -0.02]} rotation-x={-0.35}>
+          <B p={[0, -0.1, 0]} s={[0.15, 0.2, 0.012]} c="#1c1c22" r={0.005} shadow={false} />
+          <mesh position={[0, 0.005, 0.007]}>
+            <planeGeometry args={[0.12, 0.155]} />
+            <meshStandardMaterial ref={kindle} color="#f1ead6" emissive="#f6efdc" emissiveIntensity={0.55} />
+          </mesh>
+        </group>
+        <mesh position={[0.12, 0.6, 0.08]}>
+          <cylinderGeometry args={[0.045, 0.04, 0.09, 12]} />
+          <meshStandardMaterial color="#e7e5e4" />
         </mesh>
       </group>
+      {/* arc floor lamp over the chair */}
+      <group position={[7.3, 0, 5.6]}>
+        <B p={[0, 0, 0]} s={[0.32, 0.04, 0.32]} c={C.black} r={0.015} />
+        <mesh position={[0, 0.85, 0]}>
+          <cylinderGeometry args={[0.018, 0.018, 1.7, 6]} />
+          <meshStandardMaterial color="#b8860b" metalness={0.8} roughness={0.3} />
+        </mesh>
+        <mesh position={[0.45, 1.75, -0.2]} rotation-z={-1.1}>
+          <cylinderGeometry args={[0.014, 0.014, 1.0, 6]} />
+          <meshStandardMaterial color="#b8860b" metalness={0.8} roughness={0.3} />
+        </mesh>
+        <mesh position={[0.95, 1.95, -0.4]}>
+          <sphereGeometry args={[0.16, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <GlowMat k="gallery" color="#ffcf8a" intensity={1.4} base="#b8860b" side={THREE.DoubleSide} />
+        </mesh>
+        <PLight k="gallery" position={[0.95, 1.7, -0.4]} color="#ffcf8a" intensity={5} distance={5} />
+      </group>
+      {/* a stack of books waiting by the chair */}
+      {[0, 1, 2, 3].map((i) => (
+        <B key={i} p={[7.6, i * 0.07, 4.3]} s={[0.32, 0.065, 0.24]} c={SPINES[(i * 3) % SPINES.length]} shadow={false} rot={[0, i * 0.25, 0]} />
+      ))}
       <B p={[9, 0.42, 6.8]} s={[1.8, 0.08, 0.5]} c={C.wood} r={0.03} />
       <B p={[8.3, 0, 6.8]} s={[0.08, 0.42, 0.45]} c={C.black} />
       <B p={[9.7, 0, 6.8]} s={[0.08, 0.42, 0.45]} c={C.black} />
+      <mesh position={[11.86, 2.8, 3.2]} rotation-y={-Math.PI / 2}>
+        <planeGeometry args={[1.6, 0.26]} />
+        <meshStandardMaterial color="#111" emissive="#fbbf24" emissiveIntensity={0.9} toneMapped={false} />
+      </mesh>
+      <PLight k="gallery" position={[10.4, 2.6, 1.4]} intensity={3} distance={4} color="#fff1d6" />
+      <PLight k="gallery" position={[10.4, 2.6, 5.0]} intensity={3} distance={4} color="#fff1d6" />
       <Plant x={11.3} z={7.3} s={1.1} />
+    </group>
+  );
+}
+
+/* ───────────────────────── now board (living room) ───────────────────────── */
+
+// Cork board on the west wall; its content is drawn on it when you walk up.
+function NowBoard() {
+  const cork = useTex(256, 160, (g, w, h) => {
+    g.fillStyle = "#b08452";
+    g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 900; i++) {
+      g.fillStyle = i % 2 ? "rgba(90,60,30,0.25)" : "rgba(230,200,150,0.2)";
+      g.fillRect((i * 97) % w, (i * 53 + (i >> 2)) % h, 2, 2);
+    }
+    [["#fde68a", 30, 30], ["#bbf7d0", 120, 24], ["#fbcfe8", 70, 92], ["#bfdbfe", 170, 88]].forEach(([c, x, y], i) => {
+      g.save();
+      g.translate(x + 30, y + 22);
+      g.rotate(((i % 3) - 1) * 0.06);
+      g.fillStyle = c;
+      g.fillRect(-30, -22, 60, 44);
+      g.fillStyle = "rgba(0,0,0,0.35)";
+      for (let l = 0; l < 3; l++) g.fillRect(-22, -10 + l * 9, 44 - l * 8, 3);
+      g.fillStyle = "#dc2626";
+      g.beginPath(); g.arc(0, -18, 4, 0, Math.PI * 2); g.fill();
+      g.restore();
+    });
+    g.fillStyle = "#1c1917";
+    g.font = `bold 20px ${MONO}`;
+    g.fillText("NOW", 12, 150);
+  });
+  return (
+    <group position={[-11.86, 1.6, 2.5]} rotation-y={Math.PI / 2}>
+      <B p={[0, -0.65, 0]} s={[2.05, 1.3, 0.06]} c="#5a3a24" shadow={false} />
+      <mesh position={[0, 0, 0.035]}>
+        <planeGeometry args={[1.9, 1.15]} />
+        <meshStandardMaterial map={cork} roughness={0.95} />
+      </mesh>
+      <PLight k="living" position={[0, 0.9, 0.7]} color="#ffe0a3" intensity={2} distance={3} />
     </group>
   );
 }
@@ -1205,39 +1319,6 @@ function CatCorner() {
         <sphereGeometry args={[0.07, 12, 10]} />
         <meshStandardMaterial color="#ef4444" roughness={1} />
       </mesh>
-    </group>
-  );
-}
-
-function Sculpture() {
-  const ref = useRef();
-  useFrame((_, dt) => {
-    if (ref.current) ref.current.rotation.y += dt * 0.25;
-  });
-  return (
-    <group position={[9.9, 0, 1.4]}>
-      <B p={[0, 0, 0]} s={[0.55, 1.0, 0.55]} c="#f4f1ea" r={0.02} />
-      <mesh ref={ref} position={[0, 1.35, 0]} castShadow>
-        <torusKnotGeometry args={[0.2, 0.06, 96, 12, 2, 3]} />
-        <meshStandardMaterial color="#c7a17a" metalness={0.85} roughness={0.25} />
-      </mesh>
-      <PLight k="gallery" position={[0, 2.6, 0.4]} color="#fff1d6" intensity={3} distance={3} />
-    </group>
-  );
-}
-
-function LeaningCanvases() {
-  return (
-    <group>
-      {[[11.6, 7.2, 0.9, 1.2, "#fb7185", -0.18], [11.5, 6.6, 0.7, 0.9, "#38bdf8", -0.12]].map(([x, z, w, h, col, tilt], i) => (
-        <group key={i} position={[x, h / 2, z]} rotation={[0, -Math.PI / 2, tilt]}>
-          <B p={[0, -h / 2, 0]} s={[w, h, 0.04]} c="#f4f1ea" shadow={false} />
-          <mesh position={[0, 0, 0.025]}>
-            <planeGeometry args={[w - 0.1, h - 0.1]} />
-            <meshStandardMaterial color={col} />
-          </mesh>
-        </group>
-      ))}
     </group>
   );
 }
@@ -1382,8 +1463,7 @@ function Extras() {
       <Dining />
       <ReadingNook />
       <CatCorner />
-      <Sculpture />
-      <LeaningCanvases />
+      <Trophies />
       <Globe />
       <DrumKit />
       <MicStand />
@@ -1391,7 +1471,6 @@ function Extras() {
       {/* rugs anchor the study, music room and gallery */}
       <Rug x={-8} z={-4.4} w={3.6} d={2.6} color="#1e3a5f" border="#2d4a73" />
       <Rug x={8.6} z={-3.6} w={4.6} d={3.2} color="#3f1d38" border="#6b2d5c" />
-      <Rug x={8.4} z={3.4} w={4.2} d={3.0} color="#d6d0c4" border="#b8b1a3" />
       <Rug x={0} z={-3.4} w={2.6} d={2.4} color="#1e293b" border="#f59e0b" />
     </group>
   );
@@ -1405,7 +1484,7 @@ export default function Apartment() {
       <Lab />
       <Music />
       <Living />
-      <Gallery />
+      <Library />
       <Extras />
     </group>
   );

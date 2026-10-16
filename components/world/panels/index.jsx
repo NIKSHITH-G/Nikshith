@@ -8,6 +8,7 @@ const from = (load, name) => lazy(() => load().then((m) => ({ default: m[name] }
 const screens = () => import("./screens");
 const stages = () => import("./stages");
 const building = () => import("./building");
+const more = () => import("./more");
 const TVScreen = from(screens, "TVScreen");
 const TerminalScreen = from(screens, "TerminalScreen");
 const ArcadeScreen = from(screens, "ArcadeScreen");
@@ -25,12 +26,20 @@ const SnookerGame = from(building, "SnookerGame");
 const ChessGame = from(building, "ChessGame");
 const Telescope = from(building, "Telescope");
 const RadioPanel = from(building, "RadioPanel");
+const LibraryKindle = from(more, "LibraryKindle");
+const NowScreen = from(more, "NowScreen");
+const LearningScreen = from(more, "LearningScreen");
+const KanbanScreen = from(more, "KanbanScreen");
+const PhotoBoothStage = from(more, "PhotoBoothStage");
+const ArcadeGames = from(more, "ArcadeGames");
+const GuestbookStage = from(more, "GuestbookStage");
 
 // warm the panel chunks once the studio is idle, so opening one never waits
 export function preloadPanels() {
   screens();
   stages();
   building();
+  more();
 }
 
 export const PANEL_META = {
@@ -39,9 +48,9 @@ export const PANEL_META = {
   education: { kicker: "study · bookshelf", title: "Pick a book" },
   projects: { kicker: "lab · arcade", title: "Select game" },
   skills: { kicker: "lab · whiteboard", title: "The stack" },
-  certs: { kicker: "living room · trophy case", title: "Trophies" },
+  certs: { kicker: "study · trophy case", title: "Trophies" },
   music: { kicker: "music room · piano", title: "Music" },
-  photos: { kicker: "gallery · viewfinder", title: "Through the lens" },
+  photos: { kicker: "photo studio · camera", title: "Through the lens" },
   contact: { kicker: "front door", title: "Write me a letter" },
   github: { kicker: "study · wall screen", title: "Ship log" },
   elevator: { kicker: "elevator", title: "Going up?" },
@@ -51,6 +60,13 @@ export const PANEL_META = {
   chess: { kicker: "games room · chess", title: "The World vs Nikshith" },
   telescope: { kicker: "rooftop · telescope", title: "The southern sky" },
   radio: { kicker: "rooftop · radio", title: "Change the vibe" },
+  library: { kicker: "studio · library", title: "Reading list" },
+  now: { kicker: "living room · now board", title: "What I'm up to" },
+  learning: { kicker: "gym · training plan", title: "What I'm learning" },
+  photobooth: { kicker: "photo studio · booth", title: "Photo booth" },
+  arcade: { kicker: "games room · arcade", title: "Insert coin" },
+  kanban: { kicker: "games room · side quests", title: "Side quests" },
+  guestbook: { kicker: "rooftop · guestbook", title: "Guestbook" },
 };
 
 // Each object opens in its own way: screens light up in place, everything else gets a stage.
@@ -72,6 +88,13 @@ const VIEWS = {
   chess: ChessGame,
   telescope: Telescope,
   radio: RadioPanel,
+  library: LibraryKindle,
+  now: NowScreen,
+  learning: LearningScreen,
+  photobooth: PhotoBoothStage,
+  arcade: ArcadeGames,
+  kanban: KanbanScreen,
+  guestbook: GuestbookStage,
 };
 
 export function usePortrait() {

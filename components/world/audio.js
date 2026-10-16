@@ -308,3 +308,39 @@ export function setStation(name) {
     }, 700);
   }
 }
+
+// Pixel's happy "woof": two short, rough barks.
+export function bark() {
+  if (!ctx) return;
+  [0, 0.18].forEach((at) => {
+    const t = ctx.currentTime + at;
+    const o = ctx.createOscillator();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(420, t);
+    o.frequency.exponentialRampToValueAtTime(180, t + 0.12);
+    const f = ctx.createBiquadFilter();
+    f.type = "bandpass";
+    f.frequency.value = 700;
+    f.Q.value = 1.5;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.22, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+    o.connect(f).connect(g).connect(sfxBus);
+    o.start(t);
+    o.stop(t + 0.16);
+    noise(0.08, { type: "bandpass", freq: 900, q: 1, gain: 0.08, at });
+  });
+}
+
+// Camera shutter + film advance, for the photo booth.
+export function snap() {
+  noise(0.025, { type: "highpass", freq: 2500, gain: 0.5 });
+  noise(0.04, { type: "bandpass", freq: 1100, q: 2, gain: 0.3, at: 0.06 });
+  noise(0.2, { type: "bandpass", freq: 2400, q: 3, gain: 0.06, at: 0.12 });
+}
+
+// Tiny arcade bleeps for the cabinets.
+export function beep(freq = 660, dur = 0.06) {
+  tone(freq, { type: "square", dur, gain: 0.05 });
+}

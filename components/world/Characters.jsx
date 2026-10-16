@@ -179,7 +179,7 @@ export function Player() {
     // look at whatever you're near
     let look = 0;
     const near = activeItems().find((i) => i.id === s.nearby);
-    const target = near ? near.pos : s.nearby === "cat" ? [runtime.cat.x, runtime.cat.z] : null;
+    const target = near ? near.pos : s.nearby === "cat" ? [runtime.cat.x, runtime.cat.z] : s.nearby === "dog" ? [runtime.dog.x, runtime.dog.z] : null;
     if (target && !walking) {
       look = Math.max(-0.8, Math.min(0.8, angleDiff(Math.atan2(target[0] - runtime.x, target[1] - runtime.z), runtime.heading)));
     } else if (!walking) {

@@ -50,6 +50,7 @@ export const runtime = {
   keys: new Set(),
   joy: { x: 0, z: 0 },
   cat: { x: -7, z: 4.6 },
+  dog: { x: 6.5, z: 3.5 }, // Pixel, on floor 2
   yaw: 0, // camera orbit, set by dragging
   zoom: 1, // set by the scroll wheel
   powerStart: null, // performance.now()/1000 when the lights start coming on
@@ -166,6 +167,7 @@ export function walkTo(x, z, pendingOpen = null) {
 
 export function interact(id) {
   if (id === "cat") return petCat();
+  if (id === "dog") return petDog();
   const it = activeItems().find((i) => i.id === id);
   if (!it) return;
   runtime.heading = Math.atan2(it.pos[0] - runtime.x, it.pos[1] - runtime.z);
@@ -227,6 +229,19 @@ const CAT_LINES = [
   "Byte knocks a pen off the desk. Byte's way of saying 'ship it'.",
 ];
 let catIdx = 0;
+const DOG_LINES = [
+  "Pixel rolls over for belly rubs. Pixel is the studio's head of morale.",
+  "Pixel brings you a slobbery ball. Throwing it is now your full-time job.",
+  "Pixel sniffs your shoes and approves. Strong candidate.",
+  "Pixel photobombs every shot in the booth. Every. Single. One.",
+  "Pixel thinks the cat downstairs gets too much credit.",
+];
+let dogIdx = 0;
+function petDog() {
+  sfx.bark?.();
+  toast(DOG_LINES[dogIdx++ % DOG_LINES.length], "🐕");
+}
+
 function petCat() {
   sfx.meow();
   toast(CAT_LINES[catIdx++ % CAT_LINES.length]);

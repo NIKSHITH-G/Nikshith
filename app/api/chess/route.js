@@ -3,9 +3,9 @@
 //   - Only the owner can make Black's move or reset the board.
 // The owner proves who they are with CHESS_OWNER_KEY (set it in Vercel env vars),
 // sent as the x-owner-key header. Every move is validated here with chess.js.
-import { timingSafeEqual } from "node:crypto";
 import { Chess } from "chess.js";
 import { get, cas, throttle, clientId, persistent } from "../../../lib/kv";
+import { isOwner } from "../../../lib/owner";
 
 export const dynamic = "force-dynamic";
 
@@ -15,15 +15,6 @@ const MAX_HISTORY = 400;
 
 function fresh(gameNo = 1) {
   return { fen: new Chess().fen(), history: [], gameNo, updatedAt: Date.now() };
-}
-
-function isOwner(request) {
-  const expected = process.env.CHESS_OWNER_KEY;
-  const given = request.headers.get("x-owner-key") || "";
-  if (!expected || !given) return false;
-  const a = Buffer.from(expected);
-  const b = Buffer.from(given);
-  return a.length === b.length && timingSafeEqual(a, b);
 }
 
 async function load() {
