@@ -1138,13 +1138,28 @@ function Library() {
       <Rug x={8.6} z={4.4} w={4.6} d={3.4} color="#3b2f2a" border="#7c5a3a" />
       <TallShelf z={1.4} />
       <TallShelf z={5.0} />
-      {/* rolling ladder on the shelves */}
-      <group position={[11.0, 0, 3.2]} rotation-z={0.2}>
-        {[-0.22, 0.22].map((dz) => (
-          <B key={dz} p={[0, 0, dz]} s={[0.05, 2.5, 0.05]} c="#8b5a2b" />
+      {/* library ladder: feet on the floor, top leaning on the front of the first bookcase,
+          hooked onto a brass rail that runs along the shelves */}
+      <mesh position={[11.36, 2.38, 1.4]} rotation-x={Math.PI / 2}>
+        <cylinderGeometry args={[0.02, 0.02, 2.6, 8]} />
+        <meshStandardMaterial color="#c9a227" metalness={0.85} roughness={0.25} />
+      </mesh>
+      <group position={[10.82, 0, 1.9]} rotation-z={-0.2}>
+        {[-0.24, 0.24].map((dz) => (
+          <B key={dz} p={[0, 0, dz]} s={[0.06, 2.45, 0.06]} c="#8b5a2b" r={0.01} />
         ))}
         {Array.from({ length: 7 }, (_, i) => (
-          <B key={i} p={[0, 0.3 + i * 0.32, 0]} s={[0.04, 0.03, 0.44]} c="#8b5a2b" shadow={false} />
+          <B key={i} p={[0, 0.3 + i * 0.31, 0]} s={[0.05, 0.035, 0.46]} c="#a0693a" shadow={false} />
+        ))}
+        {/* hooks over the rail and little wheels at the feet */}
+        {[-0.24, 0.24].map((dz) => (
+          <group key={`h${dz}`}>
+            <B p={[0.05, 2.38, dz]} s={[0.12, 0.05, 0.05]} c="#c9a227" metal={0.85} rough={0.25} shadow={false} />
+            <mesh position={[0, 0.04, dz]} rotation-x={Math.PI / 2}>
+              <cylinderGeometry args={[0.04, 0.04, 0.03, 12]} />
+              <meshStandardMaterial color="#1f1f24" />
+            </mesh>
+          </group>
         ))}
       </group>
       {/* reading chair facing into the room */}

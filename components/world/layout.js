@@ -74,6 +74,7 @@ const STUDIO_FURNITURE = {
   nowBoard: [-11.85, 2.5, 0.15, 1.9],
   shelvesA: [11.65, 1.4, 0.5, 2.6],
   shelvesB: [11.65, 5.0, 0.5, 2.6],
+  ladder: [11.0, 1.9, 0.35, 0.6],
   readChair: [8.3, 5.0, 0.9, 0.9],
   kindleTable: [9.2, 5.0, 0.45, 0.45],
   bench: [9, 6.8, 1.8, 0.5],
