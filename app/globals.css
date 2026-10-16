@@ -63,6 +63,12 @@ svg { display: block; }
 .eq i:nth-child(4) { animation-delay: -0.15s; }
 @keyframes eq { 0%, 100% { height: 3px; } 50% { height: 12px; } }
 
+/* the blocky portrait's mouth while Nikshith is talking */
+@keyframes avatar-talk {
+  from { transform: scaleY(1); }
+  to { transform: scaleY(2.6); }
+}
+
 /* floating name tags in the 3D scene */
 .label-pop { animation: label-pop 0.28s cubic-bezier(0.2, 1.4, 0.4, 1); }
 @keyframes label-pop {

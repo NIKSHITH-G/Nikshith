@@ -61,7 +61,8 @@ function CameraRig() {
       const d = Math.hypot(dx, dz) || 1;
       const ux = dx / d;
       const uz = dz / d;
-      const side = portrait ? 0 : 0.9;
+      // at the desk the chair is in the way, so swing the camera round to his open side
+      const side = portrait ? 0 : n.activity === "desk" ? -0.9 : 0.9;
       const back = portrait ? 5.2 : 4.4;
       camGoal.set(n.x + ux * back - uz * side, 2.6, n.z + uz * back + ux * side);
       // aim low so he stands in the top half, clear of the dialogue box

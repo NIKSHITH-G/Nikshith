@@ -5,6 +5,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { profile, experience, projects, skills } from "../../../lib/content";
 import { runtime, goToPanel, openPanel, getState } from "../store";
+import BlockyAvatar from "../../BlockyAvatar";
 import * as sfx from "../audio";
 
 /* ── OnScreen: pins content onto a 3D screen ───────────────────────────────
@@ -78,7 +79,11 @@ export function TVScreen({ portrait }) {
         </div>
         <div className={`gap-9 px-10 pt-6 ${portrait ? "flex flex-col pb-20" : "grid grid-cols-[190px_1fr] pb-14"}`}>
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1, transition: { delay: 0.7 } }}>
-            <Image src={profile.photo} alt={profile.name} width={190} height={230} className="h-[230px] w-[190px] rounded-2xl object-cover ring-1 ring-white/20" />
+            {profile.tvPhoto ? (
+              <Image src={profile.tvPhoto} alt={profile.name} width={190} height={230} className="h-[230px] w-[190px] rounded-2xl object-cover ring-1 ring-white/20" />
+            ) : (
+              <BlockyAvatar size={190} className="rounded-2xl ring-1 ring-white/20" />
+            )}
             <div className="mt-3 font-mono text-[11px] text-white/45">{profile.location}</div>
           </motion.div>
           <div>

@@ -4,6 +4,7 @@ import {
   profile, socials, experience, education, projects, skills, certifications, music, photography,
 } from "../../lib/content";
 import GitHubStats from "../../components/GitHubStats";
+import BlockyAvatar from "../../components/BlockyAvatar";
 
 // The classic, no-3D version of the portfolio: fast, printable, recruiter-friendly.
 
@@ -41,7 +42,7 @@ export default function About() {
 
       <main>
         <div className="flex flex-col gap-8 py-14 sm:flex-row sm:items-center sm:py-20">
-          <Image src={profile.photo} alt={profile.name} width={144} height={144} priority className="h-28 w-28 rounded-3xl object-cover ring-1 ring-white/15 sm:h-36 sm:w-36" />
+          <BlockyAvatar size={128} className="shrink-0 rounded-3xl ring-1 ring-white/15" />
           <div>
             <div className="font-mono text-xs tracking-widest text-emerald-300/80">{profile.location.toUpperCase()}</div>
             <h1 className="mt-2 font-display text-5xl italic leading-none text-white sm:text-7xl">{profile.name}</h1>

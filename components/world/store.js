@@ -51,7 +51,7 @@ export const runtime = {
   joy: { x: 0, z: 0 },
   cat: { x: -7, z: 4.6 },
   dog: { x: 6.5, z: 3.5 }, // Pixel, on floor 2
-  npc: { x: -8.75, z: -6.3, heading: Math.PI, activity: "desk" }, // Nikshith, who lives in the studio
+  npc: { x: -8.75, z: -6.3, heading: Math.PI, activity: "desk", talking: false }, // Nikshith, who lives in the studio
   yaw: 0, // camera orbit, set by dragging
   zoom: 1, // set by the scroll wheel
   powerStart: null, // performance.now()/1000 when the lights start coming on
