@@ -6,6 +6,7 @@ import { AnimatePresence, animate, motion, useMotionTemplate, useMotionValue } f
 import { ArrowUpRight } from "lucide-react";
 import { profile, socials, education, certifications, music, photography } from "../../../lib/content";
 import * as sfx from "../audio";
+import { goToPanel } from "../store";
 import Piano from "../Piano";
 import ContactForm from "../../ContactForm";
 
@@ -166,131 +167,280 @@ export function TrophyCarousel({ portrait }) {
   );
 }
 
-/* ── bookshelf: pick a book, it opens ──────────────── */
+/* ── bookshelf: each school is a book you can read page by page ── */
 
-const COVERS = [
-  { bg: "linear-gradient(135deg,#3b1d8f,#1e1b4b)", ink: "#e9d8a6" },
-  { bg: "linear-gradient(135deg,#9a3412,#451a03)", ink: "#fde68a" },
-  { bg: "linear-gradient(135deg,#065f46,#022c22)", ink: "#d1fae5" },
-];
+const SPINE = ["#3b1d8f", "#9a3412", "#065f46"];
 
-function Cover({ e, i, small }) {
-  const c = COVERS[i % COVERS.length];
+// The closed book on the shelf: campus photo, school name, years.
+function SchoolCover({ e, i, w }) {
   return (
-    <div className="absolute inset-0 overflow-hidden rounded-r-md rounded-l-sm" style={{ background: c.bg }}>
-      <div className="absolute inset-y-0 left-0 w-3 bg-black/30" />
-      <div className="absolute inset-2.5 left-5 rounded-sm border" style={{ borderColor: `${c.ink}55` }} />
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-6 pl-8 text-center">
-        <div className={`font-display italic leading-tight ${small ? "text-base" : "text-[26px]"}`} style={{ color: c.ink }}>{e.school}</div>
-        <div className="mt-3 h-px w-10" style={{ background: `${c.ink}88` }} />
-        <div className="mt-3 font-mono text-[10px] tracking-[0.25em]" style={{ color: `${c.ink}bb` }}>{e.years}</div>
+    <div className="relative h-full w-full overflow-hidden rounded-r-md rounded-l-sm bg-black" style={{ width: w }}>
+      <Image src={e.photo} alt={`${e.school} campus`} fill sizes="320px" className="object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/10" />
+      <div className="absolute inset-y-0 left-0 w-3" style={{ background: SPINE[i % SPINE.length] }} />
+      <div className="absolute inset-x-0 bottom-0 p-5 pl-7 text-left text-white">
+        <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/70">{e.years}</div>
+        <div className="mt-1 font-display text-[28px] italic leading-[1.05]">{e.school}</div>
+        <div className="mt-2 text-xs leading-snug text-white/75">{e.degree}</div>
       </div>
     </div>
   );
 }
 
+function PhotoPage({ e }) {
+  return (
+    <div className="relative h-full w-full overflow-hidden bg-black">
+      <Image src={e.photo} alt={`${e.school} campus`} fill sizes="460px" className="object-cover" />
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-5 pt-12">
+        <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/80">{e.place}</div>
+        <div className="font-display text-xl italic text-white">{e.short} campus</div>
+      </div>
+    </div>
+  );
+}
+
+function TitlePage({ e, chapter }) {
+  return (
+    <div className="flex h-full flex-col justify-center px-8 text-center">
+      <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#8a6d3b]">Chapter {chapter}</div>
+      <h3 className="mt-4 font-display text-[34px] italic leading-[1.05]">{e.school}</h3>
+      <div className="mx-auto my-5 h-px w-16 bg-[#8a6d3b]/50" />
+      <p className="text-[15px] leading-snug text-[#3b2f22]">{e.degree}</p>
+      <p className="mt-1 text-[13px] text-[#6b5a44]">{e.focus}</p>
+      <div className="mt-6 font-hand text-2xl text-[#7c2d12]">{e.years}</div>
+      <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-[#8a6d3b]">{e.place}</div>
+    </div>
+  );
+}
+
+function ContentPage({ page }) {
+  return (
+    <div className="flex h-full flex-col px-7 py-7">
+      <h4 className="font-hand text-[34px] leading-none text-[#7c2d12]">{page.heading}</h4>
+      <div className="mt-2 h-px bg-[#c9b994]" />
+      {page.items && (
+        <ul className="mt-5 space-y-5">
+          {page.items.map((it) => (
+            <li key={it.title}>
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="font-display text-[22px] italic leading-tight">{it.title}</span>
+                {it.meta && <span className="shrink-0 text-right font-mono text-[10px] text-[#8a6d3b]">{it.meta}</span>}
+              </div>
+              {it.text && <p className="mt-1 text-[14.5px] leading-snug text-[#4a3b2a]">{it.text}</p>}
+            </li>
+          ))}
+        </ul>
+      )}
+      {page.tags && (
+        <div className="mt-5 flex flex-wrap gap-2">
+          {page.tags.map((t, k) => (
+            <span key={t} className="rounded-sm border border-dashed border-[#a8916a] bg-[#fbf6ea] px-2.5 py-1 font-mono text-[11px] text-[#5a4630]" style={{ transform: `rotate(${(k % 3) - 1}deg)` }}>
+              {t}
+            </span>
+          ))}
+        </div>
+      )}
+      {page.photos && (
+        <div className="mt-4 flex flex-1 flex-col gap-3">
+          <div className="grid flex-1 grid-cols-2 gap-3">
+            {page.photos.map((src, k) => (
+              <div key={src} className="relative min-h-[120px] bg-white p-1.5 pb-5 shadow-md" style={{ transform: `rotate(${k ? 2 : -2}deg)` }}>
+                <div className="relative h-full w-full overflow-hidden">
+                  <Image src={src} alt="" fill sizes="200px" className="object-cover" />
+                </div>
+              </div>
+            ))}
+          </div>
+          {page.caption && <p className="font-hand text-xl leading-snug text-[#5a4630]">{page.caption}</p>}
+        </div>
+      )}
+      {page.cta === "contact" && (
+        <button onClick={() => goToPanel("contact")} className="mt-auto self-start rounded-full bg-[#7c2d12] px-4 py-2 text-sm text-[#fbf6ea] shadow-[0_2px_0_#4a1a0a] transition hover:bg-[#9a3412]">
+          Write me a letter ✉
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Every page of a school's book, in reading order.
+function bookPages(e, chapter) {
+  return [
+    { key: "photo", el: <PhotoPage e={e} />, bleed: true },
+    { key: "title", el: <TitlePage e={e} chapter={chapter} /> },
+    ...e.pages.map((pg) => ({ key: pg.heading, el: <ContentPage page={pg} /> })),
+  ];
+}
+
 export function Bookshelf({ portrait }) {
   const [sel, setSel] = useState(null);
-  const W = portrait ? 160 : 250;
-  const H = Math.round(W * 1.4);
-  const small = portrait ? 96 : 170;
+  const coverW = portrait ? 150 : 230;
+  const pick = (i) => {
+    setSel(i);
+    sfx.rustle();
+  };
 
   return (
     <>
-      <Backdrop className="bg-[radial-gradient(ellipse_at_center,rgba(10,8,20,0.35),rgba(5,5,10,0.82)_70%)]" />
-      <div className="pointer-events-none fixed inset-0 z-40 flex flex-col items-center justify-center pt-16">
+      <Backdrop className="bg-[radial-gradient(ellipse_at_center,rgba(10,8,20,0.25),rgba(5,5,10,0.78)_75%)]" />
+      <div className="pointer-events-none fixed inset-0 z-40 flex flex-col items-center justify-center px-3 pt-16">
         <AnimatePresence mode="wait">
           {sel === null ? (
-            <motion.div key="row" className="pointer-events-auto flex items-end gap-4 sm:gap-8" exit={{ opacity: 0, y: 20, transition: { duration: 0.2 } }}>
-              {education.map((e, i) => (
-                <motion.button
-                  key={e.school}
-                  onClick={() => { setSel(i); sfx.rustle(); }}
-                  initial={{ opacity: 0, y: 140, rotate: i % 2 ? 6 : -6 }}
-                  animate={{ opacity: 1, y: 0, rotate: 0, transition: { delay: 0.3 + i * 0.12, type: "spring", stiffness: 160, damping: 18 } }}
-                  whileHover={{ y: -14, rotate: i % 2 ? 2 : -2 }}
-                  className="relative shadow-[0_30px_50px_-20px_rgba(0,0,0,0.9)]"
-                  style={{ width: small, height: Math.round(small * 1.4) }}
-                  aria-label={`Open ${e.school}`}
-                >
-                  <Cover e={e} i={i} small />
-                </motion.button>
-              ))}
+            <motion.div key="row" className="pointer-events-auto flex flex-col items-center" exit={{ opacity: 0, y: 20, transition: { duration: 0.2 } }}>
+              <div className={`flex items-end ${portrait ? "gap-3" : "gap-8"}`}>
+                {education.map((e, i) => (
+                  <motion.button
+                    key={e.school}
+                    onClick={() => pick(i)}
+                    initial={{ opacity: 0, y: 140, rotate: i % 2 ? 6 : -6 }}
+                    animate={{ opacity: 1, y: 0, rotate: 0, transition: { delay: 0.25 + i * 0.12, type: "spring", stiffness: 160, damping: 18 } }}
+                    whileHover={{ y: -16, rotate: i % 2 ? 1.5 : -1.5 }}
+                    className="shadow-[0_30px_50px_-18px_rgba(0,0,0,0.95)]"
+                    style={{ width: coverW, height: Math.round(coverW * 1.4) }}
+                    aria-label={`Open ${e.school}`}
+                  >
+                    <SchoolCover e={e} i={i} w={coverW} />
+                  </motion.button>
+                ))}
+              </div>
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0.8 } }} className="mt-8 font-mono text-xs text-white/60">
+                pick a book off the shelf
+              </motion.p>
             </motion.div>
           ) : (
-            <OpenBook key={sel} e={education[sel]} i={sel} W={W} H={H} portrait={portrait} />
+            <OpenBook key={sel} e={education[sel]} i={sel} portrait={portrait} onSwitch={pick} onClose={() => setSel(null)} />
           )}
         </AnimatePresence>
-
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0.8 } }} className="pointer-events-auto mt-10 flex items-center gap-2">
-          {sel === null ? (
-            <span className="font-mono text-[11px] text-white/45">pick a book off the shelf</span>
-          ) : (
-            <>
-              {education.map((e, i) => (
-                <button
-                  key={e.school}
-                  onClick={() => { setSel(i); sfx.rustle(); }}
-                  className={`h-9 w-3 rounded-sm transition ${i === sel ? "scale-y-110 opacity-100" : "opacity-50 hover:opacity-90"}`}
-                  style={{ background: COVERS[i].bg }}
-                  aria-label={e.school}
-                />
-              ))}
-              <button onClick={() => setSel(null)} className="ml-3 font-mono text-[11px] text-white/50 underline-offset-4 hover:text-white hover:underline">close book</button>
-            </>
-          )}
-        </motion.div>
       </div>
     </>
   );
 }
 
-function OpenBook({ e, i, W, H, portrait }) {
+function OpenBook({ e, i, portrait, onSwitch, onClose }) {
+  const pages = bookPages(e, education.length - i);
+  const per = portrait ? 1 : 2; // pages visible at once
+  const spreads = [];
+  for (let k = 0; k < pages.length; k += per) spreads.push(pages.slice(k, k + per));
+  const [at, setAt] = useState(0);
+  const [turn, setTurn] = useState(null); // { dir: 1 | -1 }
+  const swipe = useRef(null);
+
+  const W = portrait ? "min(86vw, 360px)" : "min(440px, 42vw)";
+  const H = portrait ? "min(118vw, 500px)" : "min(570px, 62vh)";
+  const paper = "relative h-full overflow-hidden bg-[#f6efdf] text-[#2a2118]";
+
+  const go = (dir) => {
+    if (turn) return;
+    const next = at + dir;
+    if (next < 0 || next >= spreads.length) return;
+    sfx.rustle();
+    setTurn({ dir });
+  };
+  const goRef = useRef(go);
+  goRef.current = go;
+  useEffect(() => {
+    const onKey = (ev) => {
+      const k = ev.key.toLowerCase();
+      if (k === "arrowright" || k === "d") goRef.current(1);
+      if (k === "arrowleft" || k === "a") goRef.current(-1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const finish = () => {
+    setAt((v) => v + turn.dir);
+    setTurn(null);
+  };
+
+  const cur = spreads[at];
+  const nxt = turn ? spreads[at + turn.dir] : null;
+  const pageBox = (pg, side) =>
+    pg ? (
+      <div className={`${paper} ${side === "L" ? "rounded-l-md" : "rounded-r-md"}`}>
+        {pg.el}
+        {!pg.bleed && <div className={`pointer-events-none absolute inset-y-0 w-8 ${side === "L" ? "right-0 bg-gradient-to-l" : "left-0 bg-gradient-to-r"} from-black/12 to-transparent`} />}
+      </div>
+    ) : (
+      <div className={`${paper} ${side === "L" ? "rounded-l-md" : "rounded-r-md"}`} />
+    );
+
+  // what lies under the turning leaf
+  const under = !turn ? cur : per === 1 ? nxt : turn.dir > 0 ? [cur[0], nxt[1]] : [nxt[0], cur[1]];
+  // the leaf: front is the page being lifted, back is the page it reveals
+  const leafFront = turn && (per === 1 ? cur[0] : turn.dir > 0 ? cur[1] : cur[0]);
+  const leafBack = turn && (per === 1 ? nxt[0] : turn.dir > 0 ? nxt[0] : nxt[1]);
+  const leafOnRight = per === 1 || (turn && turn.dir > 0);
+
   return (
     <motion.div
-      className="pointer-events-auto relative"
-      style={{ width: W * 2, height: H, perspective: 2000 }}
-      initial={{ opacity: 0, scale: 0.85, y: 30 }}
+      className="pointer-events-auto flex flex-col items-center"
+      initial={{ opacity: 0, scale: 0.88, y: 30 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-      transition={{ type: "spring", stiffness: 180, damping: 22 }}
+      exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.2 } }}
+      transition={{ type: "spring", stiffness: 170, damping: 22 }}
     >
-      {/* right page */}
-      <div className="absolute right-0 top-0 flex h-full flex-col rounded-r-md bg-[#f6efdf] text-[#2a2118] shadow-[0_40px_60px_-25px_rgba(0,0,0,0.9)]" style={{ width: W }}>
-        <div className="absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-black/15 to-transparent" />
-        <div className={`flex flex-1 flex-col ${portrait ? "p-4" : "p-8"}`}>
-          <div className="font-mono text-[10px] tracking-[0.25em] text-[#8a6d3b]">CHAPTER {education.length - i}</div>
-          <h3 className={`mt-2 font-display italic leading-tight ${portrait ? "text-xl" : "text-3xl"}`}>{e.school}</h3>
-          <p className={`mt-2 text-[#4a3b2a] ${portrait ? "text-xs" : "text-sm"}`}>{e.degree}</p>
-          <div className="mt-auto flex items-end justify-between">
-            <Image src={e.image} alt="" width={64} height={64} className={`${portrait ? "h-10 w-10" : "h-16 w-16"} rounded bg-white object-contain p-1 ring-1 ring-black/10`} />
-            <span className="font-hand text-2xl text-[#7c2d12]">{e.years}</span>
-          </div>
-        </div>
-      </div>
-      {/* left page (revealed as the cover swings over) */}
-      <div className="absolute left-0 top-0 h-full rounded-l-md bg-[#efe6d2] shadow-[0_40px_60px_-25px_rgba(0,0,0,0.9)]" style={{ width: W }}>
-        <div className="absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-black/15 to-transparent" />
-        <div className="flex h-full items-center justify-center p-6 text-center font-hand text-xl leading-snug text-[#8a6d3b]">
-          {i === 0 ? "currently reading…" : i === 1 ? "four years, many all-nighters" : "where the maths started"}
-        </div>
-      </div>
-      {/* the cover, hinged on the spine, swinging open */}
-      <motion.div
-        className="absolute top-0 h-full"
-        style={{ left: W, width: W, transformOrigin: "left center", transformStyle: "preserve-3d" }}
-        initial={{ rotateY: 0 }}
-        animate={{ rotateY: -178, transition: { delay: 0.35, duration: 1.0, ease: [0.3, 0.7, 0.2, 1] } }}
+      <div
+        className="relative flex touch-pan-y shadow-[0_50px_80px_-30px_rgba(0,0,0,0.95)]"
+        style={{ height: H, perspective: 2200 }}
+        onPointerDown={(ev) => (swipe.current = ev.clientX)}
+        onPointerUp={(ev) => {
+          const dx = swipe.current == null ? 0 : ev.clientX - swipe.current;
+          swipe.current = null;
+          if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+        }}
       >
-        <div className="absolute inset-0 [backface-visibility:hidden]">
-          <Cover e={e} i={i} />
-        </div>
-        {/* inside of the cover: marbled endpaper */}
-        <div
-          className="absolute inset-0 rounded-l-md [backface-visibility:hidden] [transform:rotateY(180deg)]"
-          style={{ background: `repeating-radial-gradient(circle at 30% 40%, ${COVERS[i].ink}22 0 6px, transparent 6px 14px), ${COVERS[i].bg}` }}
-        />
-      </motion.div>
+        {/* the hardback cover peeking out behind the pages */}
+        <div className="absolute -inset-2.5 rounded-lg" style={{ background: SPINE[i % SPINE.length] }} />
+        {Array.from({ length: per }, (_, k) => (
+          <div key={k} className="relative" style={{ width: W }}>
+            {pageBox(under?.[k], per === 1 ? "R" : k === 0 ? "L" : "R")}
+          </div>
+        ))}
+        {per === 2 && <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-black/25" />}
+
+        {turn && (
+          <motion.div
+            key={`${at}-${turn.dir}`}
+            className="absolute inset-y-0"
+            style={{
+              width: W,
+              left: leafOnRight ? (per === 1 ? 0 : "50%") : 0,
+              transformOrigin: leafOnRight ? (per === 1 ? "left center" : "left center") : "right center",
+              transformStyle: "preserve-3d",
+            }}
+            initial={{ rotateY: 0 }}
+            animate={{ rotateY: leafOnRight ? -180 : 180 }}
+            transition={{ duration: 0.75, ease: [0.45, 0.05, 0.25, 1] }}
+            onAnimationComplete={finish}
+          >
+            <div className="absolute inset-0 [backface-visibility:hidden]">{pageBox(leafFront, leafOnRight ? "R" : "L")}</div>
+            <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]">{pageBox(leafBack, leafOnRight ? "L" : "R")}</div>
+          </motion.div>
+        )}
+      </div>
+
+      {/* controls */}
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <button onClick={() => go(-1)} disabled={at === 0} aria-label="Previous page" className="rounded-full border border-white/20 bg-black/40 px-4 py-2 text-white/85 backdrop-blur transition hover:bg-white/10 disabled:opacity-30">←</button>
+        <span className="min-w-[110px] text-center font-mono text-[11px] text-white/60">
+          {portrait ? `page ${at + 1} of ${spreads.length}` : `pages ${at * 2 + 1}–${Math.min(at * 2 + 2, pages.length)} of ${pages.length}`}
+        </span>
+        <button onClick={() => go(1)} disabled={at === spreads.length - 1} aria-label="Next page" className="rounded-full border border-white/20 bg-black/40 px-4 py-2 text-white/85 backdrop-blur transition hover:bg-white/10 disabled:opacity-30">→</button>
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        {education.map((ed, k) => (
+          <button
+            key={ed.school}
+            onClick={() => k !== i && onSwitch(k)}
+            className={`rounded-full px-3 py-1 text-xs transition ${k === i ? "bg-white text-black" : "border border-white/20 text-white/65 hover:text-white"}`}
+          >
+            {ed.short}
+          </button>
+        ))}
+        <button onClick={onClose} className="ml-2 font-mono text-[11px] text-white/50 underline-offset-4 hover:text-white hover:underline">back to shelf</button>
+      </div>
+      {!portrait && <div className="mt-2 font-mono text-[10px] text-white/35">← → or A D to turn pages</div>}
     </motion.div>
   );
 }
