@@ -3,7 +3,7 @@
 // Views for the library, Now board, training plan, side quests, photo booth,
 // arcade cabinets and rooftop guestbook.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Camera, Download, RotateCcw, Check, Trash2, X } from "lucide-react";
 import { now, learning, quests, reading, profile } from "../../../lib/content";
@@ -203,82 +203,76 @@ export function KanbanScreen({ portrait }) {
   );
 }
 
-/* ═════════════ Photo booth: a 4-shot selfie strip ═════════════ */
+/* ═════════════ Photo booth: a 4-shot strip of the studio character ═════════════ */
 
-const FILTERS = [
-  { id: "classic", label: "Classic", css: "none" },
-  { id: "mono", label: "B&W", css: "grayscale(1) contrast(1.15)" },
-  { id: "warm", label: "Film", css: "sepia(0.45) saturate(1.3) contrast(1.05)" },
-  { id: "pop", label: "Pop", css: "saturate(1.8) contrast(1.15)" },
+const BoothScene = lazy(() => import("./booth3d"));
+
+const BACKDROPS = [
+  { id: "sunset", label: "Sunset", bg: ["#fb7185", "#fdba74"] },
+  { id: "ocean", label: "Ocean", bg: ["#38bdf8", "#1e3a8a"] },
+  { id: "mint", label: "Mint", bg: ["#6ee7b7", "#065f46"] },
+  { id: "night", label: "Night", bg: ["#312e81", "#c084fc"] },
 ];
+const OUTFITS = [
+  { id: "violet", label: "Violet", top: "#7c5cd6" },
+  { id: "red", label: "Red", top: "#dc2626" },
+  { id: "forest", label: "Forest", top: "#15803d" },
+  { id: "black", label: "Black", top: "#1f2937" },
+];
+const PROPS = [
+  { id: "headphones", label: "🎧" },
+  { id: "shades", label: "🕶️" },
+  { id: "party", label: "🥳" },
+  { id: "crown", label: "👑" },
+];
+const SHOT_POSES = ["wave", "peace", "jump", "hug"];
 const SHOTS = 4;
-const FW = 480; // frame size in the strip
-const FH = 360;
 
 export function PhotoBoothStage({ portrait }) {
-  const video = useRef(null);
-  const stream = useRef(null);
-  const [state, setState] = useState("idle"); // idle | live | shooting | done | error
-  const [error, setError] = useState("");
-  const [filter, setFilter] = useState(FILTERS[0]);
+  const canvasEl = useRef(null);
+  const poseRef = useRef("idle");
+  const [look, setLook] = useState({ bg: BACKDROPS[0].bg, top: OUTFITS[0].top, prop: "headphones", dog: true, skin: "#c89878" });
+  const [bgId, setBgId] = useState(BACKDROPS[0].id);
+  const [state, setStateB] = useState("posing"); // posing | shooting | done
   const [count, setCount] = useState(null);
+  const [shot, setShot] = useState(0);
   const [flash, setFlash] = useState(0);
   const [strip, setStrip] = useState(null);
-  const [withDog, setWithDog] = useState(true);
-  const frames = useRef([]);
 
-  const stop = () => stream.current?.getTracks().forEach((t) => t.stop());
-  useEffect(() => stop, []);
+  // little idle animation between shots so the character doesn't stand frozen
+  useEffect(() => {
+    if (state !== "posing") return;
+    const cycle = ["idle", "wave", "idle", "flex", "idle", "peace"];
+    let i = 0;
+    const id = setInterval(() => (poseRef.current = cycle[i++ % cycle.length]), 1400);
+    return () => clearInterval(id);
+  }, [state]);
 
-  const start = async () => {
-    setError("");
-    try {
-      stream.current = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 1280, height: 720 }, audio: false });
-      setState("live");
-      requestAnimationFrame(() => {
-        if (video.current) {
-          video.current.srcObject = stream.current;
-          video.current.play();
-        }
-      });
-    } catch (e) {
-      setState("error");
-      setError(e?.name === "NotAllowedError" ? "Camera access was blocked. Allow it in your browser to use the booth." : "No camera found on this device.");
-    }
-  };
-
-  // grab one mirrored, centre-cropped frame with the chosen filter
   const grab = () => {
-    const v = video.current;
+    const src = canvasEl.current;
     const c = document.createElement("canvas");
-    c.width = FW;
-    c.height = FH;
+    c.width = 480;
+    c.height = 360;
     const g = c.getContext("2d");
-    const ar = FW / FH;
-    let sw = v.videoWidth;
-    let sh = v.videoHeight;
+    // centre-crop the render to 4:3
+    const ar = 4 / 3;
+    let sw = src.width;
+    let sh = src.height;
     if (sw / sh > ar) sw = sh * ar;
     else sh = sw / ar;
-    g.filter = filter.css;
-    g.translate(FW, 0);
-    g.scale(-1, 1);
-    g.drawImage(v, (v.videoWidth - sw) / 2, (v.videoHeight - sh) / 2, sw, sh, 0, 0, FW, FH);
+    g.drawImage(src, (src.width - sw) / 2, (src.height - sh) / 2, sw, sh, 0, 0, 480, 360);
     return c;
   };
 
-  const compose = () => {
+  const compose = (frames) => {
     const pad = 24;
     const c = document.createElement("canvas");
-    c.width = FW + pad * 2;
-    c.height = SHOTS * (FH + pad) + pad + 90;
+    c.width = 480 + pad * 2;
+    c.height = SHOTS * (360 + pad) + pad + 90;
     const g = c.getContext("2d");
     g.fillStyle = "#fafaf9";
     g.fillRect(0, 0, c.width, c.height);
-    frames.current.forEach((f, i) => g.drawImage(f, pad, pad + i * (FH + pad)));
-    if (withDog) {
-      g.font = "110px serif";
-      g.fillText("🐕", c.width - pad - 140, pad + 3 * (FH + pad) + FH - 20);
-    }
+    frames.forEach((f, i) => g.drawImage(f, pad, pad + i * (360 + pad)));
     g.fillStyle = "#1c1917";
     g.textAlign = "center";
     g.font = "italic 34px Georgia, serif";
@@ -290,23 +284,30 @@ export function PhotoBoothStage({ portrait }) {
   };
 
   const shoot = async () => {
-    frames.current = [];
-    setState("shooting");
+    const frames = [];
+    setStateB("shooting");
     for (let i = 0; i < SHOTS; i++) {
+      setShot(i + 1);
+      poseRef.current = SHOT_POSES[i];
       for (let n = 3; n > 0; n--) {
         setCount(n);
         sfx.beep(520, 0.05);
-        await new Promise((r) => setTimeout(r, 650));
+        await new Promise((r) => setTimeout(r, 600));
       }
       setCount(null);
-      frames.current.push(grab());
+      // let a frame render without the countdown before taking the picture
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      frames.push(grab());
       sfx.snap();
       setFlash((f) => f + 1);
-      await new Promise((r) => setTimeout(r, 450));
+      await new Promise((r) => setTimeout(r, 380));
     }
-    setStrip(compose());
-    setState("done");
+    poseRef.current = "idle";
+    setStrip(compose(frames));
+    setStateB("done");
   };
+
+  const chip = (on) => `rounded-full px-3 py-1.5 text-xs transition ${on ? "bg-white text-black" : "border border-white/20 text-white/70 hover:text-white"}`;
 
   return (
     <>
@@ -332,62 +333,65 @@ export function PhotoBoothStage({ portrait }) {
                 className={`${portrait ? "w-44" : "w-56"} shadow-[0_30px_60px_-20px_rgba(0,0,0,0.9)]`}
               />
               <div className="max-w-xs">
-                <h2 className="font-display text-4xl italic text-white">Looking good.</h2>
-                <p className="mt-2 text-sm text-white/65">Your strip stays on your device — nothing is uploaded anywhere.</p>
+                <h2 className="font-display text-4xl italic text-white">Fresh off the press.</h2>
+                <p className="mt-2 text-sm text-white/65">Four poses, one strip. Keep it as a souvenir from the studio.</p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <a href={strip} download="nikshith-studio-photobooth.png" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black hover:bg-rose-100">
                     <Download size={15} /> Download strip
                   </a>
-                  <button onClick={() => { setStrip(null); setState("live"); requestAnimationFrame(() => { if (video.current) { video.current.srcObject = stream.current; video.current.play(); } }); }} className="inline-flex items-center gap-2 rounded-full border border-white/25 px-5 py-2.5 text-sm text-white hover:bg-white/10">
-                    <RotateCcw size={15} /> Retake
+                  <button onClick={() => { setStrip(null); setStateB("posing"); }} className="inline-flex items-center gap-2 rounded-full border border-white/25 px-5 py-2.5 text-sm text-white hover:bg-white/10">
+                    <RotateCcw size={15} /> Another one
                   </button>
                 </div>
               </div>
             </>
           ) : (
-            <div className={`${portrait ? "w-[92vw]" : "w-[640px]"}`}>
+            <div className={portrait ? "w-[92vw]" : "w-[640px]"}>
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border-[10px] border-[#881337] bg-black shadow-[0_30px_60px_-20px_rgba(0,0,0,0.9)]">
-                {state === "live" || state === "shooting" ? (
-                  <video ref={video} playsInline muted className="h-full w-full -scale-x-100 object-cover" style={{ filter: filter.css }} />
-                ) : (
-                  <div className="flex h-full flex-col items-center justify-center gap-4 px-8 text-center">
-                    <div className="text-5xl">📸</div>
-                    <h2 className="font-display text-3xl italic text-white">Photo booth</h2>
-                    <p className="max-w-sm text-sm text-white/60">Four shots, one strip. Your photos never leave your device — download the strip at the end.</p>
-                    {error && <p className="text-sm text-rose-300">{error}</p>}
-                    <button onClick={start} className="inline-flex items-center gap-2 rounded-full bg-rose-500 px-6 py-3 text-sm font-semibold text-white hover:bg-rose-400">
-                      <Camera size={16} /> Turn on camera
-                    </button>
-                  </div>
-                )}
+                <div className="absolute inset-0">
+                  <Suspense fallback={null}>
+                    <BoothScene look={look} poseRef={poseRef} onReady={(el) => (canvasEl.current = el)} />
+                  </Suspense>
+                </div>
                 <AnimatePresence>
                   {count && (
-                    <motion.div key={count} initial={{ scale: 1.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex items-center justify-center font-display text-[140px] italic text-white [text-shadow:0_4px_30px_rgba(0,0,0,0.6)]">
+                    <motion.div key={count} initial={{ scale: 1.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }} className="pointer-events-none absolute inset-0 flex items-center justify-center font-display text-[140px] italic text-white [text-shadow:0_4px_30px_rgba(0,0,0,0.6)]">
                       {count}
                     </motion.div>
                   )}
                 </AnimatePresence>
                 {state === "shooting" && (
                   <div className="absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 font-mono text-xs text-white">
-                    shot {Math.min(frames.current.length + 1, SHOTS)} / {SHOTS}
+                    shot {shot} / {SHOTS} · {SHOT_POSES[shot - 1]}
                   </div>
                 )}
               </div>
-              {state === "live" && (
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex gap-1.5">
-                    {FILTERS.map((f) => (
-                      <button key={f.id} onClick={() => setFilter(f)} className={`rounded-full px-3 py-1.5 text-xs ${filter.id === f.id ? "bg-white text-black" : "border border-white/20 text-white/70 hover:text-white"}`}>
-                        {f.label}
-                      </button>
+              {state === "posing" && (
+                <div className="mt-4 space-y-3">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="mr-1 w-16 font-mono text-[10px] uppercase tracking-wider text-white/40">backdrop</span>
+                    {BACKDROPS.map((b) => (
+                      <button key={b.id} onClick={() => { setBgId(b.id); setLook({ ...look, bg: b.bg }); }} className={chip(bgId === b.id)}>{b.label}</button>
                     ))}
                   </div>
-                  <label className="flex items-center gap-2 text-xs text-white/70">
-                    <input type="checkbox" checked={withDog} onChange={(e) => setWithDog(e.target.checked)} className="accent-rose-500" /> Pixel photobombs
-                  </label>
-                  <button onClick={shoot} className="inline-flex items-center gap-2 rounded-full bg-rose-500 px-6 py-3 text-sm font-semibold text-white hover:bg-rose-400">
-                    <Camera size={16} /> Take 4 photos
-                  </button>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="mr-1 w-16 font-mono text-[10px] uppercase tracking-wider text-white/40">hoodie</span>
+                    {OUTFITS.map((o) => (
+                      <button key={o.id} onClick={() => setLook({ ...look, top: o.top })} aria-label={o.label} className={`h-7 w-7 rounded-full border-2 transition ${look.top === o.top ? "border-white" : "border-transparent opacity-70 hover:opacity-100"}`} style={{ background: o.top }} />
+                    ))}
+                    <span className="ml-3 mr-1 font-mono text-[10px] uppercase tracking-wider text-white/40">prop</span>
+                    {PROPS.map((pr) => (
+                      <button key={pr.id} onClick={() => setLook({ ...look, prop: pr.id })} className={`rounded-full px-2.5 py-1 text-base transition ${look.prop === pr.id ? "bg-white" : "hover:bg-white/10"}`}>{pr.label}</button>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <label className="flex items-center gap-2 text-xs text-white/70">
+                      <input type="checkbox" checked={look.dog} onChange={(e) => setLook({ ...look, dog: e.target.checked })} className="accent-rose-500" /> Pixel joins the photo
+                    </label>
+                    <button onClick={shoot} className="inline-flex items-center gap-2 rounded-full bg-rose-500 px-6 py-3 text-sm font-semibold text-white hover:bg-rose-400">
+                      <Camera size={16} /> Take 4 photos
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
