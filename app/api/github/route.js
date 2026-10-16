@@ -60,20 +60,21 @@ export async function GET() {
   try {
     // Next caches these fetches and revalidates once per day — survives cold starts,
     // unlike a module-level variable, and avoids burning the rate limit on every hit.
-    const [userRes, reposRes, commitMap] = await Promise.all([
-      fetch(`https://api.github.com/users/${USERNAME}`, {
-        headers,
-        next: { revalidate: ONE_DAY },
-      }),
-      fetch(
-        `https://api.github.com/users/${USERNAME}/repos?per_page=100&sort=pushed`,
-        {
-          headers,
-          next: { revalidate: ONE_DAY },
-        }
-      ),
+    const get = (url, h) => fetch(url, { headers: h, next: { revalidate: ONE_DAY } });
+    let [userRes, reposRes, commitMap] = await Promise.all([
+      get(`https://api.github.com/users/${USERNAME}`, headers),
+      get(`https://api.github.com/users/${USERNAME}/repos?per_page=100&sort=pushed`, headers),
       fetchContributions(headers),
     ]);
+
+    // A bad or expired token makes GitHub reject even public data — retry
+    // anonymously so the profile and repos still show (just no contribution graph).
+    if (headers.Authorization && (userRes.status === 401 || reposRes.status === 401)) {
+      [userRes, reposRes] = await Promise.all([
+        get(`https://api.github.com/users/${USERNAME}`, {}),
+        get(`https://api.github.com/users/${USERNAME}/repos?per_page=100&sort=pushed`, {}),
+      ]);
+    }
 
     if (!userRes.ok || !reposRes.ok) {
       throw new Error(`GitHub API error: ${userRes.status} / ${reposRes.status}`);
