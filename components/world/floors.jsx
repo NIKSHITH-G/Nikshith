@@ -552,17 +552,20 @@ export function GymFloor() {
       ))}
 
       {/* ───── photo studio (north-east) ───── */}
-      {/* Nikshith's own photos: five on the back wall, two on the side wall */}
-      {photography.photos.slice(0, 5).map((ph, i) => (
-        <Print key={ph.src} src={ph.src} position={[1.3 + i * 1.7, 1.85, -7.84]} w={0.96} h={1.28} />
+      {/* Nikshith's own photos: seven along the back wall (salon-hung), then two by
+          the booth and two in the dog lounge, on the east wall */}
+      {photography.photos.slice(0, 7).map((ph, i) => (
+        <Print key={ph.src} src={ph.src} position={[0.95 + i * 1.22, 1.85, -7.84]} w={0.96} h={1.28} />
       ))}
-      {photography.photos.slice(5, 7).map((ph, i) => (
-        <Print key={ph.src} src={ph.src} position={[11.84, 1.85, -4.3 + i * 1.6]} rotation={[0, -Math.PI / 2, 0]} w={0.96} h={1.28} />
+      {photography.photos.slice(7, 11).map((ph, i) => (
+        <Print key={ph.src} src={ph.src} position={[11.84, 1.85, [-4.3, -2.75, 4.6, 6.15][i]]} rotation={[0, -Math.PI / 2, 0]} w={0.96} h={1.28} />
       ))}
-      {[2.15, 5.55, 8.95].map((x) => (
+      {[1.6, 4.65, 7.7].map((x) => (
         <pointLight key={x} position={[x, 2.7, -6.9]} intensity={3} distance={3.2} decay={2} color="#fff1d6" />
       ))}
-      <pointLight position={[11.0, 2.7, -3.5]} intensity={3} distance={3.2} decay={2} color="#fff1d6" />
+      {[-3.5, 5.4].map((z) => (
+        <pointLight key={z} position={[11.0, 2.7, z]} intensity={3} distance={3.2} decay={2} color="#fff1d6" />
+      ))}
       <Neon text="DARKROOM" position={[4.7, 2.95, -7.85]} width={1.8} color="#f43f5e" />
       {/* camera on a tripod, aimed at the prints */}
       <group position={[6.0, 0, -5.2]} rotation-y={Math.PI / 2}>

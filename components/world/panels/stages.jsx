@@ -375,7 +375,8 @@ export function Viewfinder({ portrait }) {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pointer-events-none fixed inset-0 z-40 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.35)_30%,rgba(0,0,0,0.92)_85%)]" />
       <AnimatePresence>
         {flash > 0 && (
-          <motion.div key={flash} className="pointer-events-none fixed inset-0 z-[46] bg-white" initial={{ opacity: 0.85 }} animate={{ opacity: 0 }} transition={{ duration: 0.35 }} />
+          // a soft blink when you switch photos, not a full-screen flash
+          <motion.div key={flash} className="pointer-events-none fixed inset-0 z-[46] bg-white" initial={{ opacity: 0.16 }} animate={{ opacity: 0 }} transition={{ duration: 0.22, ease: "easeOut" }} />
         )}
       </AnimatePresence>
 
