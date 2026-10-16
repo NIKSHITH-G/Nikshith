@@ -7,7 +7,10 @@ import { bump, clientId } from "../../../lib/kv";
 
 export const dynamic = "force-dynamic";
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+// Tried in order: the free tier sometimes reports "high demand" on one model while
+// another is fine. GEMINI_MODEL (comma-separated) overrides the list.
+const MODELS = (process.env.GEMINI_MODEL || "gemini-3.5-flash,gemini-3.8-flash,gemini-flash-lite-latest").split(",").map((m) => m.trim());
+const BUDGET_MS = 14000; // give up on the LLM entirely after this; the built-in engine answers instead
 const PER_VISITOR_PER_HOUR = 40; // messages
 const LLM_PER_DAY = 400; // stays well inside Gemini's free daily limit
 const MAX_TURNS = 8; // conversation history sent to the model
@@ -15,34 +18,45 @@ const MAX_CHARS = 500; // per message
 
 const clean = (t) => String(t ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, MAX_CHARS);
 
-async function askGemini(history) {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) return null;
-  const today = new Date().toISOString().slice(0, 10);
-  if ((await bump(`ask:llm:${today}`, 86400)) > LLM_PER_DAY) return null;
-
+async function callModel(model, key, history, ms) {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 12000);
+  const timer = setTimeout(() => ctrl.abort(), ms);
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": key },
       signal: ctrl.signal,
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents: history.map((m) => ({ role: m.role === "me" ? "model" : "user", parts: [{ text: m.text }] })),
-        generationConfig: { temperature: 0.6, maxOutputTokens: 350, thinkingConfig: { thinkingBudget: 0 } },
+        generationConfig: { temperature: 0.6, maxOutputTokens: 400, thinkingConfig: { thinkingLevel: "low" } },
       }),
     });
     if (!res.ok) return null;
     const data = await res.json();
-    const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("").trim();
+    // skip any "thought" parts; keep only what he actually says
+    const text = data?.candidates?.[0]?.content?.parts?.filter((p) => !p.thought).map((p) => p.text ?? "").join("").trim();
     return text || null;
   } catch {
     return null;
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function askGemini(history) {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) return null;
+  const today = new Date().toISOString().slice(0, 10);
+  if ((await bump(`ask:llm:${today}`, 86400)) > LLM_PER_DAY) return null;
+  const started = Date.now();
+  for (const model of MODELS) {
+    const left = BUDGET_MS - (Date.now() - started);
+    if (left < 1500) break;
+    const text = await callModel(model, key, history, Math.min(left, 9000));
+    if (text) return { text, model };
+  }
+  return null;
 }
 
 export async function POST(request) {
@@ -64,6 +78,6 @@ export async function POST(request) {
   }
 
   const llm = await askGemini(history);
-  if (llm) return Response.json({ reply: llm, source: "gemini" });
+  if (llm) return Response.json({ reply: llm.text, source: llm.model });
   return Response.json({ reply: answerOffline(question), source: "built-in" });
 }
