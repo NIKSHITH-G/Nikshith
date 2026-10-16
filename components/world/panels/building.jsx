@@ -767,9 +767,11 @@ export function ChessGame({ portrait }) {
     } else setSel(null);
   };
 
-  // owner door: hold the black king in the header for 2 seconds
-  const holdStart = () => {
-    holdTimer.current = setTimeout(() => setAskKey(true), 2000);
+  // owner door: the "I'm Nikshith" link, or hold the black king in the header for 1.5 s.
+  // Pointer capture keeps a slightly wobbly finger or mouse from cancelling the hold.
+  const holdStart = (e) => {
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    holdTimer.current = setTimeout(() => setAskKey(true), 1500);
   };
   const holdEnd = () => clearTimeout(holdTimer.current);
   const submitKey = async (e) => {
@@ -823,11 +825,11 @@ export function ChessGame({ portrait }) {
             <div className="mb-3 flex items-center justify-between font-mono text-[12px] text-white/70" style={{ width: size }}>
               <span>
                 <span
-                  className="mr-1 inline-block cursor-default select-none text-lg text-white"
+                  className="-m-2 mr-0 inline-block cursor-default touch-none select-none p-2 text-lg text-white [-webkit-touch-callout:none]"
                   onPointerDown={holdStart}
                   onPointerUp={holdEnd}
-                  onPointerLeave={holdEnd}
-                  title=""
+                  onPointerCancel={holdEnd}
+                  onContextMenu={(e) => e.preventDefault()}
                 >
                   ♚&#xFE0E;
                 </span>
@@ -903,8 +905,13 @@ export function ChessGame({ portrait }) {
                 </ol>
               )}
             </div>
-            {game.persistent === false && (
-              <p className="mt-2 font-mono text-[10px] text-white/35">dev mode: board isn&apos;t saved to a database yet</p>
+            {owner && game.persistent === false && (
+              <p className="mt-2 font-mono text-[10px] text-amber-200/60">no database connected — the board resets on each deploy</p>
+            )}
+            {!owner && (
+              <button onClick={() => setAskKey(true)} className="mt-3 inline-flex items-center gap-1.5 self-start font-mono text-[11px] text-white/35 transition hover:text-white/80">
+                <KeyRound size={12} /> I&apos;m Nikshith
+              </button>
             )}
             {owner && (
               <div className="mt-4 flex gap-2">
