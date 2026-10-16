@@ -70,7 +70,7 @@ export const PANEL_META = {
   arcade: { kicker: "games room · arcade", title: "Insert coin" },
   kanban: { kicker: "games room · side quests", title: "Side quests" },
   guestbook: { kicker: "rooftop · guestbook", title: "Guestbook" },
-  ask: { kicker: "dining table · laptop", title: "Ask me anything" },
+  ask: { kicker: "studio · Nikshith", title: "Talking to Nikshith" },
 };
 
 // Each object opens in its own way: screens light up in place, everything else gets a stage.

@@ -153,7 +153,7 @@ export function Player() {
     g.position.set(runtime.x, 0, runtime.z);
     g.rotation.y = runtime.heading;
     // step out of the shot while the camera is focused on an object
-    g.visible = !s.panel?.from;
+    g.visible = !s.panel?.from && s.panel?.id !== "ask";
 
     const swing = Math.sin(m.phase) * 0.65 * Math.min(1, stride * 1.4);
     legL.current.rotation.x = swing;
@@ -179,7 +179,8 @@ export function Player() {
     // look at whatever you're near
     let look = 0;
     const near = activeItems().find((i) => i.id === s.nearby);
-    const target = near ? near.pos : s.nearby === "cat" ? [runtime.cat.x, runtime.cat.z] : s.nearby === "dog" ? [runtime.dog.x, runtime.dog.z] : null;
+    const pet = { cat: runtime.cat, dog: runtime.dog, nikshith: runtime.npc }[s.nearby];
+    const target = near ? near.pos : pet ? [pet.x, pet.z] : null;
     if (target && !walking) {
       look = Math.max(-0.8, Math.min(0.8, angleDiff(Math.atan2(target[0] - runtime.x, target[1] - runtime.z), runtime.heading)));
     } else if (!walking) {
@@ -206,15 +207,15 @@ export function Player() {
             <Part p={[0, -0.585, 0.04]} s={[0.19, 0.09, 0.3]} c="#f5f5f5" r={0.03} />
           </group>
           {/* hoodie */}
-          <Part p={[0, 0.93, 0]} s={[0.52, 0.64, 0.32]} c="#7c5cd6" r={0.08} />
-          <Part p={[0, 0.82, 0.15]} s={[0.3, 0.16, 0.04]} c="#6a4cc2" r={0.02} />
-          <Part p={[0, 1.2, -0.15]} s={[0.4, 0.18, 0.1]} c="#6a4cc2" r={0.04} />
+          <Part p={[0, 0.93, 0]} s={[0.52, 0.64, 0.32]} c="#0f766e" r={0.08} />
+          <Part p={[0, 0.82, 0.15]} s={[0.3, 0.16, 0.04]} c="#115e59" r={0.02} />
+          <Part p={[0, 1.2, -0.15]} s={[0.4, 0.18, 0.1]} c="#115e59" r={0.04} />
           <group ref={armL} position={[-0.33, 1.18, 0]}>
-            <Part p={[0, -0.26, 0]} s={[0.14, 0.54, 0.18]} c="#7c5cd6" r={0.06} />
+            <Part p={[0, -0.26, 0]} s={[0.14, 0.54, 0.18]} c="#0f766e" r={0.06} />
             <Part p={[0, -0.57, 0]} s={[0.12, 0.11, 0.14]} c="#c89878" r={0.04} />
           </group>
           <group ref={armR} position={[0.33, 1.18, 0]}>
-            <Part p={[0, -0.26, 0]} s={[0.14, 0.54, 0.18]} c="#7c5cd6" r={0.06} />
+            <Part p={[0, -0.26, 0]} s={[0.14, 0.54, 0.18]} c="#0f766e" r={0.06} />
             <Part p={[0, -0.57, 0]} s={[0.12, 0.11, 0.14]} c="#c89878" r={0.04} />
           </group>
           <group ref={head} position={[0, 1.27, 0]}>
@@ -226,10 +227,9 @@ export function Player() {
             {/* eyes */}
             <Part p={[-0.09, 0.22, 0.2]} s={[0.055, 0.07, 0.02]} c="#111" r={0.009} />
             <Part p={[0.09, 0.22, 0.2]} s={[0.055, 0.07, 0.02]} c="#111" r={0.009} />
-            {/* headphones, because music */}
-            <Part p={[0, 0.5, 0]} s={[0.52, 0.05, 0.08]} c="#e5e7eb" r={0.02} />
-            <Part p={[-0.24, 0.22, 0]} s={[0.07, 0.2, 0.17]} c="#e5e7eb" r={0.03} />
-            <Part p={[0.24, 0.22, 0]} s={[0.07, 0.2, 0.17]} c="#e5e7eb" r={0.03} />
+            {/* the visitor wears a cap — Nikshith is the one with the headphones */}
+            <Part p={[0, 0.47, 0]} s={[0.47, 0.12, 0.45]} c="#f59e0b" r={0.05} />
+            <Part p={[0, 0.43, 0.27]} s={[0.4, 0.04, 0.2]} c="#d97706" r={0.02} />
           </group>
         </group>
       </group>

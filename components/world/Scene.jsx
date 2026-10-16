@@ -6,6 +6,10 @@ import { Html, PerformanceMonitor } from "@react-three/drei";
 import * as THREE from "three";
 import Apartment from "./Apartment";
 import { Player, Cat } from "./Characters";
+import { Nikshith, ACTIVITIES } from "./Nikshith";
+
+// clicking Nikshith from across the room walks you to a free spot beside him
+const ACTIVITY_VISIT = () => (ACTIVITIES.find((a) => a.id === runtime.npc.activity) ?? ACTIVITIES[0]).visit;
 import { POWER, activeItems, floorById } from "./layout";
 // the other floors are only downloaded when you first ride the elevator to them
 const GymFloor = lazy(() => import("./floors").then((m) => ({ default: m.GymFloor })));
@@ -49,6 +53,20 @@ function CameraRig() {
       camGoal.set(Math.sin(sway) * 24 * r, 19 * r, Math.cos(sway) * 21 * r);
       lookGoal.set(portrait ? 0 : -2.5 * (1 - push), 0, 0.5);
       lambda = 1.2;
+    } else if (s.panel?.id === "ask") {
+      // a conversation: over the visitor's shoulder, Nikshith framed above the dialogue box
+      const n = runtime.npc;
+      const dx = runtime.x - n.x;
+      const dz = runtime.z - n.z;
+      const d = Math.hypot(dx, dz) || 1;
+      const ux = dx / d;
+      const uz = dz / d;
+      const side = portrait ? 0 : 0.9;
+      const back = portrait ? 5.2 : 4.4;
+      camGoal.set(n.x + ux * back - uz * side, 2.6, n.z + uz * back + ux * side);
+      // aim low so he stands in the top half, clear of the dialogue box
+      lookGoal.set(n.x - uz * side * 0.3, portrait ? 0.2 : 0.45, n.z + ux * side * 0.3);
+      lambda = 3;
     } else if (s.panel?.from) {
       const it = activeItems().find((i) => i.id === s.panel.from);
       if (it.surface && !portrait) {
@@ -196,6 +214,7 @@ function NearbyLabel({ touch }) {
   const pets = {
     cat: { name: "Byte", label: "Pet the cat", pos: [runtime.cat.x, runtime.cat.z], h: 0.4 },
     dog: { name: "Pixel", label: "Pet the dog", pos: [runtime.dog.x, runtime.dog.z], h: 0.6 },
+    nikshith: { name: "Nikshith", label: "Talk to Nikshith", pos: [runtime.npc.x, runtime.npc.z], h: 1.85 },
   };
   const it = pets[nearby] ?? activeItems().find((i) => i.id === nearby);
   if (!it) return null;
@@ -224,6 +243,11 @@ function Proximity() {
       }
     }
     const floor = getState().floor;
+    // Nikshith beats furniture when you're standing by him
+    if (floor === "studio") {
+      const dN = Math.hypot(runtime.x - runtime.npc.x, runtime.z - runtime.npc.z);
+      if (dN < 1.7 && (!best || dN < bestD + 0.4)) best = "nikshith";
+    }
     if (!best && floor === "studio" && Math.hypot(runtime.x - runtime.cat.x, runtime.z - runtime.cat.z) < 1.3) best = "cat";
     if (!best && floor === "gym" && Math.hypot(runtime.x - runtime.dog.x, runtime.z - runtime.dog.z) < 1.4) best = "dog";
     if (getState().nearby !== best) setState({ nearby: best });
@@ -304,6 +328,17 @@ export default function Scene({ touch }) {
             }}
           >
             <Cat />
+          </group>
+          <group
+            onClick={(e) => {
+              e.stopPropagation();
+              const s = getState();
+              if (s.phase !== "playing" || s.panel || runtime.justDragged) return;
+              if (s.nearby === "nikshith") interact("nikshith");
+              else walkTo(...ACTIVITY_VISIT(), null);
+            }}
+          >
+            <Nikshith />
           </group>
         </>
       )}

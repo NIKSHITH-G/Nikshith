@@ -133,7 +133,6 @@ const STUDIO_ITEMS = [
     shot: [[7.4, 2.0, 2.4], [9.6, 0.9, 5.4]] },
   { id: "contact", name: "Front door", label: "Write me a letter", panel: "contact", pos: [-11.9, 6], stand: [-10.6, 6.4], h: 2.5,
     shot: [[-8.2, 2.1, 4.5], [-11.8, 1.2, 6.2]] },
-  { id: "ask", name: "AI Nikshith", label: "Ask me anything", panel: "ask", pos: [1.0, 5.3], stand: [1.0, 4.2], h: 1.3 },
   { id: "coffee", name: "Coffee machine", label: "Brew a coffee", action: "coffee", pos: [3.55, 5.2], stand: [2.4, 5.2], h: 1.5 },
   elevator(),
 ];
@@ -410,6 +409,23 @@ livingDetours = detours([
   STUDIO_FURNITURE.kitchen,
   [4, 5.5, 0.2, 5], // gallery half-wall
 ]);
+
+/* ── Nikshith's day: the places he goes in the studio ─────────────────── */
+
+// Where he goes and what he does there.
+//   spot: where he stands · look: what he faces · visit: a free spot for a visitor to stand
+//   pose: how he holds his arms · bubble: what his thought bubble says · secs: how long he stays
+export const ACTIVITIES = [
+  { id: "desk", spot: [-8.75, -6.3], look: [-8.2, -7.3], visit: [-6.9, -5.0], pose: "type", bubble: "💻 shipping a fix…", secs: [14, 22] },
+  { id: "books", spot: [-10.2, -4.5], look: [-11.6, -4.5], visit: [-9.0, -3.4], pose: "browse", bubble: "📚 where did I put Mistborn…", secs: [8, 12] },
+  { id: "board", spot: [2.15, -4.2], look: [3.3, -4.2], visit: [0.9, -3.2], pose: "write", bubble: "✏️ sketching an idea", secs: [10, 15] },
+  { id: "arcade", spot: [0, -5.85], look: [0, -7.35], visit: [1.2, -4.7], pose: "play", bubble: "🕹️ one more round", secs: [10, 15] },
+  { id: "piano", spot: [8, -6.3], look: [8, -7.3], visit: [9.3, -5.3], pose: "piano", bubble: "🎹 working on a melody", secs: [14, 20] },
+  { id: "library", spot: [10.0, 2.6], look: [11.6, 2.6], visit: [8.7, 2.0], pose: "read", bubble: "📖 Shadow Slave, again", secs: [12, 18] },
+  { id: "coffee", spot: [2.65, 5.2], look: [3.55, 5.2], visit: [1.95, 3.9], pose: "coffee", bubble: "☕ coffee number three", secs: [7, 10] },
+  { id: "tv", spot: [-2.0, 1.6], look: [-4, -0.6], visit: [-1.0, 2.6], pose: "idle", bubble: "📺 checking the intro reel", secs: [8, 12] },
+  { id: "window", spot: [10.3, -6.4], look: [10.3, -7.9], visit: [9.4, -5.2], pose: "idle", bubble: "🌙 nice night out", secs: [7, 10] },
+];
 
 /* ── the building ─────────────────────────────────────────────────────── */
 

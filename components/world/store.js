@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { ALL_ITEMS, SECTIONS, SPAWN, POWER, ENTER_SECONDS, planPath, activeItems, setActiveFloor, floorById } from "./layout";
+import { ACTIVITIES, ALL_ITEMS, SECTIONS, SPAWN, POWER, ENTER_SECONDS, planPath, activeItems, setActiveFloor, floorById } from "./layout";
 import * as sfx from "./audio";
 
 // UI state that React renders from. Kept small and selector-based so the HUD
@@ -51,6 +51,7 @@ export const runtime = {
   joy: { x: 0, z: 0 },
   cat: { x: -7, z: 4.6 },
   dog: { x: 6.5, z: 3.5 }, // Pixel, on floor 2
+  npc: { x: -8.75, z: -6.3, heading: Math.PI, activity: "desk" }, // Nikshith, who lives in the studio
   yaw: 0, // camera orbit, set by dragging
   zoom: 1, // set by the scroll wheel
   powerStart: null, // performance.now()/1000 when the lights start coming on
@@ -127,7 +128,15 @@ export function rideTo(to, then) {
 /* ── panels ───────────────────────────────────────── */
 
 // Prefer something on the floor you're on; otherwise look through the whole building.
+// Nikshith isn't a fixed object: "talking to him" means finding wherever he is.
+function nikshithSpot() {
+  const n = runtime.npc;
+  const act = ACTIVITIES.find((a) => a.id === n.activity) ?? ACTIVITIES[0];
+  return { id: "nikshith", name: "Nikshith", panel: "ask", floor: "studio", pos: [n.x, n.z], stand: act.visit };
+}
+
 function findInteractable(panel, item) {
+  if (panel === "ask") return nikshithSpot();
   const match = (i) => i.panel === panel && (item === undefined || i.item === item);
   const here = activeItems().map((i) => ({ ...i, floor: state.floor }));
   return here.find(match) ?? ALL_ITEMS.find(match) ?? here.find((i) => i.panel === panel) ?? ALL_ITEMS.find((i) => i.panel === panel);
@@ -168,6 +177,7 @@ export function walkTo(x, z, pendingOpen = null) {
 export function interact(id) {
   if (id === "cat") return petCat();
   if (id === "dog") return petDog();
+  if (id === "nikshith") return openPanel("ask");
   const it = activeItems().find((i) => i.id === id);
   if (!it) return;
   runtime.heading = Math.atan2(it.pos[0] - runtime.x, it.pos[1] - runtime.z);
