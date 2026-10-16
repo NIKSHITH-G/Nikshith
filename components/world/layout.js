@@ -180,13 +180,12 @@ export const GYM_FURNITURE = {
   rower: [-3.2, -6.6, 0.6, 2.0],
   bike: [-1.3, -6.8, 0.6, 1.3],
   squat: [-8.6, -2.6, 2.3, 1.4],
-  ring: [-4.6, 1.2, 4.2, 3.8],
   bag: [-1.4, -2.8, 0.9, 0.9],
   learningBoard: [-11.85, -4.4, 0.15, 1.9],
   lockers: [-11.7, 4.6, 0.5, 2.8],
   lockerBench: [-10.9, 4.6, 0.4, 2.4],
   cooler: [-11.6, 7.2, 0.5, 0.5],
-  balls: [-3.0, 5.2, 0.9, 0.9],
+  balls: [-2.6, 1.6, 0.9, 1.0],
   plyo: [-1.0, 4.4, 0.8, 0.8],
   kettlebells: [-5.0, 7.3, 1.9, 0.45],
   dumbbells: [-2.2, 7.35, 2.0, 0.5],
@@ -221,7 +220,7 @@ const GYM_ITEMS = [
 
 const GYM_ROOMS = [
   { id: "cardio", name: "Cardio", rect: [-12, -8, 0, -3.5], spawn: [-6.5, -3.4] },
-  { id: "gym", name: "Ring & weights", rect: [-12, -3.5, 0, 8], spawn: [-8.8, 1.4] },
+  { id: "gym", name: "Weights & stretch", rect: [-12, -3.5, 0, 8], spawn: [-8.8, 1.4] },
   { id: "photo", name: "Photo studio", rect: [0, -8, 12, 0.5], spawn: [6, -2.6] },
   { id: "lounge", name: "Dog lounge", rect: [0, 0.5, 12, 8], spawn: [5, 3.5] },
 ];

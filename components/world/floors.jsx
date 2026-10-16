@@ -194,75 +194,6 @@ function Tape({ x, z, w, d, color = "#facc15" }) {
   );
 }
 
-function BoxingRing({ cx = 3.5, cz = 0.6, W = 5.2, D = 4.6 }) {
-  const canvas = useTex(512, 512, (g, w, h) => {
-    g.fillStyle = "#1e3a8a";
-    g.fillRect(0, 0, w, h);
-    g.fillStyle = "#1d4ed8";
-    g.fillRect(24, 24, w - 48, h - 48);
-    g.strokeStyle = "rgba(255,255,255,0.85)";
-    g.lineWidth = 6;
-    g.beginPath(); g.arc(w / 2, h / 2, 90, 0, Math.PI * 2); g.stroke();
-    g.fillStyle = "#fff";
-    g.font = `bold 54px ${MONO}`;
-    g.textAlign = "center";
-    g.fillText("NG", w / 2, h / 2 + 18);
-    g.font = `bold 22px ${MONO}`;
-    g.fillStyle = "rgba(255,255,255,0.6)";
-    g.fillText("· FIGHT CLUB ·", w / 2, h / 2 + 62);
-  });
-  const H = 0.45;
-  const posts = [[-1, -1, "#dc2626"], [1, -1, "#f8fafc"], [-1, 1, "#f8fafc"], [1, 1, "#2563eb"]];
-  return (
-    <group position={[cx, 0, cz]}>
-      {/* platform with apron skirt */}
-      <B p={[0, 0, 0]} s={[W, H, D]} c="#111827" />
-      <mesh position={[0, H / 2, D / 2 + 0.006]}>
-        <planeGeometry args={[W, H]} />
-        <meshStandardMaterial color="#1d4ed8" />
-      </mesh>
-      <mesh rotation-x={-Math.PI / 2} position={[0, H + 0.004, 0]} receiveShadow>
-        <planeGeometry args={[W - 0.1, D - 0.1]} />
-        <meshStandardMaterial map={canvas} roughness={0.9} />
-      </mesh>
-      {/* corner posts + pads */}
-      {posts.map(([sx, sz, col]) => (
-        <group key={`${sx}${sz}`} position={[(sx * (W - 0.2)) / 2, H, (sz * (D - 0.2)) / 2]}>
-          <mesh position={[0, 0.6, 0]} castShadow>
-            <cylinderGeometry args={[0.05, 0.05, 1.2, 10]} />
-            <meshStandardMaterial color="#d1d5db" metalness={0.7} roughness={0.3} />
-          </mesh>
-          <B p={[0, 0.2, 0]} s={[0.16, 0.85, 0.16]} c={col} r={0.04} />
-        </group>
-      ))}
-      {/* three ropes per side */}
-      {[0.45, 0.75, 1.05].map((y, i) => (
-        <group key={y}>
-          {[[0, -(D - 0.2) / 2, W - 0.2, 0], [0, (D - 0.2) / 2, W - 0.2, 0], [-(W - 0.2) / 2, 0, D - 0.2, Math.PI / 2], [(W - 0.2) / 2, 0, D - 0.2, Math.PI / 2]].map(([px, pz, len, ry], k) => (
-            <mesh key={k} position={[px, H + y, pz]} rotation={[0, ry, Math.PI / 2]}>
-              <cylinderGeometry args={[0.022, 0.022, len, 6]} />
-              <meshStandardMaterial color={i === 1 ? "#f8fafc" : "#dc2626"} roughness={0.5} />
-            </mesh>
-          ))}
-        </group>
-      ))}
-      {/* steps, stool and a towel in the corner */}
-      <B p={[W / 2 + 0.3, 0, -D / 2 + 0.4]} s={[0.5, 0.22, 0.6]} c="#374151" r={0.02} />
-      <B p={[-W / 2 + 0.35, H, -D / 2 + 0.35]} s={[0.3, 0.38, 0.3]} c="#111" r={0.02} />
-      <B p={[-W / 2 + 0.35, H + 0.38, -D / 2 + 0.35]} s={[0.32, 0.03, 0.32]} c="#f8fafc" shadow={false} />
-      {/* gloves resting on the canvas */}
-      {[[0.5, -0.4, "#dc2626"], [0.75, -0.25, "#dc2626"]].map(([gx, gz, col], i) => (
-        <mesh key={i} position={[gx, H + 0.08, gz]} scale={[1, 0.8, 1.3]} castShadow>
-          <sphereGeometry args={[0.09, 12, 10]} />
-          <meshStandardMaterial color={col} roughness={0.35} />
-        </mesh>
-      ))}
-      {/* ring spotlight (the fixture itself is off-camera, just its light) */}
-      <pointLight position={[0, 2.6, 0]} color="#fff7e6" intensity={18} distance={7} decay={2} />
-    </group>
-  );
-}
-
 function Rower({ x = -1.2, z = -6.6 }) {
   return (
     <group position={[x, 0, z]}>
@@ -554,7 +485,6 @@ export function GymFloor() {
           ))
         )}
       </group>
-      <BoxingRing cx={-4.6} cz={1.2} W={4.2} D={3.8} />
       <PunchingBag x={-1.4} z={-2.8} />
       {/* training-plan whiteboard on the west wall (its content opens on it) */}
       <group position={[-11.86, 1.6, -4.4]} rotation-y={Math.PI / 2}>
@@ -581,10 +511,21 @@ export function GymFloor() {
           <meshStandardMaterial color="#7dd3fc" transparent opacity={0.6} roughness={0.1} />
         </mesh>
       </group>
-      {[["#8b5cf6", -8.6], ["#14b8a6", -7.3], ["#f472b6", -6.0]].map(([col, x]) => (
-        <B key={x} p={[x, 0, 5.4]} s={[0.65, 0.025, 1.8]} c={col} shadow={false} />
+      <Tape x={-4.6} z={1.3} w={5.2} d={3.6} color="#38bdf8" />
+      <mesh rotation-x={-Math.PI / 2} position={[-4.6, 0.006, 1.3]}>
+        <planeGeometry args={[5.1, 3.5]} />
+        <meshStandardMaterial color="#2c3a4a" roughness={1} />
+      </mesh>
+      {[["#8b5cf6", -6.2], ["#14b8a6", -5.0], ["#f472b6", -3.8]].map(([col, x]) => (
+        <group key={x}>
+          <B p={[x, 0, 1.2]} s={[0.65, 0.025, 1.8]} c={col} shadow={false} />
+          <mesh position={[x, 0.08, 2.4]} rotation-z={Math.PI / 2}>
+            <cylinderGeometry args={[0.08, 0.08, 0.6, 12]} />
+            <meshStandardMaterial color="#1f2937" />
+          </mesh>
+        </group>
       ))}
-      {[[-3.2, 5.0, 0.36, "#38bdf8"], [-2.7, 5.5, 0.3, "#a78bfa"]].map(([x, z, r, col]) => (
+      {[[-2.6, 1.2, 0.36, "#38bdf8"], [-2.5, 2.0, 0.3, "#a78bfa"]].map(([x, z, r, col]) => (
         <mesh key={x} position={[x, r, z]} castShadow>
           <sphereGeometry args={[r, 24, 18]} />
           <meshStandardMaterial color={col} roughness={0.35} />
@@ -704,7 +645,7 @@ export function GymFloor() {
 
       <Elevator position={[-11.9, 0]} label="2" />
       <Batten x={-6} z={-5.6} len={6} />
-      <Batten x={-6} z={1.2} len={4} color="#bae6fd" intensity={9} />
+      <Batten x={-4.6} z={1.3} len={4} color="#bae6fd" intensity={9} />
       <Batten x={-5} z={6.0} len={5} color="#d9f99d" intensity={7} />
       <Lamp position={[6, 3.0, -4]} intensity={12} distance={12} color="#fff7ed" />
       <Lamp position={[6, 3.0, 4.5]} intensity={10} distance={11} color="#ffedd5" />
