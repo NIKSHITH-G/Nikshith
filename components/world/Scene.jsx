@@ -105,7 +105,8 @@ function Marker({ it }) {
     if (ref.current) {
       ref.current.position.y = it.h + 0.38 + Math.sin(t * 2.2 + it.pos[0]) * 0.08;
       ref.current.rotation.y = t * 1.4;
-      const sc = (near ? 1.4 : visited ? 0.7 : 1) * on;
+      // markers step aside while a view is open so they don't poke through it
+      const sc = s.panel ? 0 : (near ? 1.4 : visited ? 0.7 : 1) * on;
       ref.current.scale.setScalar(ref.current.scale.x + (sc - ref.current.scale.x) * 0.2);
     }
     if (mat.current) {

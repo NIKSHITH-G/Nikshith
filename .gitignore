@@ -42,3 +42,6 @@ next-env.d.ts
 
 # VS Code
 .vscode/
+
+# raw photo drops (optimised copies live in public/images/photos)
+/photos/

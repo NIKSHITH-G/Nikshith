@@ -1017,7 +1017,19 @@ function Trophies() {
 
 /* ───────────────────────── prints (also used on floor 2) ───────────────────────── */
 
-export function Print({ position, rotation, w, h, palette, seed }) {
+// A real photo, loaded as a texture.
+function usePhoto(src) {
+  return useMemo(() => {
+    if (!src || typeof document === "undefined") return null;
+    const t = new THREE.TextureLoader().load(src);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 8;
+    return t;
+  }, [src]);
+}
+
+export function Print({ position, rotation, w, h, palette = ["#444", "#222"], seed = 1, src }) {
+  const photo = usePhoto(src);
   const tex = useTex(320, 220, (g, cw, ch) => {
     const grd = g.createLinearGradient(0, 0, 0, ch);
     palette.forEach((c, i) => grd.addColorStop(i / (palette.length - 1), c));
@@ -1038,7 +1050,7 @@ export function Print({ position, rotation, w, h, palette, seed }) {
       <B p={[0, -h / 2 - 0.03, 0.01]} s={[w + 0.06, h + 0.06, 0.05]} c="#f4f1ea" shadow={false} />
       <mesh position={[0, 0, 0.04]}>
         <planeGeometry args={[w * 0.9, h * 0.88]} />
-        <meshStandardMaterial map={tex} roughness={0.5} />
+        <meshStandardMaterial map={photo ?? tex} roughness={0.5} />
       </mesh>
       <mesh position={[0, h / 2 + 0.16, 0.12]}>
         <boxGeometry args={[w * 0.5, 0.04, 0.06]} />

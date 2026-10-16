@@ -338,20 +338,12 @@ export function PianoStage({ portrait }) {
 
 /* ── camera: look through the viewfinder ───────────── */
 
-const SHOTS = [
-  { label: "Golden hour", sky: ["#fb923c", "#db2777", "#312e81"], sun: 0.3 },
-  { label: "Blue hour", sky: ["#38bdf8", "#1e3a8a", "#020617"], sun: 0.7 },
-  { label: "Late light", sky: ["#fde68a", "#f97316", "#7c2d12"], sun: 0.55 },
-  { label: "Neon nights", sky: ["#e879f9", "#581c87", "#030014"], sun: 0.2 },
-];
+const SHOTS = photography.photos;
 
-function Shot({ s, className = "" }) {
+function Shot({ s, className = "", sizes = "640px" }) {
   return (
-    <div className={`relative overflow-hidden ${className}`} style={{ background: `linear-gradient(180deg, ${s.sky.join(",")})` }}>
-      <div className="absolute h-[14%] w-[9%] rounded-full bg-white/85 blur-[1px]" style={{ left: `${s.sun * 100}%`, top: "26%", aspectRatio: 1, height: "auto" }} />
-      <svg viewBox="0 0 300 100" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 h-[45%] w-full" aria-hidden>
-        <path d="M0 100 L0 60 L20 60 L20 40 L45 40 L45 55 L70 55 L70 25 L90 25 L90 50 L120 50 L120 35 L150 35 L150 60 L175 60 L175 20 L195 20 L195 45 L230 45 L230 55 L260 55 L260 30 L285 30 L285 50 L300 50 L300 100 Z" fill="rgba(5,5,15,0.82)" />
-      </svg>
+    <div className={`relative overflow-hidden bg-black ${className}`}>
+      <Image src={s.src} alt={s.title} fill sizes={sizes} className="object-cover" />
     </div>
   );
 }
@@ -409,11 +401,11 @@ export function Viewfinder({ portrait }) {
           initial={{ opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1, transition: { delay: 0.9 } }}
           exit={{ opacity: 0 }}
-          className="pointer-events-auto relative w-[min(620px,88vw)]"
+          className="pointer-events-auto relative w-[min(330px,62vw,40vh)]"
         >
           <AnimatePresence mode="wait">
             <motion.div key={sel} initial={{ opacity: 0, filter: "blur(8px)" }} animate={{ opacity: 1, filter: "blur(0px)" }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}>
-              <Shot s={SHOTS[sel]} className="aspect-[3/2] w-full rounded-sm" />
+              <Shot s={SHOTS[sel]} className="aspect-[3/4] w-full rounded-sm" sizes="420px" />
             </motion.div>
           </AnimatePresence>
           {/* focus brackets */}
@@ -423,7 +415,7 @@ export function Viewfinder({ portrait }) {
             ))}
           </div>
           <div className="mt-2 flex items-center justify-between font-mono text-[11px] text-white/60">
-            <span>{SHOTS[sel].label}</span>
+            <span>{SHOTS[sel].title}</span>
             <span>{String(sel + 1).padStart(3, "0")} / {String(SHOTS.length).padStart(3, "0")}</span>
           </div>
         </motion.div>
@@ -435,14 +427,14 @@ export function Viewfinder({ portrait }) {
           className="pointer-events-auto mt-5 flex gap-2 rounded-md bg-black/60 p-2 ring-1 ring-white/10"
         >
           {SHOTS.map((s, i) => (
-            <button key={s.label} onClick={() => take(i)} aria-label={s.label} className={`overflow-hidden rounded-sm ring-2 transition ${i === sel ? "ring-white" : "ring-transparent opacity-60 hover:opacity-100"}`}>
-              <Shot s={s} className={portrait ? "h-10 w-14" : "h-14 w-20"} />
+            <button key={s.src} onClick={() => take(i)} aria-label={s.title} className={`overflow-hidden rounded-sm ring-2 transition ${i === sel ? "ring-white" : "ring-transparent opacity-60 hover:opacity-100"}`}>
+              <Shot s={s} className={portrait ? "h-12 w-9" : "h-16 w-12"} sizes="64px" />
             </button>
           ))}
         </motion.div>
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.2 } }} exit={{ opacity: 0 }} className="pointer-events-auto mt-5 flex flex-col items-center gap-3 text-center">
-          <p className="max-w-md text-sm text-white/70">Streets, skies, and whatever the light is doing around Melbourne. The real shots live on Instagram.</p>
+          <p className="max-w-md text-sm text-white/70">Skies, birds, and whatever the light is doing around Melbourne. More on Instagram.</p>
           <a href={photography.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition hover:bg-violet-100">
             See {photography.handle} <ArrowUpRight size={14} />
           </a>

@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { B, C, MONO, Plant, Elevator, Print, useTex } from "./Apartment";
 import { WALL_H, floorById, blocked } from "./layout";
 import { runtime, now, getState, interact } from "./store";
+import { photography } from "../../lib/content";
 import { useChess, boardFromFen } from "./chess";
 
 /* ── shared shell: slab, floor, walls with light caps ── */
@@ -551,13 +552,18 @@ export function GymFloor() {
       ))}
 
       {/* ───── photo studio (north-east) ───── */}
-      <Print position={[2.6, 1.85, -7.84]} w={1.5} h={1.0} palette={["#fb923c", "#db2777", "#312e81"]} seed={1} />
-      <Print position={[5.4, 1.95, -7.84]} w={2.0} h={1.3} palette={["#0ea5e9", "#1e3a8a", "#020617"]} seed={2} />
-      <Print position={[8.2, 1.85, -7.84]} w={1.5} h={1.0} palette={["#fde68a", "#f97316", "#7c2d12"]} seed={5} />
-      {[2.6, 5.4, 8.2].map((x) => (
-        <pointLight key={x} position={[x, 2.7, -7.0]} intensity={3} distance={3} decay={2} color="#fff1d6" />
+      {/* Nikshith's own photos: five on the back wall, two on the side wall */}
+      {photography.photos.slice(0, 5).map((ph, i) => (
+        <Print key={ph.src} src={ph.src} position={[1.3 + i * 1.7, 1.85, -7.84]} w={0.96} h={1.28} />
       ))}
-      <Neon text="DARKROOM" position={[5.4, 2.9, -7.85]} width={1.8} color="#f43f5e" />
+      {photography.photos.slice(5, 7).map((ph, i) => (
+        <Print key={ph.src} src={ph.src} position={[11.84, 1.85, -4.3 + i * 1.6]} rotation={[0, -Math.PI / 2, 0]} w={0.96} h={1.28} />
+      ))}
+      {[2.15, 5.55, 8.95].map((x) => (
+        <pointLight key={x} position={[x, 2.7, -6.9]} intensity={3} distance={3.2} decay={2} color="#fff1d6" />
+      ))}
+      <pointLight position={[11.0, 2.7, -3.5]} intensity={3} distance={3.2} decay={2} color="#fff1d6" />
+      <Neon text="DARKROOM" position={[4.7, 2.95, -7.85]} width={1.8} color="#f43f5e" />
       {/* camera on a tripod, aimed at the prints */}
       <group position={[6.0, 0, -5.2]} rotation-y={Math.PI / 2}>
         {[0, 2.1, 4.2].map((a) => (
