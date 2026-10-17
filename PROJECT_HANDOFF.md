@@ -106,7 +106,7 @@ All of these use the **owner key**: the `CHESS_OWNER_KEY` setting in `.env.local
 | `CHESS_OWNER_KEY` | Owner key: chess, guestbook moderation, `/stats` |
 | `GEMINI_API_KEY` | AI Nikshith's free-tier Gemini answers |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Upstash Redis (`studio-kv`, Sydney): chess, coffee count, guestbook, stats. **Only set on Vercel**; locally the site uses a temporary in-memory store, so local testing never touches real data |
-| `GITHUB_TOKEN` | GitHub screen. **Currently invalid**, so it falls back to anonymous requests |
+| `GITHUB_TOKEN` | GitHub screen, including the contribution graph (which needs a valid token). Replaced 17 Oct 2026 with a classic token; if the graph goes empty, the token has expired |
 
 ---
 
@@ -149,7 +149,6 @@ All of these use the **owner key**: the `CHESS_OWNER_KEY` setting in `.env.local
 6. **Optional ideas:**
    - day/night that follows Melbourne time
    - a free Groq key for smarter answers
-   - fix `GITHUB_TOKEN`
    - `hi@nikshith.dev` via Cloudflare Email Routing
    - rotate the Gemini key (it once appeared in a tool log)
    - more photos, projects and Kindle highlights
@@ -158,6 +157,7 @@ All of these use the **owner key**: the `CHESS_OWNER_KEY` setting in `.env.local
 
 ## 10. Recent history (newest first)
 
+- Security update: Next.js 16.0.10 → 16.4.2 plus patched sharp/postcss/nanoid (0 production audit issues); new working `GITHUB_TOKEN`, so the ship-log contribution graph is back.
 - Guestbook moderation in `/stats`.
 - Share-card filename changed to `og-house.jpg` so LinkedIn refetches it.
 - Character polish and clean-up (subtle smile, headphones on head, no props).
