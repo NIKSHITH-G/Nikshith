@@ -109,85 +109,163 @@ export function GitHubScreen({ portrait }) {
       .catch(() => setErr(true));
   }, []);
 
-  // last 26 weeks of the contribution calendar
-  const weeks = useMemo(() => {
-    const out = [];
-    const end = new Date();
-    end.setHours(0, 0, 0, 0);
-    const start = new Date(end);
-    start.setDate(start.getDate() - (26 * 7 - 1) - start.getDay());
-    for (let w = 0; w < 26; w++) {
+  // The contribution calendar, GitHub-style: one column per week (Sun→Sat), ending this
+  // week. Dates are UTC to match the keys GitHub's calendar returns.
+  const nWeeks = portrait ? 22 : 53;
+  const cal = useMemo(() => {
+    const map = data?.commitMap ?? {};
+    const today = new Date();
+    const end = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+    const start = end - ((nWeeks - 1) * 7 + new Date(end).getUTCDay()) * DAY;
+    const weeks = [];
+    const months = [];
+    for (let w = 0; w < nWeeks; w++) {
       const col = [];
       for (let d = 0; d < 7; d++) {
-        const day = new Date(start);
-        day.setDate(start.getDate() + w * 7 + d);
-        const key = day.toISOString().slice(0, 10);
-        col.push(day > end ? null : data?.commitMap?.[key] ?? 0);
+        const t = start + (w * 7 + d) * DAY;
+        const key = new Date(t).toISOString().slice(0, 10);
+        col.push(t > end ? null : { key, n: map[key] ?? 0 });
       }
-      out.push(col);
+      weeks.push(col);
+      // label a month above the first week that starts in it
+      const first = new Date(start + w * 7 * DAY);
+      if (first.getUTCDate() <= 7 && w < nWeeks - 2) months.push({ w, label: MONTHS[first.getUTCMonth()] });
     }
-    return out;
-  }, [data]);
-  const total = weeks.flat().reduce((a, b) => a + (b || 0), 0);
-  const shade = (n) => (n == null ? "transparent" : n === 0 ? "#161b22" : n < 2 ? "#0e4429" : n < 4 ? "#006d32" : n < 7 ? "#26a641" : "#39d353");
+    const days = weeks.flat().filter(Boolean);
+    let longest = 0;
+    let run = 0;
+    for (const d of days) {
+      run = d.n > 0 ? run + 1 : 0;
+      longest = Math.max(longest, run);
+    }
+    // current streak still counts if today has nothing yet
+    let current = 0;
+    for (let i = days.length - 1; i >= 0; i--) {
+      if (days[i].n > 0) current++;
+      else if (i !== days.length - 1) break;
+    }
+    const busiest = days.reduce((a, b) => (b.n > (a?.n ?? 0) ? b : a), null);
+    return {
+      weeks,
+      months,
+      busiest,
+      total: days.reduce((a, d) => a + d.n, 0),
+      active: days.filter((d) => d.n > 0).length,
+      longest,
+      current,
+    };
+  }, [data, nWeeks]);
+  const [hover, setHover] = useState(null);
+
+  const stats = [
+    [cal.total, `contributions · ${portrait ? "5 mo" : "last year"}`],
+    [cal.current, "current streak"],
+    [cal.longest, "longest streak"],
+    [data?.stats?.publicRepos, "public repos"],
+    [data?.stats?.totalStars, "stars earned"],
+  ];
 
   return (
     <OnScreen base={1000} aspect={1.36 / 0.78} portrait={portrait} frame="rounded-[16px] border-[10px] border-[#16171f] shadow-2xl">
-      <div className={`crt-on bg-[#0d1117] px-9 py-7 text-[#e6edf3] ${portrait ? "min-h-full" : "h-full"}`}>
+      <div className={`crt-on flex flex-col bg-[radial-gradient(120%_80%_at_0%_0%,#132a1c_0%,#0d1117_55%)] text-[#e6edf3] ${portrait ? "min-h-full px-5 py-5" : "h-full px-9 py-7"}`}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="font-mono text-[13px] text-[#7d8590]">github.com/NIKSHITH-G</div>
-            <h2 className="mt-1 font-display text-[40px] italic leading-none">What I&apos;ve been shipping</h2>
+            <a href="https://github.com/NIKSHITH-G" target="_blank" rel="noopener noreferrer" className="font-mono text-[13px] text-[#7d8590] hover:text-[#e6edf3]">
+              github.com/NIKSHITH-G
+            </a>
+            <h2 className={`mt-1 font-display italic leading-none ${portrait ? "text-[30px]" : "text-[40px]"}`}>What I&apos;ve been shipping</h2>
           </div>
-          <span className="flex items-center gap-2 font-mono text-[12px] text-[#3fb950]"><span className="h-2 w-2 animate-pulse rounded-full bg-[#3fb950]" /> live</span>
+          <span className="mt-1 flex shrink-0 items-center gap-2 rounded-full border border-[#238636]/50 bg-[#238636]/10 px-3 py-1 font-mono text-[11px] text-[#3fb950]">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#3fb950]" /> live
+          </span>
         </div>
         {err ? (
           <p className="mt-10 font-mono text-sm text-[#7d8590]">Couldn&apos;t reach GitHub right now. Try again in a bit.</p>
         ) : (
           <>
-            <div className="mt-5 flex flex-wrap gap-3 font-mono text-[13px]">
-              {[["repos", data?.stats?.publicRepos], ["stars", data?.stats?.totalStars], ["followers", data?.stats?.followers], ["contributions · 6 mo", data ? total : null]].map(([k, v]) => (
-                <span key={k} className="rounded-md border border-[#30363d] bg-[#161b22] px-3 py-1.5">
-                  <b className="text-white">{v ?? "…"}</b> <span className="text-[#7d8590]">{k}</span>
-                </span>
-              ))}
-            </div>
-            <div className="mt-5 flex gap-[3px] overflow-hidden">
-              {weeks.map((col, i) => (
-                <div key={i} className="flex flex-col gap-[3px]">
-                  {col.map((n, j) => (
-                    <motion.span
-                      key={j}
-                      initial={{ opacity: 0, scale: 0.4 }}
-                      animate={{ opacity: 1, scale: 1, transition: { delay: 0.5 + i * 0.015 } }}
-                      title={n != null ? `${n} contributions` : undefined}
-                      className="block h-[14px] w-[14px] rounded-[3px]"
-                      style={{ background: data ? shade(n) : "#161b22" }}
-                    />
-                  ))}
+            <div className={`mt-5 grid overflow-hidden rounded-lg border border-[#30363d] bg-[#30363d] gap-px ${portrait ? "grid-cols-2" : "grid-cols-[1.5fr_1fr_1fr_1fr_1fr]"}`}>
+              {stats.map(([v, k], i) => (
+                <div key={k} className={`bg-[#0d1117]/95 px-4 py-2.5 ${portrait && i === 0 ? "col-span-2" : ""}`}>
+                  <div className={`font-mono text-[22px] font-semibold leading-tight ${i === 0 ? "text-[#3fb950]" : "text-white"}`}>{data ? v ?? "–" : "…"}</div>
+                  <div className="mt-0.5 font-mono text-[10.5px] uppercase tracking-wider text-[#7d8590]">{k}</div>
                 </div>
               ))}
             </div>
-            <div className={`mt-6 grid gap-3 ${portrait ? "grid-cols-1" : "grid-cols-2"}`}>
+
+            <div className="mt-5" onMouseLeave={() => setHover(null)}>
+              <div className="flex">
+                <div className="w-8 shrink-0" />
+                <div className="relative mb-1.5 h-3 flex-1 font-mono text-[10px] text-[#7d8590]">
+                  {cal.months.map((m) => (
+                    <span key={m.w} className="absolute" style={{ left: `${(m.w / nWeeks) * 100}%` }}>{m.label}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex">
+                <div className="grid w-8 shrink-0 grid-rows-7 gap-[3px] font-mono text-[10px] leading-none text-[#7d8590]">
+                  {["", "Mon", "", "Wed", "", "Fri", ""].map((d, i) => (
+                    <span key={i} className="flex items-center">{d}</span>
+                  ))}
+                </div>
+                <div className="grid flex-1 gap-[3px]" style={{ gridTemplateColumns: `repeat(${nWeeks}, minmax(0, 1fr))` }}>
+                  {cal.weeks.map((col, i) => (
+                    <div key={i} className="grid grid-rows-7 gap-[3px]">
+                      {col.map((c, j) => (
+                        <motion.span
+                          key={j}
+                          initial={{ opacity: 0, scale: 0.4 }}
+                          animate={{ opacity: 1, scale: 1, transition: { delay: 0.4 + i * 0.008 } }}
+                          onMouseEnter={() => c && setHover(c)}
+                          className={`block aspect-square w-full rounded-[3px] ${c ? "outline-1 -outline-offset-1 outline-white/[0.04] hover:outline-white/60" : ""}`}
+                          style={{ background: c ? (data ? shade(c.n) : "#161b22") : "transparent" }}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-2 flex items-center justify-between gap-4 pl-8 font-mono text-[11px] text-[#7d8590]">
+                <span className="truncate">
+                  {hover ? (
+                    <><b className="text-[#e6edf3]">{hover.n} contribution{hover.n === 1 ? "" : "s"}</b> on {fmtDay(hover.key)}</>
+                  ) : cal.busiest ? (
+                    <>{cal.active} active days{!portrait && <> · busiest {fmtDay(cal.busiest.key)} ({cal.busiest.n})</>}</>
+                  ) : (
+                    " "
+                  )}
+                </span>
+                <span className="flex shrink-0 items-center gap-1">
+                  Less
+                  {[0, 1, 3, 5, 8].map((n) => (
+                    <span key={n} className="h-[10px] w-[10px] rounded-[2px]" style={{ background: shade(n) }} />
+                  ))}
+                  More
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-5 mb-2 font-mono text-[11px] uppercase tracking-wider text-[#7d8590]">Recently pushed</div>
+            <div className={`grid gap-3 ${portrait ? "grid-cols-1" : "grid-cols-4"}`}>
               {(data?.repos ?? Array.from({ length: 4 }, () => null)).map((r, i) => (
                 <a
                   key={r?.name ?? i}
                   href={r?.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group rounded-lg border border-[#30363d] bg-[#161b22] px-4 py-3 transition hover:border-[#8b949e]"
+                  className="group relative flex flex-col overflow-hidden rounded-lg border border-[#30363d] bg-[#161b22]/80 px-4 pb-3 pt-3.5 transition hover:-translate-y-0.5 hover:border-[#8b949e]"
                 >
+                  <span className="absolute inset-x-0 top-0 h-[2px]" style={{ background: r ? LANG[r.language] ?? "#8b949e" : "#30363d" }} />
                   <div className="flex items-center justify-between gap-2">
-                    <span className="truncate font-mono text-[14px] text-[#4493f8] group-hover:underline">{r?.name ?? "loading…"}</span>
-                    <ArrowUpRight size={14} className="shrink-0 text-[#7d8590]" />
+                    <span className="truncate font-mono text-[14px] font-medium text-[#4493f8] group-hover:underline">{r?.name ?? "loading…"}</span>
+                    <ArrowUpRight size={14} className="shrink-0 text-[#7d8590] transition group-hover:text-[#e6edf3]" />
                   </div>
-                  <p className="mt-1 line-clamp-1 text-[13px] text-[#9198a1]">{r?.description || (r ? "No description yet." : " ")}</p>
-                  <div className="mt-2 flex items-center gap-3 font-mono text-[11px] text-[#7d8590]">
+                  {r?.description && <p className="mt-1 line-clamp-2 text-[12.5px] leading-snug text-[#9198a1]">{r.description}</p>}
+                  <div className="mt-auto flex items-center gap-3 pt-2 font-mono text-[11px] text-[#7d8590]">
                     {r?.language && (
-                      <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: LANG[r.language] ?? "#8b949e" }} />{r.language}</span>
+                      <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: LANG[r.language] ?? "#8b949e" }} />{r.language}</span>
                     )}
                     {r && <span>★ {r.stars}</span>}
-                    {r && <span>pushed {ago(new Date(r.pushedAt).getTime())}</span>}
+                    {r && <span className="ml-auto">{ago(new Date(r.pushedAt).getTime())}</span>}
                   </div>
                 </a>
               ))}
@@ -198,6 +276,14 @@ export function GitHubScreen({ portrait }) {
     </OnScreen>
   );
 }
+
+const DAY = 86400000;
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const fmtDay = (key) => {
+  const [, m, d] = key.split("-");
+  return `${MONTHS[+m - 1]} ${+d}`;
+};
+const shade = (n) => (n === 0 ? "#161b22" : n < 2 ? "#0e4429" : n < 4 ? "#006d32" : n < 7 ? "#26a641" : "#39d353");
 
 /* ═════════════ treadmill: 100 m sprint ═════════════ */
 
