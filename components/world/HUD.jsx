@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Map as MapIcon, X, Volume2, VolumeX } from "lucide-react";
+import { Map as MapIcon, X, Volume2, VolumeX, FileText } from "lucide-react";
 import {
   useWorld, setState, getState, interact, goToPanel, teleport, runtime, enter, toggleMute, nextSuggestion, rideTo,
 } from "./store";
@@ -173,6 +173,9 @@ function FloorPlan() {
             <div className="font-mono text-[11px] text-emerald-300/80">// floor plan · {visited.length}/{SECTIONS.length} explored</div>
             <h2 className="font-display text-3xl italic text-white">Where to?</h2>
             <p className="text-xs text-white/45">Tap a room to walk in, a dot to jump to it, or another floor to take the elevator.</p>
+            <Link href="/about" className="mt-1.5 inline-block font-mono text-[11px] text-white/50 underline-offset-4 hover:text-white hover:underline">
+              in a hurry? classic version →
+            </Link>
           </div>
           <button onClick={() => setState({ map: false })} aria-label="Close map" className="rounded-full p-2 text-white/60 hover:bg-white/10 hover:text-white">
             <X size={18} />
@@ -302,7 +305,7 @@ export default function HUD({ ready, touch }) {
           >
             <button onClick={() => goToPanel("about")} className={`flex items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-4 ${glass}`}>
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-fuchsia-400 font-mono text-[11px] font-bold text-black">NG</span>
-              <span className="whitespace-nowrap font-display text-base italic text-white sm:text-lg">Nikshith&apos;s House</span>
+              <span className="whitespace-nowrap font-display text-base italic text-white max-[379px]:hidden sm:text-lg">Nikshith&apos;s House</span>
               <span className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[10px] text-white/70">{floorById(floor).label === "R" ? "ROOF" : `${floorById(floor).label}F`}</span>
             </button>
             <nav className={`hidden items-center gap-0.5 rounded-full p-1 xl:flex ${glass}`} aria-label="Sections">
@@ -328,16 +331,17 @@ export default function HUD({ ready, touch }) {
                 </button>
               ))}
             </nav>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setState({ map: true, panel: null })} className={`flex items-center gap-2 rounded-full px-3.5 py-2 text-[13px] text-white/80 transition hover:text-white ${glass}`}>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button onClick={() => setState({ map: true, panel: null })} className={`flex items-center gap-2 rounded-full px-3 py-2 sm:px-3.5 text-[13px] text-white/80 transition hover:text-white ${glass}`}>
                 <MapIcon size={15} aria-hidden />
                 <span className="font-mono text-[12px]">{visited.length}/{SECTIONS.length}</span>
               </button>
               <button onClick={toggleMute} aria-label={muted ? "Unmute" : "Mute"} className={`rounded-full p-2.5 text-white/75 transition hover:text-white ${glass}`}>
                 {muted ? <VolumeX size={15} /> : <Volume2 size={15} />}
               </button>
-              <Link href="/about" className={`hidden rounded-full px-3.5 py-2 text-[13px] text-white/60 transition hover:text-white sm:block ${glass}`}>
-                Classic
+              <Link href="/about" aria-label="Classic version" title="Classic version" className={`rounded-full p-2.5 text-white/75 transition hover:text-white sm:px-3.5 sm:py-2 sm:text-[13px] sm:text-white/60 ${glass}`}>
+                <FileText size={15} className="sm:hidden" aria-hidden />
+                <span className="hidden sm:inline">Classic</span>
               </Link>
             </div>
           </motion.header>
