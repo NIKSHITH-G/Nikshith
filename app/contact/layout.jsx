@@ -4,7 +4,7 @@ export const metadata = {
     "Get in touch with Nikshith G — open to opportunities in AI/ML and full-stack engineering. Reach out by email, or find me on GitHub, LinkedIn, and Instagram.",
   alternates: { canonical: "/contact" },
   openGraph: {
-    images: ["/og.jpg"],
+    images: ["/og-house.jpg"],
     title: "Contact — Nikshith G",
     description:
       "Open to opportunities in AI/ML and full-stack engineering. Let's talk.",
