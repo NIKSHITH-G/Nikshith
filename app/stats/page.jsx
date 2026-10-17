@@ -86,6 +86,83 @@ function HighScores({ title, data, names, limit = 99 }) {
   );
 }
 
+// Rooftop guestbook moderation: notes stay hidden until approved here.
+function Guestbook({ k }) {
+  const [notes, setNotes] = useState(null);
+  const [busy, setBusy] = useState(null);
+  const headers = { "Content-Type": "application/json", "x-owner-key": k };
+
+  const load = useCallback(async () => {
+    const res = await fetch("/api/guestbook", { headers: { "x-owner-key": k }, cache: "no-store" });
+    if (res.ok) setNotes((await res.json()).notes);
+  }, [k]);
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const act = async (id, action) => {
+    if (action === "delete" && !window.confirm("Delete this note for good?")) return;
+    setBusy(id);
+    const res = await fetch("/api/guestbook", { method: "POST", headers, body: JSON.stringify({ action, id }) });
+    if (res.ok) setNotes((await res.json()).notes);
+    setBusy(null);
+  };
+
+  const pending = (notes ?? []).filter((n) => !n.approved);
+  const live = (notes ?? []).filter((n) => n.approved);
+  const Note = ({ n, waiting }) => (
+    <li className="flex items-start justify-between gap-4 py-3">
+      <div className="min-w-0">
+        <div className="flex items-center gap-2 text-[12px]">
+          <i className="inline-block h-3 w-3 shrink-0" style={{ background: n.color }} />
+          <span className="text-amber-200">{n.name}</span>
+          <span className="text-white/35">{ago(n.at)} AGO</span>
+        </div>
+        <p className="mt-1 break-words font-mono text-[14px] text-white/90">{n.message}</p>
+      </div>
+      <div className="flex shrink-0 gap-2 text-[11px]">
+        {waiting && (
+          <button disabled={busy === n.id} onClick={() => act(n.id, "approve")} className="border-2 border-emerald-400 px-2.5 py-1 text-emerald-300 hover:bg-emerald-400 hover:text-black disabled:opacity-40">
+            ✓ APPROVE
+          </button>
+        )}
+        <button disabled={busy === n.id} onClick={() => act(n.id, "delete")} className="border-2 border-rose-400/70 px-2.5 py-1 text-rose-300 hover:bg-rose-400 hover:text-black disabled:opacity-40">
+          ✕ DELETE
+        </button>
+      </div>
+    </li>
+  );
+
+  return (
+    <div className={`${panel} mt-4 p-5`}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="text-[13px] tracking-widest text-white/70">
+          ROOFTOP GUESTBOOK {pending.length > 0 && <span className="ml-2 bg-amber-400 px-2 py-0.5 text-black">{pending.length} WAITING</span>}
+        </div>
+        <button onClick={load} className="border-2 border-white/20 px-2.5 py-1 text-[11px] text-white/65 hover:border-white/60">↻ RELOAD</button>
+      </div>
+      {notes === null ? (
+        <p className="mt-6 text-[13px] text-white/45">LOADING…</p>
+      ) : (
+        <>
+          <div className="mt-5 text-[11px] tracking-widest text-amber-300">WAITING FOR YOU · {pending.length}</div>
+          {pending.length ? (
+            <ul className="divide-y-2 divide-dashed divide-white/10">{pending.map((n) => <Note key={n.id} n={n} waiting />)}</ul>
+          ) : (
+            <p className="mt-2 font-mono text-[13px] text-white/40">Nothing to review. Approved notes show on the rooftop board.</p>
+          )}
+          <div className="mt-6 text-[11px] tracking-widest text-emerald-300">ON THE BOARD · {live.length}</div>
+          {live.length ? (
+            <ul className="divide-y-2 divide-dashed divide-white/10">{live.map((n) => <Note key={n.id} n={n} />)}</ul>
+          ) : (
+            <p className="mt-2 font-mono text-[13px] text-white/40">No approved notes yet.</p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function Stats() {
   const [key, setKey] = useState("");
   const [data, setData] = useState(null);
@@ -156,6 +233,8 @@ export default function Stats() {
           <Score label="QUESTIONS" value={asked} sub={`${answers.unknown} he couldn't answer`} color="text-violet-300" />
           <Score label="100% CLEARS" value={counts.explored?.all ?? 0} sub="found every room" color="text-rose-300" />
         </div>
+
+        <Guestbook k={key} />
 
         <div className={`${panel} mt-4 p-5`}>
           <div className="flex items-baseline justify-between text-[12px]">
