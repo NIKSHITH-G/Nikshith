@@ -769,16 +769,12 @@ function Living() {
       <B p={[-4, 0.6, -0.72]} s={[2.1, 1.2, 0.06]} c={C.black} r={0.02} />
       <Screen k="tv" position={[-4, 1.2, -0.685]} size={[2.0, 1.12]} map={tv} />
       <PLight k="tv" position={[-4, 1.1, 0.4]} color="#9b8cff" intensity={2.5} distance={4.5} />
-      {/* coffee table with a book and a mug */}
+      {/* coffee table with a book (the mug is Byte's, in Cat.jsx) */}
       <B p={[-4, 0.36, 2]} s={[1.6, 0.06, 0.7]} c={C.wood} r={0.025} />
       <B p={[-4.65, 0, 2]} s={[0.06, 0.36, 0.55]} c={C.woodDark} />
       <B p={[-3.35, 0, 2]} s={[0.06, 0.36, 0.55]} c={C.woodDark} />
       <B p={[-4.3, 0.42, 1.95]} s={[0.36, 0.05, 0.26]} c="#e5e7eb" rot={[0, 0.3, 0]} />
       <B p={[-4.3, 0.47, 1.95]} s={[0.34, 0.04, 0.24]} c="#7c3aed" rot={[0, 0.15, 0]} />
-      <mesh position={[-3.6, 0.45, 2.05]} castShadow>
-        <cylinderGeometry args={[0.055, 0.05, 0.11, 14]} />
-        <meshStandardMaterial color="#fbbf24" />
-      </mesh>
       {/* couch, facing the TV */}
       <B p={[-4, 0.05, 3.6]} s={[3.2, 0.42, 1.1]} c={C.violet} r={0.08} />
       <B p={[-4.72, 0.45, 3.55]} s={[1.3, 0.16, 0.85]} c="#6b5aa8" r={0.07} />

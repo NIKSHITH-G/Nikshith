@@ -36,7 +36,7 @@ Written 17 Oct 2026, at the end of a long build session. No secret values appear
 - **Living room:**
   - the **TV**, with 5 channels: About, At a glance, Right now, Featured, Contact. Flip with ←/→, keys 1–5, a swipe, or the remote.
   - a **Kindle library** of 15 books with covers, a summary, real highlighted quotes and "My takeaways".
-  - the **Now board**, a coffee machine, and **Byte the cat**.
+  - the **Now board**, a coffee machine, and **Byte the cat** (`components/world/Cat.jsx`). Byte hides behind the couch, armchair or plant, under the dining table or in a cardboard box, peeks out and **pounces when you walk past** (you jump). It also knocks the mug off the coffee table while staring at the camera, gets the zoomies, naps on its bed or the couch, and stares at walls. Petting gets a purr, a belly-rub trap that ends in a bite, or a clingy cat that follows you; waking it makes it grumpy.
   - the front door, which opens a letter-style contact form.
 - **Nikshith himself (AI):** walks between activities (desk, books, board, arcade, piano, library, coffee, TV, window). Walk up to him and talk.
 
@@ -132,6 +132,7 @@ All of these use the **owner key**: the `CHESS_OWNER_KEY` setting in `.env.local
 - `?touch`: shows the phone joystick and tap buttons on a laptop.
 - `?debug`: enables `window.dispatchEvent(new CustomEvent("studio:view", { detail: [floor, x, z, zoom, yaw] }))` to jump the camera, and turns tracking off.
 - `window.dispatchEvent(new CustomEvent("world:go", { detail: "<panel id>" }))` opens any panel. Panel ids are in `components/world/panels/index.jsx` (`PANEL_META`).
+- `?debug` also enables `window.dispatchEvent(new CustomEvent("byte:do", { detail: "hide" | "knock" | "zoom" | "nap" | "stare" }))` to make Byte do something now, and `window.__byte` to inspect its state.
 - Walking routes can be simulated with a planner check against `layout.js`. All routes passed at last check.
 
 ---
@@ -157,6 +158,8 @@ All of these use the **owner key**: the `CHESS_OWNER_KEY` setting in `.env.local
 
 ## 10. Recent history (newest first)
 
+- Byte the cat: hide-and-ambush, mug knocking, zoomies, naps, wall staring, new petting reactions, cardboard box.
+- Ship log redesign: full-year graph, streaks, 4-up repo cards.
 - Security update: Next.js 16.0.10 → 16.4.2 plus patched sharp/postcss/nanoid (0 production audit issues); new working `GITHUB_TOKEN`, so the ship-log contribution graph is back.
 - Guestbook moderation in `/stats`.
 - Share-card filename changed to `og-house.jpg` so LinkedIn refetches it.

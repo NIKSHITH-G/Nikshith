@@ -12,14 +12,14 @@ const RADIUS = 0.32;
 
 
 // Move (x, z) by (dx, dz), sliding along whatever is in the way.
-function step(obj, dx, dz, r) {
+export function step(obj, dx, dz, r) {
   let moved = false;
   if (dx && !blocked(obj.x + dx, obj.z, r)) { obj.x += dx; moved = true; }
   if (dz && !blocked(obj.x, obj.z + dz, r)) { obj.z += dz; moved = true; }
   return moved;
 }
 
-const angleDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
+export const angleDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
 
 // Little dust puffs kicked up by footsteps.
 const PUFFS = 8;
@@ -166,7 +166,10 @@ export function Player() {
 
     // breathing + bounce
     m.breathe += dt;
-    body.current.position.y = Math.abs(Math.sin(m.phase)) * 0.05 * stride;
+    // jump out of your skin when Byte pounces
+    const startled = now() - (runtime.startleAt ?? -9);
+    const hop = startled < 0.5 ? Math.sin((startled / 0.5) * Math.PI) * 0.32 : 0;
+    body.current.position.y = Math.abs(Math.sin(m.phase)) * 0.05 * stride + hop;
     body.current.scale.y = 1 + Math.sin(m.breathe * 2.2) * 0.012 * (1 - stride);
 
     // look at whatever you're near
@@ -180,6 +183,13 @@ export function Player() {
       look = Math.sin(m.breathe * 0.4) * 0.25; // idle glance around
     }
     head.current.rotation.y += (look - head.current.rotation.y) * Math.min(1, dt * 5);
+    if (startled < 0.8) {
+      armL.current.rotation.z = -2.5;
+      armR.current.rotation.z = 2.5;
+      armL.current.rotation.x = armR.current.rotation.x = 0;
+    } else if (startled < 1.2) {
+      armL.current.rotation.z *= 0.8;
+    }
   });
 
   return (
@@ -203,101 +213,5 @@ export function Player() {
         </group>
       </group>
     </>
-  );
-}
-
-// Byte the cat wanders the living room and comes to sit near you.
-const CAT_AREA = [-10.5, 0.6, 2.8, 7.4];
-
-export function Cat() {
-  const root = useRef();
-  const body = useRef();
-  const tail = useRef();
-  const headRef = useRef();
-  const st = useRef({ tx: -7, tz: 4.6, wait: 2, heading: 0, walk: 0, sit: 1 });
-
-  useFrame(({ clock }, rawDt) => {
-    const dt = Math.min(rawDt, 0.05);
-    const c = runtime.cat;
-    const m = st.current;
-    const toPlayer = Math.hypot(runtime.x - c.x, runtime.z - c.z);
-
-    let moving = false;
-    if (toPlayer < 1.4) {
-      m.heading = Math.atan2(runtime.x - c.x, runtime.z - c.z);
-    } else if (m.wait > 0) {
-      m.wait -= dt;
-    } else {
-      const dx = m.tx - c.x;
-      const dz = m.tz - c.z;
-      const d = Math.hypot(dx, dz);
-      if (d < 0.1) {
-        m.wait = 2 + Math.random() * 4;
-        const followYou = runtime.z > 0 && runtime.x < 3.5 && Math.random() < 0.45;
-        m.tx = followYou ? runtime.x + 0.9 : CAT_AREA[0] + Math.random() * (CAT_AREA[2] - CAT_AREA[0]);
-        m.tz = followYou ? runtime.z + 0.6 : CAT_AREA[1] + Math.random() * (CAT_AREA[3] - CAT_AREA[1]);
-      } else {
-        const sp = 1.4 * dt;
-        if (!step(c, (dx / d) * sp, (dz / d) * sp, 0.2)) {
-          m.wait = 0.5;
-          m.tx = c.x;
-          m.tz = c.z;
-        }
-        m.heading = Math.atan2(dx, dz);
-        moving = true;
-      }
-    }
-    m.walk += moving ? dt * 12 : 0;
-    m.sit += ((moving ? 0 : 1) - m.sit) * Math.min(1, dt * 4);
-
-    const g = root.current;
-    if (!g) return;
-    g.visible = !(getState().panel?.from && toPlayer < 2.5);
-    g.position.set(c.x, moving ? Math.abs(Math.sin(m.walk)) * 0.03 : 0, c.z);
-    g.rotation.y += angleDiff(m.heading, g.rotation.y) * Math.min(1, dt * 8);
-    // sitting tilts the body back
-    body.current.rotation.x = -m.sit * 0.45;
-    body.current.position.y = -m.sit * 0.03;
-    tail.current.rotation.z = Math.sin(clock.elapsedTime * (toPlayer < 1.4 ? 6 : 2.5)) * 0.45;
-    headRef.current.rotation.z = Math.sin(clock.elapsedTime * 0.7) * 0.12;
-  });
-
-  return (
-    <group ref={root} position={[runtime.cat.x, 0, runtime.cat.z]}>
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0.012, 0]}>
-        <circleGeometry args={[0.26, 18]} />
-        <meshBasicMaterial color="#000" transparent opacity={0.3} depthWrite={false} />
-      </mesh>
-      <group ref={body}>
-        <P p={[0, 0.2, -0.02]} s={[0.24, 0.22, 0.44]} c="#f2a65a" r={0.07} />
-        <P p={[0, 0.2, 0.05]} s={[0.25, 0.14, 0.2]} c="#fff7ed" r={0.05} line={false} />
-        {/* tabby stripes */}
-        {[-0.12, -0.02, 0.08].map((z) => <P key={z} p={[0, 0.315, z]} s={[0.2, 0.012, 0.04]} c="#d97706" r={0.005} line={false} />)}
-        {/* collar with a little bell */}
-        <P p={[0, 0.27, 0.16]} s={[0.2, 0.04, 0.06]} c="#7c5cd6" r={0.015} />
-        <P p={[0, 0.24, 0.195]} s={[0.04, 0.04, 0.04]} c="#facc15" r={0.018} line={false} />
-        <group ref={headRef} position={[0, 0.36, 0.24]}>
-          <P p={[0, 0, 0]} s={[0.25, 0.21, 0.21]} c="#f2a65a" r={0.07} />
-          <P p={[0, -0.04, 0.09]} s={[0.12, 0.08, 0.05]} c="#fff7ed" r={0.025} line={false} />
-          {[-1, 1].map((x) => (
-            <group key={x}>
-              <P p={[x * 0.075, 0.13, 0]} s={[0.07, 0.08, 0.05]} c="#e08b3e" r={0.015} />
-              <P p={[x * 0.075, 0.125, 0.022]} s={[0.035, 0.045, 0.01]} c="#f9a8d4" r={0.008} line={false} />
-              <group position={[x * 0.055, 0.02, 0.106]}>
-                <P p={[0, 0, 0]} s={[0.045, 0.055, 0.012]} c="#1c1410" r={0.012} line={false} />
-                <P p={[x * -0.008, 0.013, 0.007]} s={[0.014, 0.014, 0.004]} c="#ffffff" r={0.004} line={false} />
-              </group>
-            </group>
-          ))}
-          <P p={[0, -0.025, 0.118]} s={[0.035, 0.022, 0.01]} c="#f9a8d4" r={0.006} line={false} />
-        </group>
-        <group ref={tail} position={[0, 0.27, -0.22]}>
-          <P p={[0, 0.14, -0.04]} s={[0.055, 0.3, 0.055]} c="#e08b3e" r={0.025} />
-        </group>
-      </group>
-      {[[-0.07, 0.15], [0.07, 0.15], [-0.07, -0.15], [0.07, -0.15]].map(([x, z], i) => (
-        <P key={i} p={[x, 0.05, z]} s={[0.065, 0.1, 0.065]} c="#fff7ed" r={0.02} />
-      ))}
-    </group>
   );
 }

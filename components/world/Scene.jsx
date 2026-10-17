@@ -5,7 +5,8 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Html, PerformanceMonitor } from "@react-three/drei";
 import * as THREE from "three";
 import Apartment from "./Apartment";
-import { Player, Cat } from "./Characters";
+import { Player } from "./Characters";
+import { Cat, CatProps } from "./Cat";
 import { Nikshith, ACTIVITIES } from "./Nikshith";
 
 // clicking Nikshith from across the room walks you to a free spot beside him
@@ -330,6 +331,7 @@ export default function Scene({ touch }) {
           >
             <Cat />
           </group>
+          <CatProps />
           <group
             onClick={(e) => {
               e.stopPropagation();

@@ -62,6 +62,8 @@ export const runtime = {
   surfaceEl: null, // the HTML overlay pinned to the focused screen
   bagHits: [], // timestamps of punches, so the 3D bag can swing
   steamAt: 0, // last coffee brewed, for the steam puff
+  startleAt: 0, // when Byte last ambushed you (the player jumps)
+  mug: null, // the coffee-table mug Byte knocks off (Cat.jsx)
   sprint: 0, // treadmill belt speed (0–1) while the sprint game runs
 };
 
@@ -235,15 +237,6 @@ async function brewCoffee() {
   }
 }
 
-const CAT_LINES = [
-  "Byte purrs. Byte has reviewed every PR in this house and approved none of them.",
-  "Byte headbutts your leg. That's a strong hire signal.",
-  "Byte was asleep on the keyboard again. That explains the commit messages.",
-  "Mrrp. Byte thinks you should try the arcade cabinets in the lab.",
-  "Byte stares at the piano. Byte has opinions about the bridge in Airplane Mode.",
-  "Byte knocks a pen off the desk. Byte's way of saying 'ship it'.",
-];
-let catIdx = 0;
 const DOG_LINES = [
   "Pixel rolls over for belly rubs. Pixel is the house's head of morale.",
   "Pixel brings you a slobbery ball. Throwing it is now your full-time job.",
@@ -257,9 +250,9 @@ function petDog() {
   toast(DOG_LINES[dogIdx++ % DOG_LINES.length], "🐕");
 }
 
+// Byte works out how to react (purr, bite, grumble…) in Cat.jsx
 function petCat() {
-  sfx.meow();
-  toast(CAT_LINES[catIdx++ % CAT_LINES.length]);
+  runtime.cat.petAt = now();
 }
 
 export function nextSuggestion() {

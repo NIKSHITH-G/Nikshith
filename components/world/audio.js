@@ -339,6 +339,28 @@ export function bark() {
   });
 }
 
+// Byte's ambush: a whoosh and a sharp little "mrrp!".
+export function pounce() {
+  if (!ctx) return;
+  noise(0.22, { type: "bandpass", freq: 1400, q: 0.8, gain: 0.12 });
+  const t = ctx.currentTime + 0.05;
+  const o = ctx.createOscillator();
+  o.type = "sawtooth";
+  o.frequency.setValueAtTime(620, t);
+  o.frequency.exponentialRampToValueAtTime(1150, t + 0.09);
+  const f = ctx.createBiquadFilter();
+  f.type = "bandpass";
+  f.frequency.value = 1500;
+  f.Q.value = 3;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+  o.connect(f).connect(g).connect(sfxBus);
+  o.start(t);
+  o.stop(t + 0.18);
+}
+
 // Camera shutter + film advance, for the photo booth.
 export function snap() {
   noise(0.025, { type: "highpass", freq: 2500, gain: 0.5 });
