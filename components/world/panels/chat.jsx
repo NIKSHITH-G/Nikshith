@@ -13,6 +13,7 @@ import { runtime } from "../store";
 import { isShort } from "./index";
 import BlockyAvatar from "../../BlockyAvatar";
 import * as sfx from "../audio";
+import { track } from "../../../lib/track";
 
 // the conversation carries on across visits to him during one session
 let history = [];
@@ -81,6 +82,7 @@ export function AskChat({ portrait }) {
     const local = matchOffline(q);
     if (local.confident) {
       // a direct question he already knows the answer to: reply right away (a short beat so it feels natural)
+      track("question", null, { q, how: "built-in" });
       await new Promise((r) => setTimeout(r, 350));
       setMessages([...next, { role: "me", text: local.answer }]);
       setBusy(false);

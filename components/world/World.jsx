@@ -8,6 +8,7 @@ import { runtime, getState, setState, interact, closePanel, goToPanel, enter, en
 import { setActiveFloor } from "./layout";
 import { PANEL_META, preloadPanels } from "./panels";
 import * as sfx from "./audio";
+import { trackVisit } from "../../lib/track";
 
 const MOVE_KEYS = new Set(["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"]);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -29,6 +30,7 @@ export default function World() {
   }, [phase]);
 
   useEffect(() => {
+    trackVisit("studio");
     // ?touch forces the phone controls (for testing on a desktop browser)
     const coarse = window.matchMedia("(pointer: coarse)").matches || new URLSearchParams(window.location.search).has("touch");
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

@@ -4,6 +4,7 @@
 // never goes silent.
 import { SYSTEM_PROMPT, answerOffline, matchOffline } from "../../../lib/persona";
 import { bump, clientId, get, set } from "../../../lib/kv";
+import { logQuestion } from "../../../lib/stats";
 
 export const dynamic = "force-dynamic";
 
@@ -82,8 +83,13 @@ export async function POST(request) {
   }
 
   // clear, direct questions don't need an LLM: answer them instantly
-  if (matchOffline(question).confident) return Response.json({ reply: answerOffline(question), source: "built-in" });
+  if (matchOffline(question).confident) {
+    await logQuestion(question, "built-in");
+    return Response.json({ reply: answerOffline(question), source: "built-in" });
+  }
   const llm = await askGemini(history);
+  // for /stats: "unknown" marks questions he couldn't answer — the ones worth teaching him
+  await logQuestion(question, llm ? "ai" : "unknown");
   if (llm) return Response.json({ reply: llm.text, source: llm.model });
   return Response.json({ reply: answerOffline(question), source: "built-in" });
 }

@@ -5,7 +5,7 @@ import {
   profile, socials, experience, education, projects, skills, certifications, music, photography, reading, now,
 } from "../../lib/content";
 import GitHubStats from "../../components/GitHubStats";
-import { Gallery, LocalTime, Reveal, SectionNav } from "../../components/classic/bits";
+import { Gallery, LocalTime, Reveal, SectionNav, VisitPing } from "../../components/classic/bits";
 
 // The classic, no-3D version of the portfolio: fast, printable, recruiter-friendly.
 
@@ -45,6 +45,7 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-[#0b0d16] text-white">
+      <VisitPing id="classic" />
       {/* soft colour behind the hero */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[720px] bg-[radial-gradient(ellipse_at_70%_10%,rgba(124,92,214,0.28),transparent_60%),radial-gradient(ellipse_at_10%_30%,rgba(16,185,129,0.10),transparent_55%)]" />
 

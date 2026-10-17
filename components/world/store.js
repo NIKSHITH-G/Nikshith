@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { ACTIVITIES, ALL_ITEMS, SECTIONS, SPAWN, POWER, ENTER_SECONDS, planPath, activeItems, setActiveFloor, floorById } from "./layout";
 import * as sfx from "./audio";
+import { track } from "../../lib/track";
 
 // UI state that React renders from. Kept small and selector-based so the HUD
 // only re-renders when the bit it reads actually changes.
@@ -75,6 +76,7 @@ export function enter() {
   runtime.powerStart = now();
   Object.values(POWER).forEach((t) => sfx.click(t));
   setState({ phase: "entering" });
+  track("enter", "studio");
   setTimeout(() => {
     runtime.waveAt = now();
     setState({ phase: "playing" });
@@ -101,6 +103,7 @@ export function rideTo(to, then) {
   if (state.ride) return;
   sfx.init();
   closePanel(true);
+  track("floor", to);
   const from = state.floor;
   setState({ ride: { from, to, stage: "closing" }, map: false });
   sfx.elevator();
@@ -149,10 +152,12 @@ export function openPanel(panel, item, from) {
   const counts = SECTIONS.includes(panel) && !state.visited.includes(panel);
   const visited = counts ? [...state.visited, panel] : state.visited;
   const firstTimeComplete = counts && visited.length === SECTIONS.length;
+  if (state.panel?.id !== panel) track("panel", panel);
   setState({ panel: { id: panel, item: item ?? it?.item, from: it?.id }, map: false, visited });
   sfx.blip(true);
   if (panel === "music") sfx.duck(true);
   if (firstTimeComplete) {
+    track("explored", "all");
     setTimeout(() => {
       sfx.chime();
       toast("You've explored the whole building. Byte is impressed — and Byte is never impressed.", "🏆", 6000);

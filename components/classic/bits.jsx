@@ -5,6 +5,13 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
+import { trackVisit } from "../../lib/track";
+
+// Counts the classic page once per session (renders nothing).
+export function VisitPing({ id }) {
+  useEffect(() => trackVisit(id), [id]);
+  return null;
+}
 
 // Melbourne's local time, ticking — so visitors know if it's a sensible hour to reach out.
 export function LocalTime({ timezone }) {
