@@ -339,8 +339,9 @@ export default function HUD({ ready, touch }) {
               <button onClick={toggleMute} aria-label={muted ? "Unmute" : "Mute"} className={`rounded-full p-2.5 text-white/75 transition hover:text-white ${glass}`}>
                 {muted ? <VolumeX size={15} /> : <Volume2 size={15} />}
               </button>
-              <Link href="/about" aria-label="Classic version" title="Classic version" className={`rounded-full p-2.5 text-white/75 transition hover:text-white sm:px-3.5 sm:py-2 sm:text-[13px] sm:text-white/60 ${glass}`}>
-                <FileText size={15} className="sm:hidden" aria-hidden />
+              <Link href="/about" aria-label="Classic version" title="Classic version" className={`flex items-center rounded-full p-2.5 text-white/75 transition hover:text-white sm:px-3.5 sm:py-2 sm:text-[13px] sm:text-white/60 ${glass}`}>
+                {/* the icon sits in a span: globals.css forces svg { display: block }, which beats sm:hidden on the svg itself */}
+                <span className="sm:hidden"><FileText size={15} aria-hidden /></span>
                 <span className="hidden sm:inline">Classic</span>
               </Link>
             </div>

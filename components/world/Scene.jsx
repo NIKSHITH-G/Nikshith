@@ -2,11 +2,12 @@
 
 import { lazy, Suspense, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Html, PerformanceMonitor } from "@react-three/drei";
+import { PerformanceMonitor } from "@react-three/drei";
 import * as THREE from "three";
 import Apartment from "./Apartment";
 import { Player } from "./Characters";
 import { Cat, CatProps } from "./Cat";
+import { LabelProjector } from "./labels";
 import { Nikshith, ACTIVITIES } from "./Nikshith";
 
 // clicking Nikshith from across the room walks you to a free spot beside him
@@ -207,29 +208,6 @@ function SurfaceProjector() {
   return null;
 }
 
-// Floating name tag over the thing you're standing next to.
-function NearbyLabel({ touch }) {
-  const nearby = useWorld((s) => s.nearby);
-  const panel = useWorld((s) => s.panel);
-  const phase = useWorld((s) => s.phase);
-  if (!nearby || panel || phase !== "playing") return null;
-  const pets = {
-    cat: { name: "Byte", label: "Pet the cat", pos: [runtime.cat.x, runtime.cat.z], h: 0.4 },
-    dog: { name: "Pixel", label: "Pet the dog", pos: [runtime.dog.x, runtime.dog.z], h: 0.6 },
-    nikshith: { name: "Nikshith", label: "Talk to Nikshith", pos: [runtime.npc.x, runtime.npc.z], h: 1.85 },
-  };
-  const it = pets[nearby] ?? activeItems().find((i) => i.id === nearby);
-  if (!it) return null;
-  return (
-    <Html position={[it.pos[0], it.h + 0.85, it.pos[1]]} center zIndexRange={[15, 0]} style={{ pointerEvents: "none" }}>
-      <div key={nearby} className="label-pop whitespace-nowrap rounded-full border border-white/15 bg-[#0d0f1a]/85 px-3 py-1.5 text-center shadow-lg backdrop-blur-md">
-        <div className="font-display text-[15px] italic leading-none text-white">{it.name}</div>
-        <div className="mt-1 font-mono text-[10px] text-emerald-300/90">{touch ? "tap to open" : "press E"}</div>
-      </div>
-    </Html>
-  );
-}
-
 // Works out what's within reach each frame and tells the HUD when it changes.
 function Proximity() {
   useFrame(() => {
@@ -354,7 +332,7 @@ export default function Scene({ touch }) {
       {items.map((it) => (
         <Marker key={`${floor}-${it.id}`} it={it} />
       ))}
-      <NearbyLabel touch={touch} />
+      <LabelProjector />
       <SurfaceProjector />
       <FloorClick />
       <Proximity />

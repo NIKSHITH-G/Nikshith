@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import Scene from "./Scene";
+import { WorldLabels } from "./labels";
 import HUD from "./HUD";
 import { runtime, getState, setState, interact, closePanel, goToPanel, enter, enterInstantly, useWorld } from "./store";
 import { setActiveFloor } from "./layout";
@@ -152,6 +153,7 @@ export default function World() {
           <Scene touch={touch} />
         </Suspense>
       </Canvas>
+      <WorldLabels touch={touch} />
       <HUD ready={ready} touch={touch} />
     </div>
   );

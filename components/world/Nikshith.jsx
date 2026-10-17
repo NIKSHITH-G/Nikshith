@@ -4,10 +4,9 @@
 // playing piano, reading, making coffee — and when a visitor walks up he stops,
 // turns, waves, and you can talk to him.
 
-import { useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
-import { runtime, getState, useWorld } from "./store";
+import { runtime, getState, setState } from "./store";
 import { blocked, planPath, ACTIVITIES } from "./layout";
 import { Arm, Head, Leg, OUTFITS, Torso } from "./Avatar";
 
@@ -26,6 +25,9 @@ function nextActivity(prevId) {
   return options[Math.floor(Math.random() * options.length)];
 }
 
+// his thought bubble is drawn over the canvas by labels.jsx
+const setBubble = (b) => getState().npcBubble !== b && setState({ npcBubble: b });
+
 export function Nikshith() {
   const root = useRef();
   const body = useRef();
@@ -35,10 +37,9 @@ export function Nikshith() {
   const armL = useRef();
   const armR = useRef();
   const key = useRef();
-  const [bubble, setBubble] = useState(ACTIVITIES[0].bubble);
-  // thought bubbles only while you are walking around (not over the title screen or a panel)
-  const playing = useWorld((s) => s.phase === "playing" && !s.panel);
   const st = useRef({ act: ACTIVITIES[0], path: [], until: 16, walk: 0, greeted: false, wave: 0, stuck: 0 });
+
+  useEffect(() => () => setState({ npcBubble: null }), []);
 
   useFrame(({ clock }, rawDt) => {
     const dt = Math.min(rawDt, 0.05);
@@ -58,7 +59,7 @@ export function Nikshith() {
         m.greeted = true;
         m.wave = t;
       }
-      if (bubble !== null) setBubble(null);
+      if (getState().npcBubble !== null) setBubble(null);
     } else {
       if (toPlayer > 4) m.greeted = false;
       if (m.path.length) {
@@ -95,7 +96,7 @@ export function Nikshith() {
           n.activity = m.act.id;
           m.path = planPath([n.x, n.z], m.act.spot);
           setBubble(null);
-        } else if (bubble === null) {
+        } else if (getState().npcBubble === null) {
           setBubble(m.act.bubble);
         }
       }
@@ -171,13 +172,6 @@ export function Nikshith() {
         </group>
       </group>
       <pointLight ref={key} position={[0.6, 2.3, 1.6]} color="#ffe2c2" intensity={0} distance={5} decay={2} />
-      {bubble && playing && (
-        <Html position={[0, 2.35, 0]} center zIndexRange={[12, 0]} style={{ pointerEvents: "none" }}>
-          <div className="label-pop whitespace-nowrap rounded-2xl rounded-bl-sm border border-white/15 bg-white/90 px-3 py-1.5 text-[12px] font-medium text-[#1c1917] shadow-lg">
-            {bubble}
-          </div>
-        </Html>
-      )}
     </group>
   );
 }

@@ -4,10 +4,9 @@
 // behind the furniture and ambush you, zoomies, naps, staring at nothing, and knocking
 // the mug off the coffee table while looking straight at the camera.
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
-import { runtime, getState, toast, now, useWorld } from "./store";
+import { runtime, getState, setState, toast, now } from "./store";
 import { blocked, planPath } from "./layout";
 import { P } from "./Avatar";
 import { B } from "./Apartment";
@@ -128,7 +127,6 @@ export function Cat() {
   const legs = useRef([]);
   const eyes = useRef([]);
   const ears = useRef([]);
-  const [bubble, setBubble] = useState(null);
   const st = useRef(null);
   if (!st.current) {
     st.current = {
@@ -147,6 +145,9 @@ export function Cat() {
       Object.assign(st.current, { mode: "hide", spot, t: 0 });
     }
   }
+
+  // don't leave a bubble hanging when Byte isn't on screen (another floor)
+  useEffect(() => () => setState({ catBubble: null }), []);
 
   // ?debug: window.dispatchEvent(new CustomEvent("byte:do", { detail: "hide" | "knock" | "zoom" | "nap" | "stare" }))
   useEffect(() => {
@@ -175,7 +176,7 @@ export function Cat() {
       m.bubbleUntil = secs ? t + secs : 0;
       if (m.bubble !== b) {
         m.bubble = b;
-        setBubble(b);
+        setState({ catBubble: b });
       }
     };
     if (m.bubbleUntil && t > m.bubbleUntil) say(null);
@@ -482,6 +483,7 @@ export function Cat() {
     const g = root.current;
     if (!g) return;
     g.visible = !(s.panel?.from && toPlayer < 2.5);
+    c.y = m.y; // for the speech bubble
     g.position.set(c.x, m.y + (moving ? Math.abs(Math.sin(m.walk)) * (speed > 3 ? 0.06 : 0.03) : 0), c.z);
     g.rotation.y += angleDiff(m.heading, g.rotation.y) * Math.min(1, dt * (m.mode === "zoom" ? 14 : 8));
 
@@ -517,7 +519,6 @@ export function Cat() {
     tail.current.rotation.x = m.mode === "zoom" ? -0.9 : m.mode === "hide" ? 0.5 : 0;
   });
 
-  const playing = useWorld((s) => s.phase === "playing" && !s.panel);
 
   return (
     <group ref={root} position={[runtime.cat.x, 0, runtime.cat.z]}>
@@ -564,13 +565,6 @@ export function Cat() {
           ))}
         </group>
       </group>
-      {bubble && playing && (
-        <Html position={[0, 0.95, 0]} center zIndexRange={[12, 0]} style={{ pointerEvents: "none" }}>
-          <div key={bubble} className="label-pop whitespace-nowrap rounded-2xl rounded-bl-sm border border-white/15 bg-white/90 px-2 py-0.5 text-[15px] font-bold leading-snug text-[#1c1917] shadow-lg">
-            {bubble}
-          </div>
-        </Html>
-      )}
     </group>
   );
 }

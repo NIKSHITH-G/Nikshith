@@ -13,6 +13,8 @@ let state = {
   ride: null, // elevator trip in progress: { from, to, stage: "closing" | "moving" | "opening" }
   panel: null, // { id, item, from }
   nearby: null, // interactable id, or "cat"
+  npcBubble: null, // Nikshith's thought bubble (drawn by labels.jsx)
+  catBubble: null, // Byte's
   map: false,
   toast: null,
   moved: false,

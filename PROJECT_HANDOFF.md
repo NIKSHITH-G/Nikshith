@@ -158,6 +158,8 @@ All of these use the **owner key**: the `CHESS_OWNER_KEY` setting in `.env.local
 
 ## 10. Recent history (newest first)
 
+- World labels (name tags, Nikshith's and Byte's bubbles) are plain DOM in `components/world/labels.jsx`, positioned each frame by `<LabelProjector/>`. **Don't use drei `<Html>`**: it mounts a React root per label and React 19 throws unmount/removeChild errors in dev.
+- Note: `globals.css` sets `svg { display: block }` outside Tailwind's layers, so `hidden`/`sm:hidden` on an svg won't work; wrap the icon in a span.
 - Lift ride doors: floor directory with a moving car, "Now arriving" screen, a random silly notice and Byte's paw prints (`panels/ride.jsx`). `?debug` exposes `window.__world.set({ ride: { from, to, stage } })` to freeze a ride.
 - Byte the cat: hide-and-ambush, mug knocking, zoomies, naps, wall staring, new petting reactions, cardboard box.
 - Ship log redesign: full-year graph, streaks, 4-up repo cards.
