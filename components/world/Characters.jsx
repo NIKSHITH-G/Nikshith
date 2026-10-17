@@ -194,8 +194,8 @@ export function Player() {
           <group ref={legL} position={[-0.11, 0.62, 0]}><Leg o={OUTFITS.visitor} /></group>
           <group ref={legR} position={[0.11, 0.62, 0]}><Leg o={OUTFITS.visitor} /></group>
           <Torso o={OUTFITS.visitor} />
-          <group ref={armL} position={[-0.335, 1.18, 0]}><Arm o={OUTFITS.visitor} /></group>
-          <group ref={armR} position={[0.335, 1.18, 0]}><Arm o={OUTFITS.visitor} /></group>
+          <group ref={armL} position={[-0.335, 1.18, 0]}><Arm o={OUTFITS.visitor} side={-1} /></group>
+          <group ref={armR} position={[0.335, 1.18, 0]}><Arm o={OUTFITS.visitor} side={1} /></group>
           <group ref={head} position={[0, 1.27, 0]}>
             {/* the visitor wears a cap — Nikshith is the one with the headphones */}
             <Head o={OUTFITS.visitor} />

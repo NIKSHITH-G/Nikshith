@@ -147,12 +147,18 @@ export function Nikshith() {
     armL.current.rotation.z += (lz - armL.current.rotation.z) * k;
     armR.current.rotation.z += (rz - armR.current.rotation.z) * k;
     // look down at what he's doing, up at a visitor
+    if (talking && !m.wasTalking) m.nod = t;
+    m.wasTalking = talking;
+    const nod = t - (m.nod ?? -9) < 0.7 ? Math.sin((t - m.nod) * 9) * 0.16 : 0;
     const tilt = pose === "type" || pose === "piano" || pose === "read" ? 0.25 : near ? -0.1 + (speaking ? Math.sin(t * 5) * 0.05 : 0) : 0;
-    head.current.rotation.x += (tilt - head.current.rotation.x) * k;
+    head.current.rotation.x += (tilt + nod - head.current.rotation.x) * k;
+    // glance at a visitor who's around (the body only turns once they're close)
+    const glance = toPlayer < 5 && !moving && !talking ? Math.max(-0.7, Math.min(0.7, angleDiff(Math.atan2(runtime.x - n.x, runtime.z - n.z), n.heading))) : 0;
+    head.current.rotation.y += (glance - head.current.rotation.y) * Math.min(1, dt * 3);
     head.current.rotation.z = speaking ? Math.sin(t * 1.3) * 0.05 : head.current.rotation.z * 0.9;
     // a warm key light on his face while you're talking to him
     if (key.current) key.current.intensity += ((talking ? 7 : 0) - key.current.intensity) * Math.min(1, dt * 4);
-    if (mug.current) mug.current.visible = pose === "coffee";
+    if (mug.current) mug.current.visible = pose === "coffee" || pose === "idle";
     if (book.current) book.current.visible = pose === "read";
   });
 
@@ -167,7 +173,7 @@ export function Nikshith() {
         <group ref={legR} position={[0.11, 0.62, 0]}><Leg o={OUTFITS.nikshith} /></group>
         <Torso o={OUTFITS.nikshith} />
         <group ref={armL} position={[-0.335, 1.18, 0]}>
-          <Arm o={OUTFITS.nikshith} />
+          <Arm o={OUTFITS.nikshith} side={-1} />
           {/* a book, held open in both hands while reading */}
           <group ref={book} position={[0.33, -0.62, 0.05]} visible={false}>
             <Part p={[0, 0, 0]} s={[0.36, 0.03, 0.26]} c="#f5f0e1" r={0.01} />
@@ -175,7 +181,7 @@ export function Nikshith() {
           </group>
         </group>
         <group ref={armR} position={[0.335, 1.18, 0]}>
-          <Arm o={OUTFITS.nikshith} />
+          <Arm o={OUTFITS.nikshith} side={1} />
           <mesh ref={mug} position={[0, -0.66, 0.06]} visible={false}>
             <cylinderGeometry args={[0.055, 0.05, 0.12, 12]} />
             <meshStandardMaterial color="#fbbf24" />
