@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { profile, experience, projects, skills } from "../../../lib/content";
+import { profile, experience, projects, skills, reading, now, music, certifications, photography, socials } from "../../../lib/content";
 import { runtime, goToPanel, openPanel, getState } from "../store";
 import BlockyAvatar from "../../BlockyAvatar";
 import * as sfx from "../audio";
@@ -64,48 +64,236 @@ const lineIn = (i, base = 0.55) => ({
   animate: { opacity: 1, x: 0, transition: { delay: base + i * 0.07, duration: 0.2 } },
 });
 
-/* ── TV: about ─────────────────────────────────────── */
+/* ── TV: about, flipped through like real channels ─── */
+
+const CHANNELS = [
+  { id: "about", name: "About" },
+  { id: "glance", name: "At a glance" },
+  { id: "now", name: "Right now" },
+  { id: "featured", name: "Featured" },
+  { id: "contact", name: "Contact" },
+];
+let lastChannel = 0; // the TV remembers where you left it
+
+function TVAbout({ portrait }) {
+  return (
+    <div className={`gap-9 ${portrait ? "flex flex-col" : "grid grid-cols-[200px_1fr] items-center"}`}>
+      <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1, transition: { delay: 0.1 } }}>
+        {profile.tvPhoto ? (
+          <Image src={profile.tvPhoto} alt={profile.name} width={400} height={500} className={`${portrait ? "h-[260px] w-[210px]" : "h-[250px] w-[200px]"} rounded-2xl object-cover object-top ring-1 ring-white/20`} />
+        ) : (
+          <BlockyAvatar size={200} className="rounded-2xl ring-1 ring-white/20" />
+        )}
+        <div className="mt-3 font-mono text-[11px] text-white/45">📍 {profile.location}</div>
+      </motion.div>
+      <div>
+        <motion.h2 {...lineIn(0, 0.1)} className="font-display text-[64px] italic leading-[0.95]">{profile.name}</motion.h2>
+        <motion.div {...lineIn(1, 0.1)} className="mt-2 text-lg text-violet-200">{profile.role}</motion.div>
+        <motion.p {...lineIn(2, 0.1)} className="mt-4 font-display text-[28px] italic leading-snug text-white/90">&ldquo;{profile.tagline}&rdquo;</motion.p>
+        <motion.p {...lineIn(3, 0.1)} className="mt-3 max-w-[560px] text-[15px] leading-relaxed text-white/70">{profile.bio[0]}</motion.p>
+        <motion.div {...lineIn(4, 0.1)} className="mt-5 flex flex-wrap gap-2.5">
+          <button onClick={() => goToPanel("projects", 0)} className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-violet-100">▶ Play my projects</button>
+          <button onClick={() => goToPanel("ask")} className="rounded-full border border-white/25 px-5 py-2.5 text-sm text-white/90 transition hover:bg-white/10">Talk to AI me</button>
+          <a href={profile.resume} target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/25 px-5 py-2.5 text-sm text-white/90 transition hover:bg-white/10">Résumé ↓</a>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+function TVGlance({ portrait }) {
+  const books = reading.shelves.reduce((n, s) => n + s.books.length, 0);
+  const stats = [
+    ["1.5", "years", "building core banking for HDFC Bank at TCS"],
+    [String(projects.length), "projects", "shipped — from flashcards to GPT-2 circuits"],
+    ["MAI", "Monash", "Master of Artificial Intelligence, 2026–28"],
+    [String(certifications.length), "certs", "AWS, Google and more in the trophy case"],
+    [String(books), "books", "on the Kindle — Shadow Slave is #1"],
+    [String(photography.photos.length), "photos", "of Melbourne hanging around this building"],
+  ];
+  return (
+    <div className={`grid gap-4 ${portrait ? "grid-cols-2" : "grid-cols-3"}`}>
+      {stats.map(([big, unit, text], i) => (
+        <motion.div key={unit} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.08 + i * 0.06 } }} className="rounded-2xl border border-white/10 bg-white/[0.05] px-5 py-4">
+          <div className="flex items-baseline gap-2">
+            <span className="font-display text-[52px] italic leading-none text-white">{big}</span>
+            <span className="font-mono text-[12px] uppercase tracking-wider text-violet-300">{unit}</span>
+          </div>
+          <p className="mt-2 text-[13px] leading-snug text-white/60">{text}</p>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+function TVNow({ portrait }) {
+  const rows = [
+    ...now.items.map((n) => [n.label, n.text]),
+    ["Reading", `${reading.favourite} — my all-time favourite.`],
+    ["Listening", `“${music.latest.title}”, my new single (${music.latest.length}).`],
+  ];
+  return (
+    <div>
+      <div className="mb-4 font-mono text-[11px] uppercase tracking-[0.25em] text-white/40">updated {now.updated}</div>
+      <div className={`grid gap-x-8 gap-y-4 ${portrait ? "grid-cols-1" : "grid-cols-2"}`}>
+        {rows.map(([label, text], i) => (
+          <motion.div key={label} {...lineIn(i, 0.08)} className="border-l-2 border-violet-400/60 pl-4">
+            <div className="font-mono text-[11px] uppercase tracking-wider text-emerald-300/80">{label}</div>
+            <p className="mt-1 text-[15px] leading-snug text-white/85">{text}</p>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TVFeatured({ portrait }) {
+  const picks = projects.slice(0, 3);
+  return (
+    <div className={`grid gap-4 ${portrait ? "grid-cols-1" : "grid-cols-3"}`}>
+      {picks.map((p, i) => (
+        <motion.button
+          key={p.name}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0, transition: { delay: 0.08 + i * 0.08 } }}
+          onClick={() => goToPanel("projects", i)}
+          className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] text-left transition hover:border-violet-300/60"
+        >
+          <div className="relative h-[150px] overflow-hidden bg-[linear-gradient(135deg,#4c1d95,#0f172a)]">
+            {p.images[0] ? (
+              <Image src={p.images[0]} alt="" fill sizes="320px" className="object-cover object-top transition duration-500 group-hover:scale-105" />
+            ) : (
+              <div className="flex h-full items-center justify-center font-mono text-[40px] text-violet-200/60">◈</div>
+            )}
+            <span className="absolute left-3 top-3 rounded bg-black/60 px-2 py-0.5 font-mono text-[10px] text-white/80">{p.year}</span>
+          </div>
+          <div className="px-4 py-3">
+            <div className="font-display text-[22px] italic leading-tight">{p.name}</div>
+            <p className="mt-1 text-[13px] leading-snug text-white/60">{p.tagline}</p>
+            <div className="mt-2 font-mono text-[11px] text-violet-300 opacity-70 group-hover:opacity-100">watch →</div>
+          </div>
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+
+function TVContact({ portrait }) {
+  return (
+    <div className="flex flex-col items-start">
+      <motion.div {...lineIn(0, 0.08)} className="font-mono text-[12px] uppercase tracking-[0.25em] text-emerald-300/80">{profile.status}</motion.div>
+      <motion.a {...lineIn(1, 0.08)} href={`mailto:${profile.email}`} className={`mt-3 font-display italic leading-tight ${portrait ? "text-[30px]" : "text-[44px]"} text-white underline decoration-violet-400/50 underline-offset-8 hover:decoration-violet-300`}>
+        {profile.email.replace("@", "\u200b@")}
+      </motion.a>
+      <motion.div {...lineIn(2, 0.08)} className="mt-6 flex flex-wrap gap-2.5">
+        <button onClick={() => goToPanel("contact")} className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-violet-100">✉ Write me a letter</button>
+        <a href={profile.resume} target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/25 px-5 py-2.5 text-sm text-white/90 transition hover:bg-white/10">Résumé ↓</a>
+      </motion.div>
+      <motion.div {...lineIn(3, 0.08)} className="mt-6 flex flex-wrap gap-2">
+        {socials.map((s) => (
+          <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="rounded-md border border-white/15 bg-white/[0.04] px-3 py-1.5 font-mono text-[12px] text-white/75 transition hover:border-violet-300/60 hover:text-white">
+            {s.label} ↗
+          </a>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
+const CHANNEL_VIEWS = { about: TVAbout, glance: TVGlance, now: TVNow, featured: TVFeatured, contact: TVContact };
 
 export function TVScreen({ portrait }) {
+  const [ch, setCh] = useState(lastChannel);
+  const [fuzz, setFuzz] = useState(0);
+  const swipe = useRef(null);
+  const tune = (to) => {
+    const next = (to + CHANNELS.length) % CHANNELS.length;
+    lastChannel = next;
+    setCh(next);
+    setFuzz((f) => f + 1);
+    sfx.tvStatic();
+  };
+  const tuneRef = useRef(tune);
+  tuneRef.current = tune;
+
+  // ← → (or ↑ ↓) flip channels; number keys jump straight to one
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.target.closest?.("input, textarea")) return;
+      const n = Number(e.key);
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") tuneRef.current(lastChannel + 1);
+      else if (e.key === "ArrowLeft" || e.key === "ArrowUp") tuneRef.current(lastChannel - 1);
+      else if (n >= 1 && n <= CHANNELS.length) tuneRef.current(n - 1);
+      else return;
+      e.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const View = CHANNEL_VIEWS[CHANNELS[ch].id];
   const facts = ["Master of AI · Monash", "ex-Systems Engineer · TCS", "Melbourne", "music & photography"];
   const ticker = `${profile.status} · ${facts.join(" · ")} · `;
   return (
     <OnScreen base={1000} aspect={2 / 1.12} portrait={portrait} frame="rounded-[22px] border-[10px] border-[#111216] shadow-2xl">
-      <div className={`crt-on relative overflow-hidden bg-[radial-gradient(ellipse_at_30%_20%,#2d1a63,#14112b_70%)] text-white ${portrait ? "min-h-full" : "h-full"}`}>
+      <div
+        className={`crt-on relative flex flex-col bg-[radial-gradient(ellipse_at_30%_20%,#2d1a63,#14112b_70%)] text-white ${portrait ? "min-h-full overflow-clip" : "h-full overflow-hidden"}`}
+        onPointerDown={(e) => (swipe.current = e.clientX)}
+        onPointerUp={(e) => {
+          const dx = swipe.current == null ? 0 : e.clientX - swipe.current;
+          swipe.current = null;
+          if (Math.abs(dx) > 60) tune(ch + (dx < 0 ? 1 : -1));
+        }}
+      >
         <div aria-hidden className="crt-lines pointer-events-none absolute inset-0 z-10" />
-        <div className="flex items-center justify-between px-10 pt-7 font-mono text-[13px]">
-          <span className="text-emerald-300">● now showing</span>
-          <span className="text-white/45">CH 01 · ABOUT</span>
+        {/* static burst while the set retunes */}
+        <AnimatePresence>
+          {fuzz > 0 && (
+            <motion.div key={fuzz} aria-hidden className="tv-static pointer-events-none absolute inset-0 z-20" initial={{ opacity: 0.85 }} animate={{ opacity: 0, transition: { duration: 0.32, ease: "easeIn" } }} />
+          )}
+        </AnimatePresence>
+
+        {/* on-screen display: channel number + name */}
+        <div className={`flex items-center justify-between font-mono text-[13px] ${portrait ? "px-6 pt-5" : "px-10 pt-6"}`}>
+          <span className="flex items-center gap-2 text-emerald-300"><span className="blink">●</span> now showing</span>
+          <span className="flex items-baseline gap-3">
+            <span className="text-[26px] font-bold leading-none text-emerald-300 [text-shadow:0_0_10px_rgba(110,231,183,0.7)]">CH {String(ch + 1).padStart(2, "0")}</span>
+            <span className="uppercase tracking-wider text-white/55">{CHANNELS[ch].name}</span>
+          </span>
         </div>
-        <div className={`gap-9 px-10 pt-6 ${portrait ? "flex flex-col pb-20" : "grid grid-cols-[190px_1fr] pb-14"}`}>
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1, transition: { delay: 0.7 } }}>
-            {profile.tvPhoto ? (
-              <Image src={profile.tvPhoto} alt={profile.name} width={380} height={460} className="h-[230px] w-[190px] rounded-2xl object-cover object-top ring-1 ring-white/20" />
-            ) : (
-              <BlockyAvatar size={190} className="rounded-2xl ring-1 ring-white/20" />
-            )}
-            <div className="mt-3 font-mono text-[11px] text-white/45">{profile.location}</div>
-          </motion.div>
-          <div>
-            <motion.h2 {...lineIn(0, 0.6)} className="font-display text-[64px] italic leading-[0.95]">{profile.name}</motion.h2>
-            <motion.div {...lineIn(1, 0.6)} className="mt-2 text-lg text-violet-200">{profile.role}</motion.div>
-            <motion.p {...lineIn(2, 0.6)} className="mt-4 font-display text-[26px] italic leading-snug text-white/90">&ldquo;{profile.tagline}&rdquo;</motion.p>
-            {profile.bio.map((p, i) => (
-              <motion.p key={p} {...lineIn(3 + i, 0.6)} className="mt-3 text-[15px] leading-relaxed text-white/70">{p}</motion.p>
-            ))}
-            <motion.div {...lineIn(6, 0.6)} className="mt-5 flex flex-wrap gap-2.5">
-              <button onClick={() => goToPanel("projects", 0)} className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-violet-100">▶ Play my projects</button>
-              <button onClick={() => goToPanel("contact")} className="rounded-full border border-white/25 px-5 py-2.5 text-sm text-white/90 transition hover:bg-white/10">Say hi</button>
-              <a href={profile.resume} target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/25 px-5 py-2.5 text-sm text-white/90 transition hover:bg-white/10">Résumé ↓</a>
+
+        <div className={`relative flex-1 ${portrait ? "px-6 pb-6 pt-5" : "px-10 pb-4 pt-5"}`}>
+          <AnimatePresence mode="wait">
+            <motion.div key={ch} initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: 0.15, delay: 0.12 } }} exit={{ opacity: 0, transition: { duration: 0.08 } }} className={portrait ? "" : "flex h-full flex-col justify-center"}>
+              <View portrait={portrait} />
             </motion.div>
-          </div>
+          </AnimatePresence>
         </div>
-        <div className="absolute inset-x-0 bottom-0 flex h-10 items-center overflow-hidden bg-black/45 font-mono text-[13px] text-white/75">
+
+        {/* the remote + ticker; on phones they stay pinned to the bottom while the channel scrolls */}
+        <div className={portrait ? "sticky bottom-0 z-[11] bg-[#14112b]/95 pt-3 backdrop-blur" : ""}>
+        <div className={`relative z-[11] flex items-center gap-1.5 font-mono text-[12px] ${portrait ? "justify-center px-4 pb-3" : "px-10 pb-3"}`}>
+          <button onClick={() => tune(ch - 1)} aria-label="Previous channel" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:bg-white/10 hover:text-white">‹</button>
+          {CHANNELS.map((c, i) => (
+            <button
+              key={c.id}
+              onClick={() => tune(i)}
+              className={`rounded-full px-3 py-1.5 transition ${i === ch ? "bg-violet-500 text-white" : "text-white/50 hover:bg-white/10 hover:text-white"}`}
+            >
+              {portrait ? i + 1 : `${i + 1} · ${c.name}`}
+            </button>
+          ))}
+          <button onClick={() => tune(ch + 1)} aria-label="Next channel" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:bg-white/10 hover:text-white">›</button>
+          {!portrait && <span className="ml-auto text-[11px] text-white/35">← → to flip channels</span>}
+        </div>
+
+        <div className="flex h-10 shrink-0 items-center overflow-hidden bg-black/45 font-mono text-[13px] text-white/75">
           <span className="z-10 flex h-full shrink-0 items-center bg-violet-500 px-4 font-semibold text-white">LIVE</span>
           <div className="ticker flex whitespace-nowrap">
             <span className="px-4">{ticker.repeat(3)}</span>
             <span className="px-4">{ticker.repeat(3)}</span>
           </div>
+        </div>
         </div>
       </div>
     </OnScreen>

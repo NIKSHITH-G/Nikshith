@@ -204,6 +204,12 @@ export function shutter() {
   noise(0.05, { type: "bandpass", freq: 900, q: 2, gain: 0.3, at: 0.07 });
 }
 
+// Channel change: a short burst of TV static with a click.
+export function tvStatic() {
+  noise(0.22, { type: "highpass", freq: 1200, gain: 0.12 });
+  tone(90, { type: "square", dur: 0.04, gain: 0.05 });
+}
+
 // Paper rustle for the letter.
 export function rustle() {
   noise(0.35, { type: "bandpass", freq: 3200, q: 0.6, gain: 0.08 });
