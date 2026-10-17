@@ -3,6 +3,7 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Sparkles, Stars } from "@react-three/drei";
+import { P } from "./Avatar";
 import * as THREE from "three";
 import { B, C, MONO, Plant, Elevator, HungPhotos, useTex } from "./Apartment";
 import { WALL_H, floorById, blocked } from "./layout";
@@ -269,12 +270,7 @@ export function Dog() {
   });
 
   const fur = "#c8935a";
-  const part = (p, sz, c = fur, r = 0.05) => (
-    <mesh position={p} castShadow>
-      <boxGeometry args={sz} />
-      <meshStandardMaterial color={c} roughness={0.85} />
-    </mesh>
-  );
+  const part = (p, sz, c = fur, r = 0.05) => <P p={p} s={sz} c={c} r={r} />;
   return (
     <group
       ref={root}
@@ -293,14 +289,21 @@ export function Dog() {
       {part([0, 0.36, 0.05], [0.31, 0.2, 0.3], "#f5e6d3")}
       {/* collar */}
       {part([0, 0.5, 0.27], [0.27, 0.06, 0.08], "#dc2626")}
+      {/* collar tag */}
+      <P p={[0, 0.43, 0.32]} s={[0.06, 0.06, 0.02]} c="#facc15" r={0.02} line={false} />
       <group ref={head} position={[0, 0.58, 0.36]}>
-        {part([0, 0, 0], [0.26, 0.24, 0.26])}
-        {part([0, -0.05, 0.17], [0.15, 0.12, 0.14], "#f5e6d3")}
-        {part([0, -0.02, 0.25], [0.06, 0.05, 0.03], "#111")}
-        {part([-0.07, 0.05, 0.135], [0.04, 0.05, 0.01], "#111")}
-        {part([0.07, 0.05, 0.135], [0.04, 0.05, 0.01], "#111")}
-        {part([-0.14, 0.02, -0.02], [0.05, 0.16, 0.12], "#8b5a2b")}
-        {part([0.14, 0.02, -0.02], [0.05, 0.16, 0.12], "#8b5a2b")}
+        <P p={[0, 0, 0]} s={[0.28, 0.26, 0.27]} c={fur} r={0.07} />
+        <P p={[0, -0.05, 0.17]} s={[0.16, 0.13, 0.15]} c="#f5e6d3" r={0.05} />
+        <P p={[0, -0.005, 0.25]} s={[0.07, 0.05, 0.035]} c="#1c1410" r={0.02} line={false} />
+        <P p={[0.02, -0.115, 0.215]} s={[0.05, 0.03, 0.07]} c="#f472b6" r={0.015} line={false} rot={[0.4, 0, 0]} />
+        {[-1, 1].map((x) => (
+          <group key={x} position={[x * 0.07, 0.055, 0.136]}>
+            <P p={[0, 0, 0]} s={[0.055, 0.06, 0.012]} c="#1c1410" r={0.015} line={false} />
+            <P p={[x * -0.01, 0.014, 0.008]} s={[0.016, 0.016, 0.005]} c="#ffffff" r={0.004} line={false} />
+          </group>
+        ))}
+        {/* floppy ears */}
+        {[-1, 1].map((x) => <P key={`e${x}`} p={[x * 0.155, -0.01, -0.02]} s={[0.05, 0.19, 0.13]} c="#8b5a2b" r={0.025} rot={[0, 0, x * 0.25]} />)}
       </group>
       {[[-0.1, 0.2], [0.1, 0.2], [-0.1, -0.2], [0.1, -0.2]].map(([x, z], i) => (
         <group key={i} ref={(l) => (legs.current[i] = l)} position={[x, 0.26, z]}>

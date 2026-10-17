@@ -2,21 +2,14 @@
 
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { RoundedBox } from "@react-three/drei";
 import { runtime, getState, setState, openPanel, interact, now } from "./store";
 import { blocked, activeItems } from "./layout";
+import { Arm, Head, Leg, OUTFITS, P, Torso } from "./Avatar";
 import * as sfx from "./audio";
 
 const SPEED = 4.3;
 const RADIUS = 0.32;
 
-function Part({ p, s, c, r = 0.04, rough = 0.75 }) {
-  return (
-    <RoundedBox args={s} radius={Math.min(r, Math.min(...s) / 2 - 0.002)} smoothness={3} position={p} castShadow>
-      <meshStandardMaterial color={c} roughness={rough} />
-    </RoundedBox>
-  );
-}
 
 // Move (x, z) by (dx, dz), sliding along whatever is in the way.
 function step(obj, dx, dz, r) {
@@ -198,38 +191,14 @@ export function Player() {
           <meshBasicMaterial color="#000" transparent opacity={0.35} depthWrite={false} />
         </mesh>
         <group ref={body}>
-          <group ref={legL} position={[-0.11, 0.62, 0]}>
-            <Part p={[0, -0.28, 0]} s={[0.17, 0.56, 0.2]} c="#2b3150" />
-            <Part p={[0, -0.585, 0.04]} s={[0.19, 0.09, 0.3]} c="#f5f5f5" r={0.03} />
-          </group>
-          <group ref={legR} position={[0.11, 0.62, 0]}>
-            <Part p={[0, -0.28, 0]} s={[0.17, 0.56, 0.2]} c="#2b3150" />
-            <Part p={[0, -0.585, 0.04]} s={[0.19, 0.09, 0.3]} c="#f5f5f5" r={0.03} />
-          </group>
-          {/* hoodie */}
-          <Part p={[0, 0.93, 0]} s={[0.52, 0.64, 0.32]} c="#0f766e" r={0.08} />
-          <Part p={[0, 0.82, 0.15]} s={[0.3, 0.16, 0.04]} c="#115e59" r={0.02} />
-          <Part p={[0, 1.2, -0.15]} s={[0.4, 0.18, 0.1]} c="#115e59" r={0.04} />
-          <group ref={armL} position={[-0.33, 1.18, 0]}>
-            <Part p={[0, -0.26, 0]} s={[0.14, 0.54, 0.18]} c="#0f766e" r={0.06} />
-            <Part p={[0, -0.57, 0]} s={[0.12, 0.11, 0.14]} c="#c89878" r={0.04} />
-          </group>
-          <group ref={armR} position={[0.33, 1.18, 0]}>
-            <Part p={[0, -0.26, 0]} s={[0.14, 0.54, 0.18]} c="#0f766e" r={0.06} />
-            <Part p={[0, -0.57, 0]} s={[0.12, 0.11, 0.14]} c="#c89878" r={0.04} />
-          </group>
+          <group ref={legL} position={[-0.11, 0.62, 0]}><Leg o={OUTFITS.visitor} /></group>
+          <group ref={legR} position={[0.11, 0.62, 0]}><Leg o={OUTFITS.visitor} /></group>
+          <Torso o={OUTFITS.visitor} />
+          <group ref={armL} position={[-0.335, 1.18, 0]}><Arm o={OUTFITS.visitor} /></group>
+          <group ref={armR} position={[0.335, 1.18, 0]}><Arm o={OUTFITS.visitor} /></group>
           <group ref={head} position={[0, 1.27, 0]}>
-            <Part p={[0, 0.2, 0]} s={[0.42, 0.42, 0.4]} c="#c89878" r={0.09} />
-            {/* hair */}
-            <Part p={[0, 0.43, -0.02]} s={[0.46, 0.13, 0.44]} c="#1a1410" r={0.05} />
-            <Part p={[0, 0.3, -0.19]} s={[0.46, 0.3, 0.08]} c="#1a1410" r={0.03} />
-            <Part p={[0.12, 0.37, 0.18]} s={[0.2, 0.08, 0.07]} c="#1a1410" r={0.03} />
-            {/* eyes */}
-            <Part p={[-0.09, 0.22, 0.2]} s={[0.055, 0.07, 0.02]} c="#111" r={0.009} />
-            <Part p={[0.09, 0.22, 0.2]} s={[0.055, 0.07, 0.02]} c="#111" r={0.009} />
             {/* the visitor wears a cap — Nikshith is the one with the headphones */}
-            <Part p={[0, 0.47, 0]} s={[0.47, 0.12, 0.45]} c="#f59e0b" r={0.05} />
-            <Part p={[0, 0.43, 0.27]} s={[0.4, 0.04, 0.2]} c="#d97706" r={0.02} />
+            <Head o={OUTFITS.visitor} />
           </group>
         </group>
       </group>
@@ -300,22 +269,34 @@ export function Cat() {
         <meshBasicMaterial color="#000" transparent opacity={0.3} depthWrite={false} />
       </mesh>
       <group ref={body}>
-        <Part p={[0, 0.2, -0.02]} s={[0.24, 0.22, 0.44]} c="#f2a65a" r={0.07} />
-        <Part p={[0, 0.2, 0.05]} s={[0.25, 0.14, 0.2]} c="#fff7ed" r={0.05} />
+        <P p={[0, 0.2, -0.02]} s={[0.24, 0.22, 0.44]} c="#f2a65a" r={0.07} />
+        <P p={[0, 0.2, 0.05]} s={[0.25, 0.14, 0.2]} c="#fff7ed" r={0.05} line={false} />
+        {/* tabby stripes */}
+        {[-0.12, -0.02, 0.08].map((z) => <P key={z} p={[0, 0.315, z]} s={[0.2, 0.012, 0.04]} c="#d97706" r={0.005} line={false} />)}
+        {/* collar with a little bell */}
+        <P p={[0, 0.27, 0.16]} s={[0.2, 0.04, 0.06]} c="#7c5cd6" r={0.015} />
+        <P p={[0, 0.24, 0.195]} s={[0.04, 0.04, 0.04]} c="#facc15" r={0.018} line={false} />
         <group ref={headRef} position={[0, 0.36, 0.24]}>
-          <Part p={[0, 0, 0]} s={[0.24, 0.21, 0.21]} c="#f2a65a" r={0.07} />
-          <Part p={[-0.075, 0.13, 0]} s={[0.07, 0.08, 0.05]} c="#e08b3e" r={0.015} />
-          <Part p={[0.075, 0.13, 0]} s={[0.07, 0.08, 0.05]} c="#e08b3e" r={0.015} />
-          <Part p={[-0.055, 0.02, 0.105]} s={[0.035, 0.045, 0.01]} c="#111" r={0.004} />
-          <Part p={[0.055, 0.02, 0.105]} s={[0.035, 0.045, 0.01]} c="#111" r={0.004} />
-          <Part p={[0, -0.035, 0.108]} s={[0.04, 0.025, 0.01]} c="#f9a8d4" r={0.004} />
+          <P p={[0, 0, 0]} s={[0.25, 0.21, 0.21]} c="#f2a65a" r={0.07} />
+          <P p={[0, -0.04, 0.09]} s={[0.12, 0.08, 0.05]} c="#fff7ed" r={0.025} line={false} />
+          {[-1, 1].map((x) => (
+            <group key={x}>
+              <P p={[x * 0.075, 0.13, 0]} s={[0.07, 0.08, 0.05]} c="#e08b3e" r={0.015} />
+              <P p={[x * 0.075, 0.125, 0.022]} s={[0.035, 0.045, 0.01]} c="#f9a8d4" r={0.008} line={false} />
+              <group position={[x * 0.055, 0.02, 0.106]}>
+                <P p={[0, 0, 0]} s={[0.045, 0.055, 0.012]} c="#1c1410" r={0.012} line={false} />
+                <P p={[x * -0.008, 0.013, 0.007]} s={[0.014, 0.014, 0.004]} c="#ffffff" r={0.004} line={false} />
+              </group>
+            </group>
+          ))}
+          <P p={[0, -0.025, 0.118]} s={[0.035, 0.022, 0.01]} c="#f9a8d4" r={0.006} line={false} />
         </group>
         <group ref={tail} position={[0, 0.27, -0.22]}>
-          <Part p={[0, 0.14, -0.04]} s={[0.055, 0.3, 0.055]} c="#e08b3e" r={0.025} />
+          <P p={[0, 0.14, -0.04]} s={[0.055, 0.3, 0.055]} c="#e08b3e" r={0.025} />
         </group>
       </group>
       {[[-0.07, 0.15], [0.07, 0.15], [-0.07, -0.15], [0.07, -0.15]].map(([x, z], i) => (
-        <Part key={i} p={[x, 0.05, z]} s={[0.065, 0.1, 0.065]} c="#fff7ed" r={0.02} />
+        <P key={i} p={[x, 0.05, z]} s={[0.065, 0.1, 0.065]} c="#fff7ed" r={0.02} />
       ))}
     </group>
   );
