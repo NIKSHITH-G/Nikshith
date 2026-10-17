@@ -93,16 +93,36 @@ export function LibraryKindle({ portrait }) {
                       <p className="mt-3 text-[13px] leading-relaxed text-black/75">{open.line}</p>
                     </div>
                   </div>
+                  {open.summary && (
+                    <>
+                      <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.25em] text-black/45">About the book</div>
+                      <p className="mt-2 font-serif text-[14.5px] leading-relaxed text-black/80">{open.summary}</p>
+                    </>
+                  )}
                   {open.why && <p className="mt-5 border-l-2 border-[#b45309] pl-3 font-hand text-xl leading-snug text-[#7c2d12]">{open.why}</p>}
-                  <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.25em] text-black/45">Highlights · key ideas</div>
-                  <ul className="mt-3 space-y-3">
-                    {open.ideas.map((idea, i) => (
-                      <motion.li key={idea} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.1 + i * 0.08 } }} className="text-[15px] leading-relaxed">
-                        <span className="box-decoration-clone bg-[#fde68a] px-1 py-0.5">{idea}</span>
-                      </motion.li>
+                  {open.quotes?.length > 0 && (
+                    <>
+                      <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.25em] text-black/45">Highlights · {open.quotes.length}</div>
+                      <ul className="mt-3 space-y-4">
+                        {open.quotes.map((q, i) => (
+                          <motion.li key={q.text} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.1 + i * 0.08 } }}>
+                            <p className="font-serif text-[15px] leading-relaxed">
+                              <span className="box-decoration-clone bg-[#fde68a] px-1 py-0.5">“{q.text}”</span>
+                            </p>
+                            <div className="mt-1 font-mono text-[10px] text-black/45">— {q.from}</div>
+                          </motion.li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                  <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.25em] text-black/45">My takeaways</div>
+                  <ul className="mt-2 space-y-2">
+                    {open.ideas.map((idea) => (
+                      <li key={idea} className="flex gap-2 text-[13.5px] leading-relaxed text-black/75">
+                        <span className="text-[#b45309]">✎</span> {idea}
+                      </li>
                     ))}
                   </ul>
-                  <p className="mt-6 text-[10px] text-black/40">Key ideas are summaries, not quotes from the book.</p>
                 </motion.div>
               ) : (
                 <motion.div key="shelves" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="flex-1 overflow-y-auto pb-4">
