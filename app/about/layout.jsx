@@ -1,7 +1,7 @@
 export const metadata = {
   title: "About",
   description:
-    "Nikshith G — Master's in AI at Monash, two years building core banking systems at TCS. Experience, education, projects, and the stack I build with.",
+    "Nikshith G — Master's in AI at Monash, a year and a half building core banking systems at TCS. Experience, education, projects, and the stack I build with.",
   alternates: { canonical: "/about" },
   openGraph: {
     title: "About — Nikshith G",

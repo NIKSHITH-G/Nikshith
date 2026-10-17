@@ -186,7 +186,7 @@ function TVContact({ portrait }) {
         {profile.email.replace("@", "\u200b@")}
       </motion.a>
       <motion.div {...lineIn(2, 0.08)} className="mt-6 flex flex-wrap gap-2.5">
-        <button onClick={() => goToPanel("contact")} className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-violet-100">✉ Write me a letter</button>
+        <button onClick={() => goToPanel("contact")} className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-violet-100">Write me a letter</button>
         <a href={profile.resume} target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/25 px-5 py-2.5 text-sm text-white/90 transition hover:bg-white/10">Résumé ↓</a>
       </motion.div>
       <motion.div {...lineIn(3, 0.08)} className="mt-6 flex flex-wrap gap-2">
