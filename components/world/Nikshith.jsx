@@ -6,7 +6,7 @@
 
 import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Html, RoundedBox } from "@react-three/drei";
+import { Html } from "@react-three/drei";
 import { runtime, getState, useWorld } from "./store";
 import { blocked, planPath, ACTIVITIES } from "./layout";
 import { Arm, Head, Leg, OUTFITS, Torso } from "./Avatar";
@@ -19,13 +19,6 @@ const R = 0.32;
 const angleDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
 const rand = ([a, b]) => a + Math.random() * (b - a);
 
-function Part({ p, s, c, r = 0.04, rot }) {
-  return (
-    <RoundedBox args={s} radius={Math.min(r, Math.min(...s) / 2 - 0.002)} smoothness={3} position={p} rotation={rot} castShadow>
-      <meshStandardMaterial color={c} roughness={0.75} />
-    </RoundedBox>
-  );
-}
 
 // pick his next activity: somewhere he wasn't just now
 function nextActivity(prevId) {
@@ -41,8 +34,6 @@ export function Nikshith() {
   const legR = useRef();
   const armL = useRef();
   const armR = useRef();
-  const mug = useRef();
-  const book = useRef();
   const key = useRef();
   const [bubble, setBubble] = useState(ACTIVITIES[0].bubble);
   // thought bubbles only while you are walking around (not over the title screen or a panel)
@@ -130,8 +121,7 @@ export function Nikshith() {
     if (pose === "play") { lx = rx = -1.0; rx += Math.sin(t * 12) * 0.12; }
     if (pose === "write") { rx = -1.6 + Math.sin(t * 5) * 0.12; rz = 0.25 + Math.sin(t * 3) * 0.15; }
     if (pose === "browse") { rx = -1.9 + Math.sin(t * 1.3) * 0.2; }
-    if (pose === "read") { lx = rx = -1.0; lz = -0.25; rz = 0.25; }
-    if (pose === "coffee") { rx = Math.sin(t * 0.9) > 0.3 ? -2.2 : -0.6; }
+    if (pose === "coffee") { rx = -1.15 + (Math.sin(t * 1.4) > 0.6 ? 0.18 : 0); } // working the machine
     if (waving) { rx = 0; rz = 2.6 + Math.sin((t - m.wave) * 12) * 0.35; }
     // talking: easy hand gestures, a little head bob, mouth flapping
     const speaking = talking && n.talking;
@@ -150,7 +140,7 @@ export function Nikshith() {
     if (talking && !m.wasTalking) m.nod = t;
     m.wasTalking = talking;
     const nod = t - (m.nod ?? -9) < 0.7 ? Math.sin((t - m.nod) * 9) * 0.16 : 0;
-    const tilt = pose === "type" || pose === "piano" || pose === "read" ? 0.25 : near ? -0.1 + (speaking ? Math.sin(t * 5) * 0.05 : 0) : 0;
+    const tilt = pose === "type" || pose === "piano" || pose === "coffee" ? 0.25 : near ? -0.1 + (speaking ? Math.sin(t * 5) * 0.05 : 0) : 0;
     head.current.rotation.x += (tilt + nod - head.current.rotation.x) * k;
     // glance at a visitor who's around (the body only turns once they're close)
     const glance = toPlayer < 5 && !moving && !talking ? Math.max(-0.7, Math.min(0.7, angleDiff(Math.atan2(runtime.x - n.x, runtime.z - n.z), n.heading))) : 0;
@@ -158,8 +148,6 @@ export function Nikshith() {
     head.current.rotation.z = speaking ? Math.sin(t * 1.3) * 0.05 : head.current.rotation.z * 0.9;
     // a warm key light on his face while you're talking to him
     if (key.current) key.current.intensity += ((talking ? 7 : 0) - key.current.intensity) * Math.min(1, dt * 4);
-    if (mug.current) mug.current.visible = pose === "coffee" || pose === "idle";
-    if (book.current) book.current.visible = pose === "read";
   });
 
   return (
@@ -174,18 +162,9 @@ export function Nikshith() {
         <Torso o={OUTFITS.nikshith} />
         <group ref={armL} position={[-0.335, 1.18, 0]}>
           <Arm o={OUTFITS.nikshith} side={-1} />
-          {/* a book, held open in both hands while reading */}
-          <group ref={book} position={[0.33, -0.62, 0.05]} visible={false}>
-            <Part p={[0, 0, 0]} s={[0.36, 0.03, 0.26]} c="#f5f0e1" r={0.01} />
-            <Part p={[0, -0.02, 0]} s={[0.38, 0.02, 0.28]} c="#111" r={0.01} />
-          </group>
         </group>
         <group ref={armR} position={[0.335, 1.18, 0]}>
           <Arm o={OUTFITS.nikshith} side={1} />
-          <mesh ref={mug} position={[0, -0.66, 0.06]} visible={false}>
-            <cylinderGeometry args={[0.055, 0.05, 0.12, 12]} />
-            <meshStandardMaterial color="#fbbf24" />
-          </mesh>
         </group>
         <group ref={head} position={[0, 1.27, 0]}>
           <Head o={OUTFITS.nikshith} />

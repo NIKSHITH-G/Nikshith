@@ -52,8 +52,7 @@ export const OUTFITS = {
     skin: "#c89878", skinDark: "#b5845f", hair: "#1a1410", hairStyle: "curly",
     top: "#7c5cd6", topDark: "#6a4cc2", strings: "#ede9fe", collar: "#f5f5f4",
     pants: "#4a5f8a", pantsDark: "#3f5278", shoes: "#f5f5f5", sole: "#3f3f46", accent: "#a78bfa",
-    sleeves: "pushed",
-    headphones: { band: "#e5e7eb", cup: "#f4f4f5", pad: "#7c5cd6", wear: "neck" },
+    headphones: { band: "#e5e7eb", cup: "#f4f4f5", pad: "#7c5cd6", wear: "head" },
   },
   visitor: {
     skin: "#c89878", skinDark: "#b5845f", hair: "#1a1410", hairStyle: "short",
@@ -225,8 +224,6 @@ export function Arm({ o, side }) {
   const pushed = o.sleeves === "pushed";
   return (
     <group rotation-z={side * 0.09}>
-      {/* rounded shoulder that tucks into the torso */}
-      <P p={[-side * 0.02, -0.02, 0]} s={[0.17, 0.16, 0.2]} c={o.top} r={0.07} />
       {pushed ? (
         <>
           <P p={[0, -0.17, 0]} s={[0.15, 0.3, 0.19]} c={o.top} r={0.06} />

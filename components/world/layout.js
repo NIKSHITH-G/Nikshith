@@ -422,8 +422,8 @@ export const ACTIVITIES = [
   { id: "board", spot: [2.15, -4.2], look: [3.3, -4.2], visit: [0.9, -3.2], pose: "write", bubble: "✏️ sketching an idea", secs: [10, 15] },
   { id: "arcade", spot: [0, -5.85], look: [0, -7.35], visit: [1.2, -4.7], pose: "play", bubble: "🕹️ one more round", secs: [10, 15] },
   { id: "piano", spot: [8, -6.3], look: [8, -7.3], visit: [9.3, -5.3], pose: "piano", bubble: "🎹 working on a melody", secs: [14, 20] },
-  { id: "library", spot: [10.0, 2.6], look: [11.6, 2.6], visit: [8.7, 2.0], pose: "read", bubble: "📖 Shadow Slave, again", secs: [12, 18] },
-  { id: "coffee", spot: [2.65, 5.2], look: [3.55, 5.2], visit: [1.95, 3.9], pose: "coffee", bubble: "☕ coffee number three", secs: [7, 10] },
+  { id: "library", spot: [10.0, 2.6], look: [11.6, 2.6], visit: [8.7, 2.0], pose: "browse", bubble: "📖 picking the next read", secs: [12, 18] },
+  { id: "coffee", spot: [2.65, 5.2], look: [3.55, 5.2], visit: [1.95, 3.9], pose: "coffee", bubble: "☕ making coffee number three", secs: [7, 10] },
   { id: "tv", spot: [-2.0, 1.6], look: [-4, -0.6], visit: [-1.0, 2.6], pose: "idle", bubble: "📺 checking the intro reel", secs: [8, 12] },
   { id: "window", spot: [10.3, -6.4], look: [10.3, -7.9], visit: [9.4, -5.2], pose: "idle", bubble: "🌙 nice night out", secs: [7, 10] },
 ];
