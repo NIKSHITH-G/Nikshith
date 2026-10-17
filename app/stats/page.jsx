@@ -15,7 +15,7 @@ const ROOM_NAMES = {
   photobooth: "Photo booth", treadmill: "Treadmill", bag: "Punching bag", snooker: "Snooker", chess: "Chess",
   arcade: "Arcade games", kanban: "Side quests", telescope: "Telescope", radio: "Radio", guestbook: "Guestbook",
 };
-const FLOOR_NAMES = { studio: "Studio 1F", gym: "Gym 2F", games: "Games 3F", roof: "Rooftop" };
+const FLOOR_NAMES = { studio: "Ground 1F", gym: "Gym 2F", games: "Games 3F", roof: "Rooftop" };
 const HOW = {
   "built-in": ["ANSWERED", "text-emerald-300 border-emerald-400"],
   ai: ["GEMINI", "text-violet-300 border-violet-400"],
@@ -117,7 +117,7 @@ export default function Stats() {
       <Screen>
         <div className="flex min-h-[80vh] items-center justify-center">
           <form onSubmit={(e) => { e.preventDefault(); load(key); }} className={`${panel} w-full max-w-sm p-6 text-center`}>
-            <div className="text-3xl text-amber-300 [text-shadow:4px_4px_0_#7c2d12]">STUDIO STATS</div>
+            <div className="text-3xl text-amber-300 [text-shadow:4px_4px_0_#7c2d12]">HOUSE STATS</div>
             <p className="mt-3 text-[12px] text-white/55">OWNER ONLY. INSERT KEY TO CONTINUE</p>
             <input type="password" value={key} onChange={(e) => setKey(e.target.value)} placeholder="OWNER KEY" className="mt-6 w-full border-4 border-[#3b2f7a] bg-black px-3 py-2.5 font-mono text-sm outline-none focus:border-violet-400" />
             {error && <p className="mt-3 text-[12px] text-rose-400">{error}</p>}
@@ -141,18 +141,18 @@ export default function Stats() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="text-[12px] tracking-widest text-emerald-300">1UP · OWNER</div>
-            <h1 className="mt-1 text-4xl text-amber-300 [text-shadow:4px_4px_0_#7c2d12] sm:text-5xl">STUDIO STATS</h1>
+            <h1 className="mt-1 text-4xl text-amber-300 [text-shadow:4px_4px_0_#7c2d12] sm:text-5xl">HOUSE STATS</h1>
           </div>
           <div className="flex gap-2 text-[12px]">
             <button onClick={() => load(key)} className="border-4 border-[#3b2f7a] bg-[#120f2b] px-3 py-2 hover:border-violet-400">↻ REFRESH</button>
             <button onClick={() => { setOwnerKey(""); setData(null); setKey(""); }} className="border-4 border-[#3b2f7a] bg-[#120f2b] px-3 py-2 hover:border-violet-400">LOCK</button>
-            <Link href="/" className="bg-violet-500 px-3 py-2.5 shadow-[4px_4px_0_#000] hover:bg-violet-400">▶ STUDIO</Link>
+            <Link href="/" className="bg-violet-500 px-3 py-2.5 shadow-[4px_4px_0_#000] hover:bg-violet-400">▶ HOUSE</Link>
           </div>
         </div>
 
         <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
-          <Score label="PLAYERS" value={visits} sub={`${counts.visit?.studio ?? 0} studio · ${counts.visit?.classic ?? 0} classic`} color="text-amber-300" />
-          <Score label="PRESSED START" value={entered} sub={counts.visit?.studio ? `${Math.round((entered / counts.visit.studio) * 100)}% of studio visitors` : "—"} color="text-emerald-300" />
+          <Score label="PLAYERS" value={visits} sub={`${counts.visit?.studio ?? 0} 3D house · ${counts.visit?.classic ?? 0} classic`} color="text-amber-300" />
+          <Score label="PRESSED START" value={entered} sub={counts.visit?.studio ? `${Math.round((entered / counts.visit.studio) * 100)}% of 3D house visitors` : "—"} color="text-emerald-300" />
           <Score label="QUESTIONS" value={asked} sub={`${answers.unknown} he couldn't answer`} color="text-violet-300" />
           <Score label="100% CLEARS" value={counts.explored?.all ?? 0} sub="found every room" color="text-rose-300" />
         </div>
@@ -160,11 +160,11 @@ export default function Stats() {
         <div className={`${panel} mt-4 p-5`}>
           <div className="flex items-baseline justify-between text-[12px]">
             <span className="tracking-widest text-white/60">PLAYERS · LAST 30 DAYS</span>
-            <span className="flex gap-4 text-white/50"><span><i className="mr-1 inline-block h-2.5 w-2.5 bg-violet-400" />STUDIO</span><span><i className="mr-1 inline-block h-2.5 w-2.5 bg-emerald-400" />CLASSIC</span></span>
+            <span className="flex gap-4 text-white/50"><span><i className="mr-1 inline-block h-2.5 w-2.5 bg-violet-400" />3D HOUSE</span><span><i className="mr-1 inline-block h-2.5 w-2.5 bg-emerald-400" />CLASSIC</span></span>
           </div>
           <div className="mt-4 flex h-36 items-end gap-1">
             {daily.map((d) => (
-              <div key={d.day} title={`${d.day}: ${d.studio} studio, ${d.classic} classic, ${d.entered} entered, ${d.questions} questions`} className="flex h-full flex-1 flex-col justify-end border-b-2 border-white/10">
+              <div key={d.day} title={`${d.day}: ${d.studio} 3D house, ${d.classic} classic, ${d.entered} entered, ${d.questions} questions`} className="flex h-full flex-1 flex-col justify-end border-b-2 border-white/10">
                 <div className="bg-emerald-400" style={{ height: `${(d.classic / maxDay) * 100}%` }} />
                 <div className="bg-violet-400" style={{ height: `${(d.studio / maxDay) * 100}%` }} />
               </div>

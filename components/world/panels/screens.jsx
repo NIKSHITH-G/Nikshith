@@ -314,7 +314,7 @@ export function TerminalScreen({ portrait }) {
           <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
           <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
           <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-          <span className="flex-1 text-center text-[12px] text-white/40">nikshith@studio — ~/work — zsh</span>
+          <span className="flex-1 text-center text-[12px] text-white/40">nikshith@home — ~/work — zsh</span>
         </div>
         <div className="no-scrollbar flex-1 overflow-y-auto px-6 py-4">
           <motion.div {...lineIn(n++, 0.4)} className="text-white/35">Last login: {new Date().toDateString()} on ttys001</motion.div>
@@ -368,7 +368,7 @@ export function TerminalScreen({ portrait }) {
 function Prompt() {
   return (
     <>
-      <span className="text-emerald-400">nikshith@studio</span>
+      <span className="text-emerald-400">nikshith@home</span>
       <span className="text-white/40">:</span>
       <span className="text-sky-400">~/work</span>
       <span className="text-white/40">$</span>

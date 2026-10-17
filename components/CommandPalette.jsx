@@ -67,7 +67,7 @@ export default function CommandPalette() {
   // The command set. `keywords` widens what a search term will match.
   const commands = useMemo(
     () => [
-      { group: "Navigate", label: "Studio (3D home)", icon: Home, keywords: "start intro hero world", run: () => go("/") },
+      { group: "Navigate", label: "House (3D home)", icon: Home, keywords: "start intro hero world", run: () => go("/") },
       { group: "Navigate", label: "About", icon: User, keywords: "bio me story", run: () => travel("about") },
       { group: "Navigate", label: "Experience", icon: Briefcase, keywords: "work tcs job roles", run: () => travel("experience") },
       { group: "Navigate", label: "Education", icon: GraduationCap, keywords: "study monash degree", run: () => travel("education") },

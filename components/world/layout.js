@@ -431,7 +431,7 @@ export const ACTIVITIES = [
 /* ── the building ─────────────────────────────────────────────────────── */
 
 export const FLOORS = [
-  { id: "studio", label: "1", name: "Studio", blurb: "work, music & library", walls: WALLS, furniture: STUDIO_FURNITURE, items: STUDIO_ITEMS, rooms: STUDIO_ROOMS, path: studioPath, arrive: [-10.6, 0] },
+  { id: "studio", label: "1", name: "Ground floor", blurb: "work, music & library", walls: WALLS, furniture: STUDIO_FURNITURE, items: STUDIO_ITEMS, rooms: STUDIO_ROOMS, path: studioPath, arrive: [-10.6, 0] },
   { id: "gym", label: "2", name: "Gym & Photo studio", blurb: "gym, photo booth & a dog", walls: GYM_WALLS, furniture: GYM_FURNITURE, items: GYM_ITEMS, rooms: GYM_ROOMS, arrive: [-10.6, 0],
     path: throughDoorway(detours(Object.values(GYM_FURNITURE))) },
   { id: "games", label: "3", name: "Games room", blurb: "bar, snooker & live chess", walls: OUTER, furniture: GAMES_FURNITURE, items: GAMES_ITEMS, rooms: GAMES_ROOMS, arrive: [-10.6, 0],

@@ -59,7 +59,7 @@ export default function About() {
           <div className="flex items-center gap-2">
             <a href={profile.resume} target="_blank" rel="noopener noreferrer" className="hidden rounded-full px-3 py-1.5 text-[13px] text-white/65 hover:text-white sm:inline">Résumé ↓</a>
             <Link href="/" className="whitespace-nowrap rounded-full bg-white px-3.5 py-1.5 text-xs font-medium text-black transition hover:bg-violet-200">
-              Enter 3D studio →
+              Enter 3D house →
             </Link>
           </div>
         </div>
@@ -83,7 +83,7 @@ export default function About() {
             <div className="mt-7 flex flex-wrap gap-2.5 print:hidden">
               <a href={`mailto:${profile.email}`} className={`${btn} bg-white font-semibold text-black hover:bg-violet-100`}><Mail size={16} /> Email me</a>
               <a href={profile.resume} target="_blank" rel="noopener noreferrer" className={`${btn} border border-white/20 text-white/90 hover:bg-white/10`}>Résumé ↓</a>
-              <Link href="/" className={`${btn} border border-violet-400/40 bg-violet-500/10 text-violet-100 hover:bg-violet-500/20`}>Walk through the 3D studio →</Link>
+              <Link href="/" className={`${btn} border border-violet-400/40 bg-violet-500/10 text-violet-100 hover:bg-violet-500/20`}>Walk through my 3D house →</Link>
             </div>
             <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 text-sm text-white/50">
               {socials.map((s) => (
@@ -298,7 +298,7 @@ export default function About() {
                     ))}
                   </div>
                   <p className="mt-3 text-[13px] text-white/55">
-                    <span className="text-amber-300">★ {reading.favourite}</span> is my all-time favourite. Read the highlights on the Kindle in the <Link href="/" className="text-violet-300 underline-offset-4 hover:underline">3D studio</Link>.
+                    <span className="text-amber-300">★ {reading.favourite}</span> is my all-time favourite. Read the highlights on the Kindle in the <Link href="/" className="text-violet-300 underline-offset-4 hover:underline">3D house</Link>.
                   </p>
                 </div>
               </Reveal>
@@ -325,7 +325,7 @@ export default function About() {
 
       <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 border-t border-white/10 px-4 py-8 font-mono text-xs text-white/40 sm:px-6">
         <span>© {new Date().getFullYear()} {profile.name} · Melbourne</span>
-        <Link href="/" className="hover:text-white">Prefer the fun version? Enter the 3D studio →</Link>
+        <Link href="/" className="hover:text-white">Prefer the fun version? Enter the 3D house →</Link>
       </footer>
     </div>
   );

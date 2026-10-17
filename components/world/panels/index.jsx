@@ -63,14 +63,14 @@ export const PANEL_META = {
   chess: { kicker: "games room · chess", title: "The World vs Nikshith" },
   telescope: { kicker: "rooftop · telescope", title: "The southern sky" },
   radio: { kicker: "rooftop · radio", title: "Change the vibe" },
-  library: { kicker: "studio · library", title: "Reading list" },
+  library: { kicker: "living room · library", title: "Reading list" },
   now: { kicker: "living room · now board", title: "What I'm up to" },
   learning: { kicker: "gym · training plan", title: "What I'm learning" },
   photobooth: { kicker: "photo studio · booth", title: "Photo booth" },
   arcade: { kicker: "games room · arcade", title: "Insert coin" },
   kanban: { kicker: "games room · side quests", title: "Side quests" },
   guestbook: { kicker: "rooftop · guestbook", title: "Guestbook" },
-  ask: { kicker: "studio · Nikshith", title: "Talking to Nikshith" },
+  ask: { kicker: "house · Nikshith", title: "Talking to Nikshith" },
 };
 
 // Each object opens in its own way: screens light up in place, everything else gets a stage.
@@ -146,14 +146,14 @@ function Chrome({ id }) {
           </button>
         ) : (
           <span className="hidden rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-2.5 font-mono text-[11px] text-emerald-300 backdrop-blur-md sm:block">
-            ✓ studio fully explored
+            ✓ house fully explored
           </span>
         )}
         <button
           onClick={closePanel}
           className="flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-[13px] font-medium text-black shadow-lg transition hover:bg-violet-100"
         >
-          <X size={15} /> <span className="hidden sm:inline">Back to studio</span>
+          <X size={15} /> <span className="hidden sm:inline">Keep exploring</span>
           <kbd className="hidden rounded border border-black/15 px-1 font-mono text-[10px] text-black/45 sm:inline">esc</kbd>
         </button>
       </div>

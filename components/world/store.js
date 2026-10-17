@@ -229,7 +229,7 @@ async function brewCoffee() {
   try {
     const res = await fetch("/api/counter?name=coffee", { method: "POST" });
     const { count } = await res.json();
-    toast(`Fresh coffee. Visitors have brewed ${Number(count).toLocaleString()} cups in this studio.`, "☕");
+    toast(`Fresh coffee. Visitors have brewed ${Number(count).toLocaleString()} cups in this house.`, "☕");
   } catch {
     toast("Fresh coffee. Productivity +10.", "☕");
   }
@@ -245,7 +245,7 @@ const CAT_LINES = [
 ];
 let catIdx = 0;
 const DOG_LINES = [
-  "Pixel rolls over for belly rubs. Pixel is the studio's head of morale.",
+  "Pixel rolls over for belly rubs. Pixel is the house's head of morale.",
   "Pixel brings you a slobbery ball. Throwing it is now your full-time job.",
   "Pixel sniffs your shoes and approves. Strong candidate.",
   "Pixel photobombs every shot in the booth. Every. Single. One.",

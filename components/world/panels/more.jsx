@@ -347,7 +347,7 @@ export function PhotoBoothStage({ portrait }) {
     g.fillStyle = "#1c1917";
     g.textAlign = "center";
     g.font = "italic 34px Georgia, serif";
-    g.fillText("Nikshith's Studio", c.width / 2, c.height - 50);
+    g.fillText("Nikshith's House", c.width / 2, c.height - 50);
     g.font = "18px ui-monospace, Menlo, monospace";
     g.fillStyle = "#78716c";
     g.fillText(`nikshith.dev · ${new Date().toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}`, c.width / 2, c.height - 22);
@@ -405,9 +405,9 @@ export function PhotoBoothStage({ portrait }) {
               />
               <div className="max-w-xs">
                 <h2 className="font-display text-4xl italic text-white">Fresh off the press.</h2>
-                <p className="mt-2 text-sm text-white/65">Four poses, one strip. Keep it as a souvenir from the studio.</p>
+                <p className="mt-2 text-sm text-white/65">Four poses, one strip. Keep it as a souvenir from the house.</p>
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <a href={strip} download="nikshith-studio-photobooth.png" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black hover:bg-rose-100">
+                  <a href={strip} download="nikshiths-house-photobooth.png" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black hover:bg-rose-100">
                     <Download size={15} /> Download strip
                   </a>
                   <button onClick={() => { setStrip(null); setStateB("posing"); }} className="inline-flex items-center gap-2 rounded-full border border-white/25 px-5 py-2.5 text-sm text-white hover:bg-white/10">

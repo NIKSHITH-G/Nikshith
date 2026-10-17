@@ -62,7 +62,7 @@ function Boot({ ready }) {
   return (
     <motion.div key="boot" exit={{ opacity: 0, transition: { duration: 0.8 } }} className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-[#07080d] px-6">
       <div className="w-full max-w-sm font-mono text-[12px]">
-        <div className="mb-4 text-white/80">nikshith-os <span className="text-white/35">v2.6</span> — booting studio</div>
+        <div className="mb-4 text-white/80">nikshith-os <span className="text-white/35">v2.6</span> — booting house</div>
         <ul className="space-y-1.5">
           {BOOT.slice(0, n + 1).map((line, i) => {
             const ok = i < n || done;
@@ -112,7 +112,7 @@ function Title({ touch, muted }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, type: "spring", stiffness: 200, damping: 20 }}
           >
-            Studio
+            House
           </motion.span>
         </h1>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.95 }} className="mt-6 max-w-md text-[15px] leading-relaxed text-white/70">
@@ -125,7 +125,7 @@ function Title({ touch, muted }) {
             className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-black shadow-[0_0_50px_-8px_rgba(167,139,250,0.8)] transition hover:scale-[1.03] active:scale-[0.98]"
           >
             <span className="relative flex h-2 w-2"><span className="absolute inset-0 animate-ping rounded-full bg-violet-500" /><span className="h-2 w-2 rounded-full bg-violet-600" /></span>
-            Enter the studio
+            Come inside
             {!touch && <span className="rounded border border-black/15 px-1.5 py-0.5 font-mono text-[10px] text-black/50">↵</span>}
           </button>
           <button onClick={toggleMute} className="flex items-center gap-2 font-mono text-[11px] text-white/50 transition hover:text-white">
@@ -302,7 +302,7 @@ export default function HUD({ ready, touch }) {
           >
             <button onClick={() => goToPanel("about")} className={`flex items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-4 ${glass}`}>
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-fuchsia-400 font-mono text-[11px] font-bold text-black">NG</span>
-              <span className="whitespace-nowrap font-display text-base italic text-white sm:text-lg">Nikshith&apos;s Studio</span>
+              <span className="whitespace-nowrap font-display text-base italic text-white sm:text-lg">Nikshith&apos;s House</span>
               <span className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[10px] text-white/70">{floorById(floor).label === "R" ? "ROOF" : `${floorById(floor).label}F`}</span>
             </button>
             <nav className={`hidden items-center gap-0.5 rounded-full p-1 xl:flex ${glass}`} aria-label="Sections">
@@ -354,7 +354,7 @@ export default function HUD({ ready, touch }) {
             className={`pointer-events-auto absolute left-3 top-[72px] w-[230px] rounded-2xl px-4 py-3 sm:left-5 ${glass}`}
           >
             <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-white/45">
-              <span>Explore the studio</span>
+              <span>Explore the house</span>
               <span className="text-white/70">{visited.length}/{SECTIONS.length}</span>
             </div>
             <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10">

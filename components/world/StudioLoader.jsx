@@ -8,9 +8,9 @@ const World = dynamic(() => import("./World"), {
   loading: () => (
     <div className="fixed inset-0 flex items-center justify-center bg-[#07080d] px-6">
       <div className="w-full max-w-sm font-mono text-[12px] text-white/80">
-        nikshith-os <span className="text-white/35">v2.6</span> — booting studio
+        nikshith-os <span className="text-white/35">v2.6</span> — booting house
         <div className="mt-4 flex gap-2 text-white/55">
-          <span className="animate-pulse text-amber-300">[ .. ]</span> downloading the studio
+          <span className="animate-pulse text-amber-300">[ .. ]</span> downloading the house
         </div>
       </div>
     </div>
