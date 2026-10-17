@@ -99,10 +99,9 @@ export function Head({ o }) {
       <Oval p={[0, 0.185, 0.238]} s={[0.022, 0.018, 0.012]} c={o.skinDark} />
       {/* blush */}
       {[-1, 1].map((x) => <Oval key={`c${x}`} p={[x * 0.165, 0.165, 0.233]} s={[0.035, 0.017, 0.004]} c="#e88a7a" />)}
-      {/* a wider, slightly lopsided smile */}
-      <P p={[0.008, 0.112, 0.234]} s={[0.1, 0.02, 0.01]} c="#6b2a1a" r={0.008} line={false} />
-      <P p={[-0.056, 0.121, 0.234]} s={[0.032, 0.017, 0.01]} c="#6b2a1a" r={0.006} line={false} rot={[0, 0, -0.5]} />
-      <P p={[0.07, 0.127, 0.234]} s={[0.034, 0.017, 0.01]} c="#6b2a1a" r={0.006} line={false} rot={[0, 0, 0.7]} />
+      {/* a small, relaxed smile — just a hint, one corner lifted */}
+      <P p={[0.005, 0.115, 0.234]} s={[0.07, 0.016, 0.01]} c="#7a3a2a" r={0.006} line={false} />
+      <P p={[0.045, 0.119, 0.234]} s={[0.022, 0.014, 0.01]} c="#7a3a2a" r={0.005} line={false} rot={[0, 0, 0.35]} />
 
       {o.hairStyle === "curly" ? <CurlyHair o={o} /> : <ShortHair o={o} />}
       {o.headphones?.wear === "head" && <HeadphonesOn h={o.headphones} />}
