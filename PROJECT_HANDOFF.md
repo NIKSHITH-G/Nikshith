@@ -158,6 +158,7 @@ All of these use the **owner key**: the `CHESS_OWNER_KEY` setting in `.env.local
 
 ## 10. Recent history (newest first)
 
+- Lift ride doors: floor directory with a moving car, "Now arriving" screen, a random silly notice and Byte's paw prints (`panels/ride.jsx`). `?debug` exposes `window.__world.set({ ride: { from, to, stage } })` to freeze a ride.
 - Byte the cat: hide-and-ambush, mug knocking, zoomies, naps, wall staring, new petting reactions, cardboard box.
 - Ship log redesign: full-year graph, streaks, 4-up repo cards.
 - Security update: Next.js 16.0.10 → 16.4.2 plus patched sharp/postcss/nanoid (0 production audit issues); new working `GITHUB_TOKEN`, so the ship-log contribution graph is back.

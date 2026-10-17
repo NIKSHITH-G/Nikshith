@@ -49,6 +49,8 @@ export default function World() {
     if (!ready) return;
     // ?debug exposes a tiny camera/floor control for inspecting the building
     if (new URLSearchParams(window.location.search).has("debug")) {
+      // window.__world.set({ ride: { from, to, stage } }) freezes a lift ride for a look at the doors
+      window.__world = { get: getState, set: setState };
       // dispatch new CustomEvent("studio:view", { detail: [floor, x, z, zoom, yaw] })
       window.addEventListener("studio:view", ({ detail: [floor, x, z, zoom = 1, yaw = 0] }) => {
         enterInstantly();
