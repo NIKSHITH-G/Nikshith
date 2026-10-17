@@ -40,15 +40,17 @@ export const metadata = {
   openGraph: {
     title: "Nikshith G — AI & Full-Stack Engineer",
     description:
-      "Master's in AI at Monash. I build, break, and fix things.",
+      "Master of AI at Monash, ex-TCS. Walk through my 3D studio, play my projects, and talk to an AI version of me.",
     url: "https://nikshith.dev",
     siteName: "Nikshith G",
     type: "website",
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Nikshith G — AI & Full-Stack Engineer. Walk through my 3D studio at nikshith.dev" }],
   },
   twitter: {
     card: "summary_large_image",
+    images: ["/og.jpg"],
     title: "Nikshith G — AI & Full-Stack Engineer",
-    description: "Master's in AI at Monash. I build, break, and fix things.",
+    description: "Master of AI at Monash, ex-TCS. Walk through my 3D studio, play my projects, and talk to an AI version of me.",
   },
 };
 
