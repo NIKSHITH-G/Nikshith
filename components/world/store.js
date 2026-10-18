@@ -15,6 +15,7 @@ let state = {
   nearby: null, // interactable id, or "cat"
   npcBubble: null, // Nikshith's thought bubble (drawn by labels.jsx)
   catBubble: null, // Byte's
+  dogBubble: null, // Pixel's
   map: false,
   toast: null,
   moved: false,
@@ -67,6 +68,10 @@ export const runtime = {
   startleAt: 0, // when Byte last ambushed you (the player jumps)
   mug: null, // the coffee-table mug Byte knocks off (Cat.jsx)
   sprint: 0, // treadmill belt speed (0–1) while the sprint game runs
+  liftAt: 0, // last successful squat, so the 3D barbell rises
+  backdrop: 0, // photo studio backdrop colour (index into BACKDROPS)
+  flashAt: 0, // softbox flash when the backdrop changes
+  ball: null, // Pixel's tennis ball (floors.jsx)
 };
 
 export const now = () => performance.now() / 1000;
@@ -191,6 +196,7 @@ export function interact(id) {
   if (!it) return;
   runtime.heading = Math.atan2(it.pos[0] - runtime.x, it.pos[1] - runtime.z);
   if (it.action === "coffee") return brewCoffee();
+  if (it.action === "backdrop") return changeBackdrop();
   openPanel(it.panel, it.item, it.id);
 }
 
@@ -247,9 +253,30 @@ const DOG_LINES = [
   "Pixel thinks the cat downstairs gets too much credit.",
 ];
 let dogIdx = 0;
-function petDog() {
+// Pixel decides between a pet and a game of fetch in floors.jsx (Dog); this is the plain pet.
+export function petDogLine() {
   sfx.bark?.();
   toast(DOG_LINES[dogIdx++ % DOG_LINES.length], "🐕");
+}
+function petDog() {
+  runtime.dog.petAt = now();
+}
+
+// The paper backdrop in the photo studio: each click pulls down the next colour.
+export const BACKDROPS = [
+  ["Sunset coral", "#fb7185"],
+  ["Electric blue", "#3b82f6"],
+  ["Mint", "#5eead4"],
+  ["Butter yellow", "#fde047"],
+  ["Lilac", "#c4b5fd"],
+  ["Studio black", "#1c1917"],
+  ["Paper white", "#f5f5f4"],
+];
+function changeBackdrop() {
+  runtime.backdrop = (runtime.backdrop + 1) % BACKDROPS.length;
+  runtime.flashAt = now();
+  sfx.snap?.();
+  toast(`Backdrop: ${BACKDROPS[runtime.backdrop][0]}. Click again for the next roll.`, "📸", 2600);
 }
 
 // Byte works out how to react (purr, bite, grumble…) in Cat.jsx

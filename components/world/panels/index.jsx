@@ -22,6 +22,7 @@ const Letter = from(stages, "Letter");
 const ElevatorPanel = from(building, "ElevatorPanel");
 const GitHubScreen = from(building, "GitHubScreen");
 const TreadmillSprint = from(building, "TreadmillSprint");
+const LiftGame = from(building, "LiftGame");
 const PunchingBagGame = from(building, "PunchingBagGame");
 const SnookerGame = from(building, "SnookerGame");
 const ChessGame = from(building, "ChessGame");
@@ -59,6 +60,7 @@ export const PANEL_META = {
   elevator: { kicker: "elevator", title: "Going up?" },
   treadmill: { kicker: "gym · treadmill", title: "100 m sprint" },
   bag: { kicker: "gym · punching bag", title: "Hit the bag" },
+  lift: { kicker: "gym · squat rack", title: "Squat day" },
   snooker: { kicker: "games room · snooker", title: "Snooker" },
   chess: { kicker: "games room · chess", title: "The World vs Nikshith" },
   telescope: { kicker: "rooftop · telescope", title: "The southern sky" },
@@ -87,6 +89,7 @@ const VIEWS = {
   github: GitHubScreen,
   elevator: ElevatorPanel,
   treadmill: TreadmillSprint,
+  lift: LiftGame,
   bag: PunchingBagGame,
   snooker: SnookerGame,
   chess: ChessGame,

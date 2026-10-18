@@ -40,7 +40,7 @@ Written 17 Oct 2026, at the end of a long build session. No secret values appear
   - the front door, which opens a letter-style contact form.
 - **Nikshith himself (AI):** walks between activities (desk, books, board, arcade, piano, library, coffee, TV, window). Walk up to him and talk.
 
-**Floor 2: Gym & Photo studio.** Treadmill sprint, punching bag, a training plan board, a character **photo booth** (no webcam), a camera "viewfinder" photo gallery (←/→ or A/D), and **Pixel the dog**.
+**Floor 2: Gym & Photo studio.** Treadmill sprint, punching bag, **squat rack lifting game** (stop the marker in the green; +10 kg a lift, +15 for a perfect), a **YOUR PRs** LED board by the lift that updates live (bests are per browser, `components/world/bests.js`), a training plan board, a character **photo booth** (no webcam), a camera "viewfinder" photo gallery (←/→ or A/D), a **seamless paper backdrop** you click to change colour (`BACKDROPS` in `store.js`), a **darkroom** corner with your photos as polaroids on a line, a director's chair and lens cart, and **Pixel the dog**, who plays **fetch** (pet Pixel: about half the time you throw the ball).
 
 **Floor 3: Games room.** Snooker, **live chess** (all visitors play White together, Nikshith plays Black), arcade games (Snake, Breakout, Pong) and a side-quests board.
 
@@ -158,6 +158,7 @@ All of these use the **owner key**: the `CHESS_OWNER_KEY` setting in `.env.local
 
 ## 10. Recent history (newest first)
 
+- Floor 2 upgrade: squat game, live PR board, photo-studio backdrop set, darkroom polaroids, Pixel fetch. `?debug` exposes `window.__world.runtime`.
 - World labels (name tags, Nikshith's and Byte's bubbles) are plain DOM in `components/world/labels.jsx`, positioned each frame by `<LabelProjector/>`. **Don't use drei `<Html>`**: it mounts a React root per label and React 19 throws unmount/removeChild errors in dev.
 - Note: `globals.css` sets `svg { display: block }` outside Tailwind's layers, so `hidden`/`sm:hidden` on an svg won't work; wrap the icon in a span.
 - Lift ride doors: floor directory with a moving car, "Now arriving" screen, a random silly notice and Byte's paw prints (`panels/ride.jsx`). `?debug` exposes `window.__world.set({ ride: { from, to, stage } })` to freeze a ride.

@@ -1046,7 +1046,7 @@ export function HungPhotos({ where }) {
 }
 
 // A real photo, loaded as a texture.
-function usePhoto(src) {
+export function usePhoto(src) {
   return useMemo(() => {
     if (!src || typeof document === "undefined") return null;
     const t = new THREE.TextureLoader().load(src);

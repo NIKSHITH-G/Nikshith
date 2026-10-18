@@ -58,6 +58,8 @@ export function WorldLabels({ touch }) {
   const nearby = useWorld((s) => s.nearby);
   const live = useWorld((s) => s.phase === "playing" && !s.panel);
   const studio = useWorld((s) => s.floor === "studio");
+  const gym = useWorld((s) => s.floor === "gym");
+  const dogBubble = useWorld((s) => s.dogBubble);
   const npcBubble = useWorld((s) => s.npcBubble);
   const catBubble = useWorld((s) => s.catBubble);
   if (!live) return null;
@@ -88,6 +90,11 @@ export function WorldLabels({ touch }) {
       {studio && catBubble && (
         <WorldLabel at={() => [runtime.cat.x, 0.95 + (runtime.cat.y ?? 0), runtime.cat.z]}>
           <div key={catBubble} className={`${bubbleClass} px-2 py-0.5 text-[15px] font-bold leading-snug`}>{catBubble}</div>
+        </WorldLabel>
+      )}
+      {gym && dogBubble && (
+        <WorldLabel at={() => [runtime.dog.x, 1.2, runtime.dog.z]}>
+          <div key={dogBubble} className={`${bubbleClass} px-2 py-0.5 text-[15px] font-bold leading-snug`}>{dogBubble}</div>
         </WorldLabel>
       )}
     </div>

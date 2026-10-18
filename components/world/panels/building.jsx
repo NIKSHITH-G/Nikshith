@@ -11,22 +11,9 @@ import { FLOORS } from "../layout";
 import { runtime, rideTo, useWorld, now } from "../store";
 import * as sfx from "../audio";
 import { OnScreen } from "./screens";
+import { best } from "../bests";
 import { useChess, move as chessMove, reset as chessReset, whoami, setOwnerKey, ownerKey, refresh as chessRefresh, boardFromFen } from "../chess";
 
-const best = {
-  get(k) {
-    try {
-      return JSON.parse(localStorage.getItem(`studio-best-${k}`));
-    } catch {
-      return null;
-    }
-  },
-  set(k, v) {
-    try {
-      localStorage.setItem(`studio-best-${k}`, JSON.stringify(v));
-    } catch {}
-  },
-};
 
 function Backdrop({ className = "" }) {
   return <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className={`pointer-events-none fixed inset-0 z-30 ${className}`} />;
@@ -508,6 +495,138 @@ export function PunchingBagGame() {
         </div>
       </motion.div>
     </>
+  );
+}
+
+/* ═════════════ squat rack: timing lifts ═════════════ */
+
+// A marker sweeps across the bar; stop it in the green to lift. Every lift adds 10 kg,
+// and the green shrinks while the marker speeds up. Miss and the bar wins.
+const START_KG = 60;
+const zoneFor = (kg) => Math.max(0.05, 0.3 - (kg - START_KG) * 0.0016);
+const speedFor = (kg) => 0.8 + (kg - START_KG) * 0.006;
+const newZone = (kg) => {
+  const w = zoneFor(kg);
+  return { c: w / 2 + 0.05 + Math.random() * (0.9 - w), w };
+};
+
+export function LiftGame() {
+  const sim = useRef({ p: 0, dir: 1, kg: START_KG, zone: newZone(START_KG), state: "ready", flash: null, top: null });
+  const [view, setView] = useState({ ...sim.current });
+  const [record, setRecord] = useState(() => best.get("lift"));
+
+  const press = useCallback(() => {
+    const s = sim.current;
+    if (s.state === "failed") return;
+    if (s.state === "ready") {
+      s.state = "lifting";
+      return;
+    }
+    const off = Math.abs(s.p - s.zone.c);
+    if (off <= s.zone.w / 2) {
+      const perfect = off <= s.zone.w / 6;
+      runtime.liftAt = now();
+      sfx.punch(perfect ? 1.6 : 1);
+      if (perfect) sfx.chime();
+      const lifted = s.kg;
+      s.top = lifted;
+      if (!best.get("lift") || lifted > best.get("lift")) {
+        best.set("lift", lifted);
+        setRecord(lifted);
+      }
+      s.flash = { text: perfect ? `PERFECT · ${lifted} kg` : `${lifted} kg ✓`, good: true, at: performance.now() };
+      s.kg += perfect ? 15 : 10;
+      s.zone = newZone(s.kg);
+    } else {
+      s.state = "failed";
+      sfx.clack(0.6);
+      s.flash = { text: "The bar wins.", good: false, at: performance.now() };
+    }
+  }, []);
+
+  useEffect(() => {
+    let raf;
+    let prev = performance.now();
+    const loop = (t) => {
+      const dt = Math.min(0.05, (t - prev) / 1000);
+      prev = t;
+      const s = sim.current;
+      if (s.state === "lifting") {
+        s.p += s.dir * speedFor(s.kg) * dt;
+        if (s.p > 1) { s.p = 1; s.dir = -1; }
+        if (s.p < 0) { s.p = 0; s.dir = 1; }
+      }
+      setView({ ...s, zone: { ...s.zone } });
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    const onKey = (e) => {
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        press();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [press]);
+
+  const again = () => {
+    sim.current = { p: 0, dir: 1, kg: START_KG, zone: newZone(START_KG), state: "lifting", flash: null, top: null };
+  };
+  const verdict = (kg) => (!kg ? "Even the bar was heavy today." : kg < 120 ? "Solid session." : kg < 180 ? "Strong. The rack creaked." : kg < 250 ? "Elite lifter energy." : "That's not a squat, that's a forklift.");
+  const flashFresh = view.flash && performance.now() - view.flash.at < 900;
+
+  return (
+    <motion.div
+      initial={{ y: "110%" }}
+      animate={{ y: 0, transition: { delay: 0.25, type: "spring", stiffness: 140, damping: 20 } }}
+      exit={{ y: "110%" }}
+      className="pointer-events-auto fixed bottom-0 left-1/2 z-40 w-[min(760px,100vw)] -translate-x-1/2 rounded-t-3xl border border-b-0 border-white/10 bg-[#101218]/95 px-5 pb-6 pt-5 backdrop-blur-xl sm:px-8"
+    >
+      <div className="flex items-end justify-between font-mono">
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.3em] text-orange-300/80">on the bar</div>
+          <div className="text-5xl font-bold tabular-nums text-white">{view.kg}<span className="text-xl text-white/40"> kg</span></div>
+        </div>
+        <div className="text-right text-[12px] text-white/50">
+          <div className={flashFresh ? (view.flash.good ? "text-emerald-300" : "text-rose-300") : ""}>{view.flash?.text ?? " "}</div>
+          <div>best {record ? `${record} kg` : "—"}</div>
+        </div>
+      </div>
+      {/* the timing bar */}
+      <div
+        onPointerDown={press}
+        className="relative mt-4 h-14 cursor-pointer touch-none overflow-hidden rounded-xl border border-white/10 bg-[#1b1d26] select-none"
+        role="button"
+        aria-label="Lift"
+      >
+        <div
+          className="absolute inset-y-0 bg-emerald-500/35"
+          style={{ left: `${(view.zone.c - view.zone.w / 2) * 100}%`, width: `${view.zone.w * 100}%` }}
+        />
+        <div
+          className="absolute inset-y-0 bg-emerald-400/60"
+          style={{ left: `${(view.zone.c - view.zone.w / 6) * 100}%`, width: `${(view.zone.w / 3) * 100}%` }}
+        />
+        <div className="absolute inset-y-1 w-1.5 -translate-x-1/2 rounded-full bg-white shadow-[0_0_12px_#fff]" style={{ left: `${view.p * 100}%` }} />
+        {view.state === "ready" && (
+          <div className="absolute inset-0 flex items-center justify-center font-mono text-[12px] uppercase tracking-[0.2em] text-white/70">tap or press space to unrack</div>
+        )}
+      </div>
+      {view.state === "failed" ? (
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+          <p className="font-display text-2xl italic text-white">{view.top ? `${view.top} kg. ${verdict(view.top)}` : verdict(null)}</p>
+          <button onClick={again} className="rounded-full bg-orange-500 px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-orange-400">Go again</button>
+        </div>
+      ) : (
+        <p className="mt-5 text-sm text-white/60">
+          Stop the marker in the green to lift (<Kbd>Space</Kbd> or tap the bar). The bright middle is a perfect rep: +15 kg instead of +10.
+        </p>
+      )}
+    </motion.div>
   );
 }
 

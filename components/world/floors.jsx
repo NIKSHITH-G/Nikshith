@@ -1,13 +1,16 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Sparkles, Stars } from "@react-three/drei";
 import { P } from "./Avatar";
 import * as THREE from "three";
-import { B, C, MONO, Plant, Elevator, HungPhotos, useTex } from "./Apartment";
+import { B, C, MONO, Plant, Elevator, HungPhotos, useTex, usePhoto } from "./Apartment";
 import { WALL_H, floorById, blocked } from "./layout";
-import { runtime, now, getState, interact } from "./store";
+import { runtime, now, getState, setState, interact, toast, petDogLine, BACKDROPS } from "./store";
+import { best } from "./bests";
+import { photography } from "../../lib/content";
+import * as sfx from "./audio";
 import { useChess, boardFromFen } from "./chess";
 
 /* ── shared shell: slab, floor, walls with light caps ── */
@@ -215,63 +218,218 @@ function Rower({ x = -1.2, z = -6.6 }) {
   );
 }
 
-// Pixel the studio dog: wanders the east half, comes over to say hi, wags.
+// Pixel the studio dog: wanders the east half, comes over to say hi, and plays fetch.
 const DOG_AREA = [1.2, -2.8, 11.2, 6.2];
+const BALL_HOME = [7.4, 4.6];
+const BALL_Y = 0.07;
+const inStudio = (x, z) => x > 0.6 && x < 11.5 && z > -7.6 && z < 7.6;
+
+// a spot a few metres out, roughly where you're facing, that the ball can land on
+function throwTarget() {
+  for (let k = 0; k < 14; k++) {
+    const a = runtime.heading + (Math.random() - 0.5) * (k < 8 ? 1.2 : Math.PI * 2);
+    const d = 3.2 + Math.random() * 2;
+    const x = runtime.x + Math.sin(a) * d;
+    const z = runtime.z + Math.cos(a) * d;
+    if (inStudio(x, z) && !blocked(x, z, 0.35)) return [x, z];
+  }
+  for (let k = 0; k < 20; k++) {
+    const x = DOG_AREA[0] + Math.random() * (DOG_AREA[2] - DOG_AREA[0]);
+    const z = DOG_AREA[1] + Math.random() * (DOG_AREA[3] - DOG_AREA[1]);
+    if (!blocked(x, z, 0.35)) return [x, z];
+  }
+  return BALL_HOME;
+}
 
 export function Dog() {
   const root = useRef();
   const tail = useRef();
   const head = useRef();
   const legs = useRef([]);
-  const st = useRef({ tx: 7, tz: 3, wait: 1.5, heading: 0, walk: 0 });
+  const ballMesh = useRef();
+  const st = useRef({ mode: "wander", t: 0, tx: 7, tz: 3, wait: 1.5, heading: 0, walk: 0, stuck: 0, petSeen: runtime.dog.petAt ?? 0, bubble: null, bubbleUntil: 0, fetches: 0 });
+  if (!runtime.ball) runtime.ball = { x: BALL_HOME[0], y: BALL_Y, z: BALL_HOME[1], vx: 0, vy: 0, vz: 0, state: "rest" };
+  useEffect(() => () => setState({ dogBubble: null }), []);
 
   useFrame(({ clock }, rawDt) => {
     const dt = Math.min(rawDt, 0.05);
     const d = runtime.dog;
+    const b = runtime.ball;
     const m = st.current;
+    const t = now();
+    m.t += dt;
     const toPlayer = Math.hypot(runtime.x - d.x, runtime.z - d.z);
+    const atPlayer = Math.atan2(runtime.x - d.x, runtime.z - d.z);
+    const say = (txt, secs = 0) => {
+      m.bubbleUntil = secs ? t + secs : 0;
+      if (m.bubble !== txt) {
+        m.bubble = txt;
+        setState({ dogBubble: txt });
+      }
+    };
+    if (m.bubbleUntil && t > m.bubbleUntil) say(null);
+    const setMode = (mode) => {
+      m.mode = mode;
+      m.t = 0;
+      m.stuck = 0;
+    };
+    // run toward (x, z), sliding round furniture; returns the distance left
+    const runTo = (x, z, speed) => {
+      const dx = x - d.x;
+      const dz = z - d.z;
+      const dist = Math.hypot(dx, dz);
+      if (dist < 0.05) return dist;
+      const sp = Math.min(speed * dt, dist);
+      let ok = false;
+      if (!blocked(d.x + (dx / dist) * sp, d.z, 0.28)) { d.x += (dx / dist) * sp; ok = true; }
+      if (!blocked(d.x, d.z + (dz / dist) * sp, 0.28)) { d.z += (dz / dist) * sp; ok = true; }
+      m.stuck = ok ? 0 : m.stuck + dt;
+      m.heading = Math.atan2(dx, dz);
+      return dist;
+    };
+
+    /* ── petted: a pet, or a game of fetch ── */
+    if (d.petAt && d.petAt !== m.petSeen) {
+      m.petSeen = d.petAt;
+      if (m.mode === "chase" || m.mode === "return") {
+        toast("Pixel is busy. Very busy. Ball business.", "🎾");
+      } else if (Math.random() < (m.mode === "sit" ? 0.85 : 0.55)) {
+        // throw from your hand toward a landing spot, in ~0.9 s
+        const [tx, tz] = throwTarget();
+        const T = 0.9;
+        Object.assign(b, { x: runtime.x, y: 1.3, z: runtime.z, vx: (tx - runtime.x) / T, vz: (tz - runtime.z) / T, vy: (BALL_Y - 1.3 + 0.5 * 9.8 * T * T) / T, state: "air" });
+        sfx.bark?.();
+        toast(m.fetches ? "Again! Pixel was born for this." : "You throw the ball. Pixel is already gone.", "🎾", 3000);
+        say("❗", 1.2);
+        setMode("chase");
+      } else {
+        petDogLine();
+        say("❤️", 2.2);
+      }
+    }
+
+    /* ── the ball ── */
+    if (b.state === "air" || b.state === "roll") {
+      b.vy -= 9.8 * dt;
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      b.z += b.vz * dt;
+      if (b.x < 0.4 || b.x > 11.6) { b.vx *= -0.5; b.x = Math.min(11.6, Math.max(0.4, b.x)); }
+      if (b.z < -7.6 || b.z > 7.6) { b.vz *= -0.5; b.z = Math.min(7.6, Math.max(-7.6, b.z)); }
+      if (b.y <= BALL_Y) {
+        b.y = BALL_Y;
+        if (Math.abs(b.vy) > 1.2) {
+          b.vy = -b.vy * 0.45;
+          b.vx *= 0.7;
+          b.vz *= 0.7;
+        } else {
+          b.vy = 0;
+          b.state = "roll";
+          b.vx *= 1 - Math.min(1, dt * 2.5);
+          b.vz *= 1 - Math.min(1, dt * 2.5);
+          if (Math.hypot(b.vx, b.vz) < 0.05) {
+            b.state = "rest";
+            // rolled under the sofa or into a stand: nudge it somewhere Pixel can reach
+            if (blocked(b.x, b.z, 0.15)) {
+              for (let r = 0.3; r < 2; r += 0.3) {
+                const k = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => [b.x + Math.cos(i * 0.785) * r, b.z + Math.sin(i * 0.785) * r]).find(([x, z]) => inStudio(x, z) && !blocked(x, z, 0.3));
+                if (k) { [b.x, b.z] = k; break; }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    /* ── behaviour ── */
     let moving = false;
-    if (toPlayer < 1.5) {
-      m.heading = Math.atan2(runtime.x - d.x, runtime.z - d.z);
+    let speed = 2;
+    if (m.mode === "chase") {
+      speed = 4.4;
+      const left = m.t < 0.25 ? 1 : runTo(b.x, b.z, speed); // a beat to react
+      moving = m.t >= 0.25;
+      if (b.state === "rest" && left < 0.42) {
+        b.state = "mouth";
+        say("🎾");
+        setMode("return");
+      } else if (m.stuck > 2.5) {
+        toast("Pixel lost the ball behind the furniture and found a smell instead.", "🐕");
+        say(null);
+        setMode("wander");
+      }
+    } else if (m.mode === "return") {
+      speed = 3.2;
+      const back = 0.75 / Math.max(toPlayer, 0.01);
+      const left = runTo(runtime.x - (runtime.x - d.x) * back, runtime.z - (runtime.z - d.z) * back, speed);
+      moving = left > 0.06;
+      if (left < 0.2 || toPlayer < 0.9) {
+        // drop it at your feet and stare
+        b.state = "rest";
+        b.x = d.x + Math.sin(m.heading) * 0.45;
+        b.z = d.z + Math.cos(m.heading) * 0.45;
+        b.y = BALL_Y;
+        m.fetches++;
+        if (m.fetches === 1) toast("Pixel drops the ball at your feet and stares at you. Pet Pixel to throw again.", "🐕", 4200);
+        say("❤️", 3);
+        setMode("sit");
+      } else if (m.stuck > 2.5) {
+        b.state = "rest";
+        b.y = BALL_Y;
+        say(null);
+        setMode("wander");
+      }
+    } else if (m.mode === "sit") {
+      m.heading = atPlayer;
+      if (m.t > 6 || toPlayer > 4) setMode("wander");
+    } else if (toPlayer < 1.5) {
+      m.heading = atPlayer;
     } else if (m.wait > 0) {
       m.wait -= dt;
     } else {
-      const dx = m.tx - d.x;
-      const dz = m.tz - d.z;
-      const dist = Math.hypot(dx, dz);
-      if (dist < 0.12) {
+      const left = runTo(m.tx, m.tz, 2);
+      moving = left > 0.12;
+      if (!moving || m.stuck > 0.4) {
         m.wait = 1.5 + Math.random() * 3.5;
+        m.stuck = 0;
         // dogs like company: often trot over if you're on this side of the wall
         const toYou = runtime.x > 0.5 && Math.random() < 0.55;
         m.tx = toYou ? runtime.x - 0.9 : DOG_AREA[0] + Math.random() * (DOG_AREA[2] - DOG_AREA[0]);
         m.tz = toYou ? runtime.z + 0.7 : DOG_AREA[1] + Math.random() * (DOG_AREA[3] - DOG_AREA[1]);
-      } else {
-        const sp = 2.0 * dt;
-        let ok = false;
-        if (!blocked(d.x + (dx / dist) * sp, d.z, 0.28)) { d.x += (dx / dist) * sp; ok = true; }
-        if (!blocked(d.x, d.z + (dz / dist) * sp, 0.28)) { d.z += (dz / dist) * sp; ok = true; }
-        if (!ok) { m.wait = 0.4; m.tx = d.x; m.tz = d.z; }
-        m.heading = Math.atan2(dx, dz);
-        moving = true;
       }
     }
-    m.walk += moving ? dt * 14 : 0;
+
+    m.walk += moving ? dt * (speed > 3 ? 22 : 14) : 0;
     const g = root.current;
     if (!g) return;
-    g.position.set(d.x, moving ? Math.abs(Math.sin(m.walk)) * 0.03 : 0, d.z);
+    g.position.set(d.x, moving ? Math.abs(Math.sin(m.walk)) * (speed > 3 ? 0.06 : 0.03) : 0, d.z);
     const diff = Math.atan2(Math.sin(m.heading - g.rotation.y), Math.cos(m.heading - g.rotation.y));
-    g.rotation.y += diff * Math.min(1, dt * 8);
-    const t = clock.elapsedTime;
-    if (tail.current) tail.current.rotation.z = Math.sin(t * (toPlayer < 1.5 ? 18 : 6)) * 0.6;
-    if (head.current) head.current.rotation.x = toPlayer < 1.5 ? -0.3 : Math.sin(t * 0.8) * 0.08;
+    g.rotation.y += diff * Math.min(1, dt * (speed > 3 ? 12 : 8));
+    const time = clock.elapsedTime;
+    const happy = toPlayer < 1.5 || m.mode !== "wander";
+    if (tail.current) tail.current.rotation.z = Math.sin(time * (happy ? 18 : 6)) * 0.6;
+    if (head.current) head.current.rotation.x = m.mode === "sit" ? -0.35 : toPlayer < 1.5 ? -0.3 : Math.sin(time * 0.8) * 0.08;
     legs.current.forEach((l, i) => {
-      if (l) l.rotation.x = moving ? Math.sin(m.walk + (i % 2 ? Math.PI : 0) + (i > 1 ? Math.PI : 0)) * 0.5 : 0;
+      if (l) l.rotation.x = moving ? Math.sin(m.walk + (i % 2 ? Math.PI : 0) + (i > 1 ? Math.PI : 0)) * (speed > 3 ? 0.8 : 0.5) : 0;
     });
+
+    // the ball rides in Pixel's mouth on the way back
+    if (b.state === "mouth") {
+      const h = g.rotation.y;
+      b.x = d.x + Math.sin(h) * 0.6;
+      b.z = d.z + Math.cos(h) * 0.6;
+      b.y = 0.5 + g.position.y;
+    }
+    if (ballMesh.current) ballMesh.current.position.set(b.x, b.y, b.z);
   });
 
   const fur = "#c8935a";
   const part = (p, sz, c = fur, r = 0.05) => <P p={p} s={sz} c={c} r={r} />;
   return (
+    <>
+      <mesh ref={ballMesh} position={[runtime.ball?.x ?? BALL_HOME[0], BALL_Y, runtime.ball?.z ?? BALL_HOME[1]]} castShadow>
+        <sphereGeometry args={[0.07, 14, 10]} />
+        <meshStandardMaterial color="#d9f99d" emissive="#a3e635" emissiveIntensity={0.25} roughness={0.7} />
+      </mesh>
     <group
       ref={root}
       position={[runtime.dog.x, 0, runtime.dog.z]}
@@ -314,6 +472,7 @@ export function Dog() {
         {part([0, 0.1, -0.03], [0.06, 0.22, 0.06])}
       </group>
     </group>
+    </>
   );
 }
 
@@ -363,7 +522,7 @@ function PhotoBooth() {
   );
 }
 
-function Softbox({ x, z, rot }) {
+function Softbox({ x, z, rot, matRef }) {
   return (
     <group position={[x, 0, z]} rotation-y={rot}>
       {[0, 2.1, 4.2].map((a) => (
@@ -373,8 +532,301 @@ function Softbox({ x, z, rot }) {
       <B p={[0, 1.55, 0]} s={[0.7, 0.7, 0.35]} c="#111" r={0.03} />
       <mesh position={[0, 1.9, -0.18]}>
         <planeGeometry args={[0.62, 0.62]} />
-        <meshStandardMaterial color="#fff" emissive="#ffffff" emissiveIntensity={1.4} toneMapped={false} side={THREE.DoubleSide} />
+        <meshStandardMaterial ref={matRef} color="#fff" emissive="#ffffff" emissiveIntensity={1.4} toneMapped={false} side={THREE.DoubleSide} />
       </mesh>
+    </group>
+  );
+}
+
+// The squat rack; the bar lifts off the pins on every good rep in the squat game.
+function SquatRack() {
+  const bar = useRef();
+  useFrame(() => {
+    const a = now() - runtime.liftAt;
+    if (bar.current) bar.current.position.y = a < 1.1 ? Math.sin((a / 1.1) * Math.PI) * 0.45 : 0;
+  });
+  return (
+    <group position={[-8.6, 0, -2.6]}>
+      {[[-1, -0.6], [1, -0.6], [-1, 0.6], [1, 0.6]].map(([x, z], i) => (
+        <B key={i} p={[x, 0, z]} s={[0.09, 2.4, 0.09]} c="#1f2937" />
+      ))}
+      <B p={[0, 2.35, -0.6]} s={[2.1, 0.09, 0.09]} c="#1f2937" />
+      <B p={[0, 2.35, 0.6]} s={[2.1, 0.09, 0.09]} c="#1f2937" />
+      <B p={[0, 0, 0]} s={[2.3, 0.04, 1.4]} c="#3b2a1e" />
+      {/* safety pins */}
+      {[-1, 1].map((sd) => <B key={sd} p={[sd * 1.0, 1.36, 0.6]} s={[0.12, 0.05, 0.16]} c="#f97316" shadow={false} />)}
+      <group ref={bar}>
+        <mesh position={[0, 1.45, 0.6]} rotation-z={Math.PI / 2}>
+          <cylinderGeometry args={[0.025, 0.025, 2.5, 10]} />
+          <meshStandardMaterial color="#c0c4cc" metalness={0.85} roughness={0.25} />
+        </mesh>
+        {[-1, 1].map((sd) =>
+          [0, 1].map((k) => (
+            <mesh key={`${sd}${k}`} position={[sd * (1.08 + k * 0.07), 1.45, 0.6]} rotation-z={Math.PI / 2} castShadow>
+              <cylinderGeometry args={[0.3 - k * 0.07, 0.3 - k * 0.07, 0.06, 24]} />
+              <meshStandardMaterial color={k ? "#2563eb" : "#dc2626"} roughness={0.5} />
+            </mesh>
+          ))
+        )}
+      </group>
+      {/* spare plates stacked flat beside the rack */}
+      <group position={[1.75, 0, -0.2]}>
+        {[["#dc2626", 0.3], ["#dc2626", 0.3], ["#2563eb", 0.26], ["#eab308", 0.22], ["#16a34a", 0.18]].map(([col, r], i) => (
+          <mesh key={i} position={[0, 0.03 + i * 0.055, 0]} castShadow>
+            <cylinderGeometry args={[r, r, 0.05, 24]} />
+            <meshStandardMaterial color={col} roughness={0.55} />
+          </mesh>
+        ))}
+      </group>
+    </group>
+  );
+}
+
+// LED scoreboard of your own bests from the gym games; redraws when you set a new one.
+function PRBoard() {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    const on = () => setV((n) => n + 1);
+    window.addEventListener("studio:pr", on);
+    return () => window.removeEventListener("studio:pr", on);
+  }, []);
+  const tex = useTex(512, 320, (g, w, h) => {
+    g.fillStyle = "#07080c";
+    g.fillRect(0, 0, w, h);
+    g.fillStyle = "rgba(255,157,60,0.07)";
+    for (let y = 4; y < h; y += 8) for (let x = 4; x < w; x += 8) g.fillRect(x, y, 3, 3);
+    g.shadowColor = "#ff9d3c";
+    g.shadowBlur = 14;
+    g.fillStyle = "#ff9d3c";
+    g.font = `bold 36px ${MONO}`;
+    g.fillText("YOUR PRs", 28, 60);
+    const rows = [
+      ["SPRINT 100M", best.get("sprint"), (x) => `${x.toFixed(2)}s`],
+      ["BAG COMBO", best.get("combo"), (x) => `x${x}`],
+      ["SQUAT", best.get("lift"), (x) => `${x} KG`],
+    ];
+    rows.forEach(([label, val, fmt], i) => {
+      const y = 130 + i * 68;
+      g.shadowBlur = 0;
+      g.textAlign = "left";
+      g.font = `24px ${MONO}`;
+      g.fillStyle = "rgba(255,255,255,0.6)";
+      g.fillText(label, 28, y);
+      g.textAlign = "right";
+      g.shadowBlur = val ? 12 : 0;
+      g.font = `bold 40px ${MONO}`;
+      g.fillStyle = val ? "#fbbf24" : "rgba(255,157,60,0.3)";
+      g.fillText(val ? fmt(val) : "--", w - 28, y + 4);
+    });
+    g.textAlign = "left";
+    g.shadowBlur = 0;
+    g.font = `18px ${MONO}`;
+    g.fillStyle = "rgba(255,255,255,0.35)";
+    g.fillText("set them: treadmill · bag · squat rack", 28, h - 18);
+  }, [v]);
+  useEffect(() => () => tex?.dispose(), [tex]);
+  return (
+    <group position={[-9.0, 0, 0.7]}>
+      {[-0.6, 0.6].map((x) => (
+        <group key={x}>
+          <B p={[x, 0, 0]} s={[0.07, 1.2, 0.07]} c="#1f2937" />
+          <B p={[x, 0, 0]} s={[0.12, 0.04, 0.4]} c="#111" />
+        </group>
+      ))}
+      <group position={[0, 1.68, 0]} rotation-x={-0.12}>
+        <B p={[0, -0.54, -0.04]} s={[1.5, 1.04, 0.08]} c="#111" r={0.02} />
+        <mesh position={[0, 0, 0.005]}>
+          <planeGeometry args={[1.4, 0.9]} />
+          <meshBasicMaterial map={tex} toneMapped={false} />
+        </mesh>
+      </group>
+      <pointLight position={[0, 1.6, 0.9]} color="#ff9d3c" intensity={2} distance={3} decay={2} />
+    </group>
+  );
+}
+
+// The photo studio's set: a seamless paper backdrop on the east wall that sweeps onto the
+// floor, two softboxes aimed at it, and a stool. Clicking it pulls down the next colour.
+function StudioSet() {
+  const mats = useRef([]);
+  const rim = useRef();
+  const flash = useRef();
+  const boxes = useRef([]);
+  const col = useMemo(() => new THREE.Color(BACKDROPS[0][1]), []);
+  const target = useMemo(() => new THREE.Color(), []);
+  useFrame((_, dt) => {
+    target.set(BACKDROPS[runtime.backdrop][1]);
+    col.lerp(target, Math.min(1, dt * 6));
+    mats.current.forEach((m) => m && m.color.copy(col));
+    if (rim.current) rim.current.color.copy(col);
+    const f = Math.max(0, 1 - (now() - runtime.flashAt) / 0.35);
+    boxes.current.forEach((m) => m && (m.emissiveIntensity = 1.4 + f * 6));
+    if (flash.current) flash.current.intensity = f * 40;
+  });
+  const paper = (i) => <meshStandardMaterial ref={(m) => (mats.current[i] = m)} color={BACKDROPS[0][1]} roughness={1} side={THREE.DoubleSide} />;
+  const Z = -2.0;
+  const W = 3.6;
+  return (
+    <group>
+      {/* wall, curved sweep, floor */}
+      <mesh position={[11.88, 1.7, Z]} rotation-y={-Math.PI / 2}>
+        <planeGeometry args={[W, 2.6]} />
+        {paper(0)}
+      </mesh>
+      <mesh position={[11.48, 0.4, Z]} rotation-x={Math.PI / 2}>
+        <cylinderGeometry args={[0.4, 0.4, W, 16, 1, true, 0, Math.PI / 2]} />
+        {paper(1)}
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[10.54, 0.012, Z]} receiveShadow>
+        <planeGeometry args={[1.88, W]} />
+        {paper(2)}
+      </mesh>
+      {/* the roll it hangs from */}
+      <mesh position={[11.8, 3.02, Z]} rotation-x={Math.PI / 2}>
+        <cylinderGeometry args={[0.1, 0.1, W + 0.3, 16]} />
+        {paper(3)}
+      </mesh>
+      {[-1, 1].map((sd) => <B key={sd} p={[11.86, 2.9, Z + sd * (W / 2 + 0.2)]} s={[0.12, 0.25, 0.08]} c="#111" shadow={false} />)}
+      {/* subject mark and stool */}
+      <B p={[10.8, 0.014, Z]} s={[0.36, 0.004, 0.05]} c="#111" shadow={false} rot={[0, 0.785, 0]} />
+      <B p={[10.8, 0.014, Z]} s={[0.36, 0.004, 0.05]} c="#111" shadow={false} rot={[0, -0.785, 0]} />
+      <group position={[10.8, 0, Z]}>
+        <mesh position={[0, 0.32, 0]}>
+          <cylinderGeometry args={[0.03, 0.03, 0.64, 6]} />
+          <meshStandardMaterial color="#9ca3af" />
+        </mesh>
+        <mesh position={[0, 0.66, 0]}>
+          <cylinderGeometry args={[0.2, 0.2, 0.05, 16]} />
+          <meshStandardMaterial color="#111" />
+        </mesh>
+      </group>
+      <Softbox x={9.2} z={-4.2} rot={-2.455} matRef={(m) => (boxes.current[0] = m)} />
+      <Softbox x={9.2} z={0.2} rot={-0.686} matRef={(m) => (boxes.current[1] = m)} />
+      {/* sandbag on a softbox foot */}
+      <B p={[9.45, 0, -4.45]} s={[0.3, 0.1, 0.16]} c="#3f3f46" r={0.04} />
+      <pointLight ref={rim} position={[10.6, 2.3, Z]} intensity={5} distance={5} decay={2} />
+      <pointLight ref={flash} position={[9.5, 2.0, Z]} color="#ffffff" intensity={0} distance={7} decay={2} />
+    </group>
+  );
+}
+
+// A polaroid pegged to the darkroom line, swaying a little.
+function Polaroid({ src, x, tilt, phase }) {
+  const g = useRef();
+  const photo = usePhoto(src);
+  useFrame(({ clock }) => {
+    if (g.current) g.current.rotation.z = tilt + Math.sin(clock.elapsedTime * 1.3 + phase) * 0.05;
+  });
+  return (
+    <group ref={g} position={[x, 2.0, 0]}>
+      <mesh position={[0, -0.2, 0]}>
+        <planeGeometry args={[0.3, 0.36]} />
+        <meshStandardMaterial color="#f8f7f2" roughness={0.9} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh position={[0, -0.17, 0.002]}>
+        <planeGeometry args={[0.26, 0.26]} />
+        <meshStandardMaterial map={photo} color={photo ? "#fff" : "#444"} roughness={0.6} />
+      </mesh>
+      <B p={[0, -0.04, 0.006]} s={[0.035, 0.08, 0.02]} c="#a16207" shadow={false} />
+    </group>
+  );
+}
+
+// Darkroom corner by the partition: a red safelight, developing trays, and prints drying on a line.
+function Darkroom() {
+  const prints = photography.photos.slice(0, 8).map((p) => p.src);
+  return (
+    <group>
+      {/* bench with dev / stop / fix trays */}
+      <B p={[0.5, 0, -4.6]} s={[0.7, 0.85, 1.9]} c="#27272a" r={0.02} />
+      {[["DEV", -5.2, "#7f1d1d"], ["STOP", -4.6, "#78350f"], ["FIX", -4.0, "#1e3a8a"]].map(([, z, liquid]) => (
+        <group key={z} position={[0.5, 0.86, z]}>
+          <B p={[0, 0, 0]} s={[0.5, 0.06, 0.45]} c="#e7e5e4" />
+          <B p={[0, 0.02, 0]} s={[0.44, 0.03, 0.39]} c={liquid} shadow={false} rough={0.2} />
+        </group>
+      ))}
+      {/* safelight hanging over the bench */}
+      <mesh position={[0.6, 2.45, -4.6]}>
+        <cylinderGeometry args={[0.005, 0.005, 1.1, 4]} />
+        <meshStandardMaterial color="#111" />
+      </mesh>
+      <mesh position={[0.6, 1.85, -4.6]}>
+        <sphereGeometry args={[0.09, 14, 12]} />
+        <meshStandardMaterial color="#450a0a" emissive="#ef4444" emissiveIntensity={3} toneMapped={false} />
+      </mesh>
+      <pointLight position={[0.8, 1.7, -4.6]} color="#ef4444" intensity={4} distance={3.6} decay={2} />
+      {/* drying line, east–west so the prints face the room */}
+      <group position={[0, 0, -2.9]}>
+        {[0.35, 4.45].map((x) => (
+          <group key={x}>
+            <B p={[x, 0, 0]} s={[0.05, 2.1, 0.05]} c="#1f2937" />
+            <B p={[x, 0, 0]} s={[0.3, 0.04, 0.3]} c="#111" />
+          </group>
+        ))}
+        <mesh position={[2.4, 2.02, 0]} rotation-z={Math.PI / 2}>
+          <cylinderGeometry args={[0.005, 0.005, 4.1, 4]} />
+          <meshStandardMaterial color="#d6d3d1" />
+        </mesh>
+        {prints.map((src, i) => (
+          <Polaroid key={src} src={src} x={0.75 + i * 0.47} tilt={((i * 37) % 7 - 3) * 0.03} phase={i * 1.7} />
+        ))}
+      </group>
+    </group>
+  );
+}
+
+// A director's chair facing the set, with his name on the back.
+function DirectorChair() {
+  const back = useTex(256, 80, (g, w, h) => {
+    g.fillStyle = "#18181b";
+    g.fillRect(0, 0, w, h);
+    g.fillStyle = "#fafaf9";
+    g.font = `bold 34px ${MONO}`;
+    g.textAlign = "center";
+    g.fillText("NIKSHITH", w / 2, 52);
+  });
+  return (
+    <group position={[8.0, 0, -1.2]} rotation-y={Math.PI / 2}>
+      {[-1, 1].map((sd) => (
+        <group key={sd}>
+          <B p={[sd * 0.24, 0, 0.12]} s={[0.04, 0.62, 0.04]} c={C.wood} rot={[0.45, 0, 0]} />
+          <B p={[sd * 0.24, 0, -0.12]} s={[0.04, 0.62, 0.04]} c={C.wood} rot={[-0.45, 0, 0]} />
+          <B p={[sd * 0.24, 0.55, -0.2]} s={[0.04, 0.55, 0.04]} c={C.wood} />
+          <B p={[sd * 0.24, 0.72, 0]} s={[0.05, 0.03, 0.42]} c={C.wood} />
+        </group>
+      ))}
+      <B p={[0, 0.55, 0]} s={[0.46, 0.03, 0.38]} c="#18181b" />
+      <mesh position={[0, 0.92, -0.215]} rotation-y={Math.PI}>
+        <planeGeometry args={[0.5, 0.16]} />
+        <meshStandardMaterial map={back} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
+}
+
+// A rolling cart of camera bodies and lenses.
+function LensCart() {
+  return (
+    <group position={[5.0, 0, -0.9]}>
+      {[0.08, 0.5, 0.86].map((y) => <B key={y} p={[0, y, 0]} s={[0.8, 0.04, 0.5]} c="#3f3f46" metal={0.4} rough={0.5} />)}
+      {[[-0.37, -0.22], [0.37, -0.22], [-0.37, 0.22], [0.37, 0.22]].map(([x, z], i) => (
+        <group key={i}>
+          <B p={[x, 0.06, z]} s={[0.03, 0.82, 0.03]} c="#18181b" />
+          <mesh position={[x, 0.04, z]}>
+            <sphereGeometry args={[0.04, 8, 6]} />
+            <meshStandardMaterial color="#111" />
+          </mesh>
+        </group>
+      ))}
+      {/* camera body + three lenses up top, a bag of cables below */}
+      <B p={[-0.2, 0.9, 0]} s={[0.24, 0.16, 0.12]} c="#1d1d22" r={0.02} />
+      {[[0.05, 0.12, 0.05], [0.2, 0.18, 0.045], [0.32, 0.09, 0.05]].map(([x, len, r]) => (
+        <mesh key={x} position={[x, 0.9 + len / 2, 0.08]}>
+          <cylinderGeometry args={[r, r, len, 16]} />
+          <meshStandardMaterial color="#111" metalness={0.4} roughness={0.4} />
+        </mesh>
+      ))}
+      <B p={[0.1, 0.54, 0]} s={[0.45, 0.2, 0.3]} c="#334155" r={0.05} />
     </group>
   );
 }
@@ -393,10 +845,10 @@ export function GymFloor() {
   });
   repeatTex(rubber, 12, 8);
   const concrete = useTex(256, 256, (g, w, h) => {
-    g.fillStyle = "#cfc9be";
+    g.fillStyle = "#4a4a52";
     g.fillRect(0, 0, w, h);
     for (let i = 0; i < 1500; i++) {
-      g.fillStyle = i % 2 ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.08)";
+      g.fillStyle = i % 2 ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.05)";
       g.fillRect((i * 97) % w, (i * 53 + (i >> 3)) % h, 3, 3);
     }
   });
@@ -428,21 +880,15 @@ export function GymFloor() {
       g.strokeRect(220, 44 + i * 20, 12, 12);
     }
   });
-  const backdrop = useTex(64, 256, (g, w, h) => {
-    const grd = g.createLinearGradient(0, 0, 0, h);
-    grd.addColorStop(0, "#fda4af");
-    grd.addColorStop(1, "#c084fc");
-    g.fillStyle = grd;
-    g.fillRect(0, 0, w, h);
-  });
+
 
   return (
     <group>
       <Room id="gym" floorTex={rubber} cap="#f97316" wall="#2a2c36" />
-      {/* the east half is a bright concrete photo studio */}
+      {/* the east half is a polished concrete photo studio */}
       <mesh rotation-x={-Math.PI / 2} position={[6, 0.004, 0]} receiveShadow>
         <planeGeometry args={[12, 16]} />
-        <meshStandardMaterial map={concrete} roughness={0.9} />
+        <meshStandardMaterial map={concrete} roughness={0.55} metalness={0.1} />
       </mesh>
 
       {/* ───── gym (west) ───── */}
@@ -467,27 +913,8 @@ export function GymFloor() {
         <B p={[0, 0.06, -0.45]} s={[0.07, 1.0, 0.07]} c="#dc2626" rot={[0.2, 0, 0]} />
         <B p={[0, 1.06, -0.62]} s={[0.5, 0.05, 0.08]} c="#111" />
       </group>
-      {/* squat rack */}
-      <group position={[-8.6, 0, -2.6]}>
-        {[[-1, -0.6], [1, -0.6], [-1, 0.6], [1, 0.6]].map(([x, z], i) => (
-          <B key={i} p={[x, 0, z]} s={[0.09, 2.4, 0.09]} c="#1f2937" />
-        ))}
-        <B p={[0, 2.35, -0.6]} s={[2.1, 0.09, 0.09]} c="#1f2937" />
-        <B p={[0, 2.35, 0.6]} s={[2.1, 0.09, 0.09]} c="#1f2937" />
-        <B p={[0, 0, 0]} s={[2.3, 0.04, 1.4]} c="#3b2a1e" />
-        <mesh position={[0, 1.45, 0.6]} rotation-z={Math.PI / 2}>
-          <cylinderGeometry args={[0.025, 0.025, 2.5, 10]} />
-          <meshStandardMaterial color="#c0c4cc" metalness={0.85} roughness={0.25} />
-        </mesh>
-        {[-1, 1].map((sd) =>
-          [0, 1].map((k) => (
-            <mesh key={`${sd}${k}`} position={[sd * (1.08 + k * 0.07), 1.45, 0.6]} rotation-z={Math.PI / 2} castShadow>
-              <cylinderGeometry args={[0.3 - k * 0.07, 0.3 - k * 0.07, 0.06, 24]} />
-              <meshStandardMaterial color={k ? "#2563eb" : "#dc2626"} roughness={0.5} />
-            </mesh>
-          ))
-        )}
-      </group>
+      <SquatRack />
+      <PRBoard />
       <PunchingBag x={-1.4} z={-2.8} />
       {/* training-plan whiteboard on the west wall (its content opens on it) */}
       <group position={[-11.86, 1.6, -4.4]} rotation-y={Math.PI / 2}>
@@ -573,37 +1000,15 @@ export function GymFloor() {
         </mesh>
       </group>
       <PhotoBooth />
-      {/* portrait corner: paper backdrop on the east wall between two softboxes */}
-      <mesh position={[11.86, 1.45, 1.5]} rotation-y={-Math.PI / 2}>
-        <planeGeometry args={[2.6, 2.9]} />
-        <meshStandardMaterial map={backdrop} roughness={1} />
-      </mesh>
-      <mesh rotation-x={-Math.PI / 2} position={[11.2, 0.01, 1.5]}>
-        <planeGeometry args={[1.3, 2.6]} />
-        <meshStandardMaterial map={backdrop} roughness={1} />
-      </mesh>
-      <mesh position={[11.86, 2.95, 1.5]} rotation-x={Math.PI / 2}>
-        <cylinderGeometry args={[0.08, 0.08, 2.8, 12]} />
-        <meshStandardMaterial color="#111" />
-      </mesh>
-      <Softbox x={10.6} z={-0.6} rot={-2.4} />
-      <Softbox x={10.6} z={3.6} rot={-0.7} />
-      <group position={[11.0, 0, 1.5]}>
-        <mesh position={[0, 0.32, 0]}>
-          <cylinderGeometry args={[0.03, 0.03, 0.64, 6]} />
-          <meshStandardMaterial color="#9ca3af" />
-        </mesh>
-        <mesh position={[0, 0.66, 0]}>
-          <cylinderGeometry args={[0.2, 0.2, 0.05, 16]} />
-          <meshStandardMaterial color="#111" />
-        </mesh>
-      </group>
-      <pointLight position={[10.3, 2.2, 1.5]} color="#ffe4e6" intensity={5} distance={5} decay={2} />
+      <StudioSet />
+      <Darkroom />
+      <DirectorChair />
+      <LensCart />
 
       {/* ───── dog lounge (south-east) ───── */}
       <mesh rotation-x={-Math.PI / 2} position={[6.4, 0.008, 5.2]} receiveShadow>
         <planeGeometry args={[6.4, 3.6]} />
-        <meshStandardMaterial color="#e2c9a6" roughness={1} />
+        <meshStandardMaterial color="#8a5a3f" roughness={1} />
       </mesh>
       <group position={[5.6, 0, 6.9]}>
         <B p={[0, 0.05, 0]} s={[2.8, 0.42, 0.9]} c="#475569" r={0.08} />
@@ -634,10 +1039,6 @@ export function GymFloor() {
           <meshStandardMaterial color={i ? "#38bdf8" : "#f43f5e"} />
         </mesh>
       ))}
-      <mesh position={[7.4, 0.07, 4.6]}>
-        <sphereGeometry args={[0.07, 12, 10]} />
-        <meshStandardMaterial color="#facc15" roughness={0.6} />
-      </mesh>
       <B p={[6.6, 0.03, 4.9]} s={[0.25, 0.05, 0.06]} c="#f5f5f4" rot={[0, 0.6, 0]} shadow={false} />
       <Dog />
       <Plant x={11.3} z={7.3} s={1.1} />

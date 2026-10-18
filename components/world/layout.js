@@ -194,9 +194,13 @@ export const GYM_FURNITURE = {
   // photo studio
   tripod: [6.0, -5.2, 0.7, 0.7],
   booth: [10.4, -6.2, 2.0, 1.9],
-  softboxA: [10.6, -0.6, 0.5, 0.5],
-  softboxB: [10.6, 3.6, 0.5, 0.5],
-  stool: [11.0, 1.5, 0.45, 0.45],
+  softboxA: [9.2, -4.2, 0.5, 0.5],
+  softboxB: [9.2, 0.2, 0.5, 0.5],
+  stool: [10.8, -2.0, 0.45, 0.45],
+  darkroom: [0.5, -4.6, 0.7, 1.9],
+  directorChair: [8.0, -1.2, 0.6, 0.6],
+  lensCart: [5.0, -0.9, 0.8, 0.5],
+  prBoard: [-9.0, 0.7, 1.5, 0.35],
   plantE: [1.0, -7.3, 0.6, 0.6],
   // dog lounge
   sofa: [5.6, 6.9, 2.8, 0.9],
@@ -213,6 +217,9 @@ const GYM_ITEMS = [
   { id: "learning", name: "Training plan", label: "Read my training plan", panel: "learning", pos: [-11.85, -4.4], stand: [-10.4, -4.4], h: 2.5,
     shot: [[-8.6, 2.0, -3.4], [-11.8, 1.6, -4.4]],
     surface: { c: [-11.76, 1.6, -4.4], n: [1, 0, 0], w: 1.8, h: 1.15 } },
+  { id: "lift", name: "Squat rack", label: "Squat day", panel: "lift", pos: [-8.6, -2.6], stand: [-8.6, -1.0], h: 2.5,
+    shot: [[-6.9, 2.0, 0.6], [-8.6, 1.2, -2.6]] },
+  { id: "backdrop", name: "Backdrop", label: "Change the backdrop", action: "backdrop", pos: [11.5, -2.0], stand: [9.9, -2.0], h: 2.4 },
   { id: "photos", name: "Camera", label: "Look through the camera", panel: "photos", pos: [6.0, -5.2], stand: [6.0, -3.8], h: 1.6,
     shot: [[6.6, 2.0, -2.6], [6.0, 1.5, -7.8]] },
   { id: "photobooth", name: "Photo booth", label: "Take a selfie strip", panel: "photobooth", pos: [10.4, -6.2], stand: [10.4, -4.5], h: 2.6,
@@ -455,7 +462,7 @@ export const ALL_ITEMS = FLOORS.flatMap((f) => f.items.map((it) => ({ ...it, flo
 // The "explore" checklist — every section worth visiting, in tour order.
 export const SECTIONS = [
   "about", "ask", "experience", "github", "education", "projects", "skills", "certs", "now", "library", "music", "contact",
-  "treadmill", "bag", "learning", "photos", "photobooth",
+  "treadmill", "bag", "lift", "learning", "photos", "photobooth",
   "snooker", "chess", "arcade", "kanban",
   "telescope", "guestbook",
 ];
