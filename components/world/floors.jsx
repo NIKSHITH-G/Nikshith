@@ -164,23 +164,9 @@ function PunchingBag({ x = -1.4, z = -2.8 }) {
   );
 }
 
-// Hanging LED batten: a glowing bar on two wires, with its light.
-function Batten({ x, z, len = 3, color = "#f1f5ff", intensity = 10, rot = 0 }) {
-  return (
-    <group position={[x, 2.95, z]} rotation-y={rot}>
-      {[-len / 2 + 0.2, len / 2 - 0.2].map((dx) => (
-        <mesh key={dx} position={[dx, 0.4, 0]}>
-          <cylinderGeometry args={[0.006, 0.006, 0.8, 4]} />
-          <meshStandardMaterial color="#111" />
-        </mesh>
-      ))}
-      <mesh>
-        <boxGeometry args={[len, 0.06, 0.12]} />
-        <meshStandardMaterial color="#1a1a1a" emissive={color} emissiveIntensity={2.4} toneMapped={false} />
-      </mesh>
-      <pointLight position={[0, -0.3, 0]} color={color} intensity={intensity} distance={9} decay={2} />
-    </group>
-  );
+// Overhead light for a zone (the fixture itself stays out of shot to keep the view clean).
+function Batten({ x, z, color = "#f1f5ff", intensity = 10 }) {
+  return <pointLight position={[x, 2.65, z]} color={color} intensity={intensity} distance={9} decay={2} />;
 }
 
 // Floor tape marking out a zone.
@@ -529,7 +515,7 @@ function Softbox({ x, z, rot, matRef }) {
         <B key={a} p={[Math.sin(a) * 0.2, 0, Math.cos(a) * 0.2]} s={[0.03, 1.1, 0.03]} c="#111" rot={[Math.cos(a) * 0.3, 0, -Math.sin(a) * 0.3]} shadow={false} />
       ))}
       <B p={[0, 0.9, 0]} s={[0.04, 0.9, 0.04]} c="#111" shadow={false} />
-      <B p={[0, 1.55, 0]} s={[0.7, 0.7, 0.35]} c="#111" r={0.03} />
+      <B p={[0, 1.55, 0]} s={[0.7, 0.7, 0.35]} c="#111" r={0.03} shadow={false} />
       <mesh position={[0, 1.9, -0.18]}>
         <planeGeometry args={[0.62, 0.62]} />
         <meshStandardMaterial ref={matRef} color="#fff" emissive="#ffffff" emissiveIntensity={1.4} toneMapped={false} side={THREE.DoubleSide} />
@@ -568,15 +554,6 @@ function SquatRack() {
             </mesh>
           ))
         )}
-      </group>
-      {/* spare plates stacked flat beside the rack */}
-      <group position={[1.75, 0, -0.2]}>
-        {[["#dc2626", 0.3], ["#dc2626", 0.3], ["#2563eb", 0.26], ["#eab308", 0.22], ["#16a34a", 0.18]].map(([col, r], i) => (
-          <mesh key={i} position={[0, 0.03 + i * 0.055, 0]} castShadow>
-            <cylinderGeometry args={[r, r, 0.05, 24]} />
-            <meshStandardMaterial color={col} roughness={0.55} />
-          </mesh>
-        ))}
       </group>
     </group>
   );
@@ -702,8 +679,6 @@ function StudioSet() {
       </group>
       <Softbox x={9.2} z={-4.2} rot={-2.455} matRef={(m) => (boxes.current[0] = m)} />
       <Softbox x={9.2} z={0.2} rot={-0.686} matRef={(m) => (boxes.current[1] = m)} />
-      {/* sandbag on a softbox foot */}
-      <B p={[9.45, 0, -4.45]} s={[0.3, 0.1, 0.16]} c="#3f3f46" r={0.04} />
       <pointLight ref={rim} position={[10.6, 2.3, Z]} intensity={5} distance={5} decay={2} />
       <pointLight ref={flash} position={[9.5, 2.0, Z]} color="#ffffff" intensity={0} distance={7} decay={2} />
     </group>
@@ -734,7 +709,7 @@ function Polaroid({ src, x, tilt, phase }) {
 
 // Darkroom corner by the partition: a red safelight, developing trays, and prints drying on a line.
 function Darkroom() {
-  const prints = photography.photos.slice(0, 8).map((p) => p.src);
+  const prints = photography.photos.slice(0, 5).map((p) => p.src);
   return (
     <group>
       {/* bench with dev / stop / fix trays */}
@@ -756,15 +731,15 @@ function Darkroom() {
       </mesh>
       <pointLight position={[0.8, 1.7, -4.6]} color="#ef4444" intensity={4} distance={3.6} decay={2} />
       {/* drying line, east–west so the prints face the room */}
-      <group position={[0, 0, -2.9]}>
-        {[0.35, 4.45].map((x) => (
+      <group position={[0, 0, -3.3]}>
+        {[0.35, 2.85].map((x) => (
           <group key={x}>
             <B p={[x, 0, 0]} s={[0.05, 2.1, 0.05]} c="#1f2937" />
             <B p={[x, 0, 0]} s={[0.3, 0.04, 0.3]} c="#111" />
           </group>
         ))}
-        <mesh position={[2.4, 2.02, 0]} rotation-z={Math.PI / 2}>
-          <cylinderGeometry args={[0.005, 0.005, 4.1, 4]} />
+        <mesh position={[1.6, 2.02, 0]} rotation-z={Math.PI / 2}>
+          <cylinderGeometry args={[0.005, 0.005, 2.5, 4]} />
           <meshStandardMaterial color="#d6d3d1" />
         </mesh>
         {prints.map((src, i) => (
@@ -800,33 +775,6 @@ function DirectorChair() {
         <planeGeometry args={[0.5, 0.16]} />
         <meshStandardMaterial map={back} side={THREE.DoubleSide} />
       </mesh>
-    </group>
-  );
-}
-
-// A rolling cart of camera bodies and lenses.
-function LensCart() {
-  return (
-    <group position={[5.0, 0, -0.9]}>
-      {[0.08, 0.5, 0.86].map((y) => <B key={y} p={[0, y, 0]} s={[0.8, 0.04, 0.5]} c="#3f3f46" metal={0.4} rough={0.5} />)}
-      {[[-0.37, -0.22], [0.37, -0.22], [-0.37, 0.22], [0.37, 0.22]].map(([x, z], i) => (
-        <group key={i}>
-          <B p={[x, 0.06, z]} s={[0.03, 0.82, 0.03]} c="#18181b" />
-          <mesh position={[x, 0.04, z]}>
-            <sphereGeometry args={[0.04, 8, 6]} />
-            <meshStandardMaterial color="#111" />
-          </mesh>
-        </group>
-      ))}
-      {/* camera body + three lenses up top, a bag of cables below */}
-      <B p={[-0.2, 0.9, 0]} s={[0.24, 0.16, 0.12]} c="#1d1d22" r={0.02} />
-      {[[0.05, 0.12, 0.05], [0.2, 0.18, 0.045], [0.32, 0.09, 0.05]].map(([x, len, r]) => (
-        <mesh key={x} position={[x, 0.9 + len / 2, 0.08]}>
-          <cylinderGeometry args={[r, r, len, 16]} />
-          <meshStandardMaterial color="#111" metalness={0.4} roughness={0.4} />
-        </mesh>
-      ))}
-      <B p={[0.1, 0.54, 0]} s={[0.45, 0.2, 0.3]} c="#334155" r={0.05} />
     </group>
   );
 }
@@ -924,7 +872,7 @@ export function GymFloor() {
           <meshStandardMaterial map={board} roughness={0.4} />
         </mesh>
       </group>
-      {/* lockers, mats, balls, plyo, kettlebells, dumbbells */}
+      {/* lockers, mats, balls, kettlebells, dumbbells */}
       {Array.from({ length: 5 }, (_, i) => (
         <group key={i}>
           <B p={[-11.7, 0, 3.4 + i * 0.55]} s={[0.5, 2.1, 0.52]} c={i % 2 ? "#334155" : "#3f4f66"} r={0.015} />
@@ -961,8 +909,6 @@ export function GymFloor() {
           <meshStandardMaterial color={col} roughness={0.35} />
         </mesh>
       ))}
-      <B p={[-1.0, 0, 4.4]} s={[0.75, 0.6, 0.75]} c="#a16207" r={0.03} />
-      <B p={[-1.0, 0.6, 4.4]} s={[0.55, 0.42, 0.55]} c="#ca8a04" r={0.03} />
       {Array.from({ length: 6 }, (_, i) => (
         <group key={i} position={[-5.8 + i * 0.32, 0, 7.3]}>
           <mesh position={[0, 0.12 + i * 0.01, 0]} castShadow>
@@ -1003,7 +949,6 @@ export function GymFloor() {
       <StudioSet />
       <Darkroom />
       <DirectorChair />
-      <LensCart />
 
       {/* ───── dog lounge (south-east) ───── */}
       <mesh rotation-x={-Math.PI / 2} position={[6.4, 0.008, 5.2]} receiveShadow>
@@ -1045,9 +990,9 @@ export function GymFloor() {
       <Plant x={1.0} z={-7.3} s={0.9} kind={1} />
 
       <Elevator position={[-11.9, 0]} label="2" />
-      <Batten x={-6} z={-5.6} len={6} />
-      <Batten x={-4.6} z={1.3} len={4} color="#bae6fd" intensity={9} />
-      <Batten x={-5} z={6.0} len={5} color="#d9f99d" intensity={7} />
+      <Batten x={-6} z={-5.6} />
+      <Batten x={-4.6} z={1.3} color="#bae6fd" intensity={9} />
+      <Batten x={-5} z={6.0} color="#d9f99d" intensity={7} />
       <Lamp position={[6, 3.0, -4]} intensity={12} distance={12} color="#fff7ed" />
       <Lamp position={[6, 3.0, 4.5]} intensity={10} distance={11} color="#ffedd5" />
     </group>

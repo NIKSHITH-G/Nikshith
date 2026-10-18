@@ -188,7 +188,6 @@ export const GYM_FURNITURE = {
   lockerBench: [-10.9, 4.6, 0.4, 2.4],
   cooler: [-11.6, 7.2, 0.5, 0.5],
   balls: [-2.6, 1.6, 0.9, 1.0],
-  plyo: [-1.0, 4.4, 0.8, 0.8],
   kettlebells: [-5.0, 7.3, 1.9, 0.45],
   dumbbells: [-2.2, 7.35, 2.0, 0.5],
   // photo studio
@@ -199,7 +198,6 @@ export const GYM_FURNITURE = {
   stool: [10.8, -2.0, 0.45, 0.45],
   darkroom: [0.5, -4.6, 0.7, 1.9],
   directorChair: [8.0, -1.2, 0.6, 0.6],
-  lensCart: [5.0, -0.9, 0.8, 0.5],
   prBoard: [-9.0, 0.7, 1.5, 0.35],
   plantE: [1.0, -7.3, 0.6, 0.6],
   // dog lounge
