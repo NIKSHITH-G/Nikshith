@@ -235,7 +235,15 @@ export function Dog() {
   const ballMesh = useRef();
   const st = useRef({ mode: "wander", t: 0, tx: 7, tz: 3, wait: 1.5, heading: 0, walk: 0, stuck: 0, petSeen: runtime.dog.petAt ?? 0, bubble: null, bubbleUntil: 0, fetches: 0 });
   if (!runtime.ball) runtime.ball = { x: BALL_HOME[0], y: BALL_Y, z: BALL_HOME[1], vx: 0, vy: 0, vz: 0, state: "rest" };
-  useEffect(() => () => setState({ dogBubble: null }), []);
+  useEffect(() => {
+    // back on this floor mid-game (you took the lift): the ball's wherever it was, on the floor
+    const b = runtime.ball;
+    if (b.state !== "rest") Object.assign(b, { state: "rest", y: BALL_Y, vx: 0, vy: 0, vz: 0, x: Math.max(0.6, b.x) });
+    return () => {
+      setState({ dogBubble: null });
+      if (runtime.ball.state === "mouth") Object.assign(runtime.ball, { state: "rest", y: BALL_Y });
+    };
+  }, []);
 
   useFrame(({ clock }, rawDt) => {
     const dt = Math.min(rawDt, 0.05);
@@ -259,16 +267,23 @@ export function Dog() {
       m.t = 0;
       m.stuck = 0;
     };
-    // run toward (x, z), sliding round furniture; returns the distance left
+    // run toward (x, z), sliding round furniture; returns the distance left. Pixel lives east of
+    // the low wall (x = 0); if Pixel ends up on the gym side, the way back is through the doorway.
     const runTo = (x, z, speed) => {
+      const dist = Math.hypot(x - d.x, z - d.z);
+      if (dist < 0.05) return dist;
+      if (d.x < 0.3 && x > 0.3) {
+        const lined = Math.abs(d.z) < 1.0 && d.x > -0.9;
+        [x, z] = lined ? [1.0, d.z] : [-0.7, Math.max(-0.9, Math.min(0.9, d.z))];
+      }
       const dx = x - d.x;
       const dz = z - d.z;
-      const dist = Math.hypot(dx, dz);
-      if (dist < 0.05) return dist;
-      const sp = Math.min(speed * dt, dist);
+      const leg = Math.hypot(dx, dz);
+      if (leg < 0.02) return dist;
+      const sp = Math.min(speed * dt, leg);
       let ok = false;
-      if (!blocked(d.x + (dx / dist) * sp, d.z, 0.28)) { d.x += (dx / dist) * sp; ok = true; }
-      if (!blocked(d.x, d.z + (dz / dist) * sp, 0.28)) { d.z += (dz / dist) * sp; ok = true; }
+      if (!blocked(d.x + (dx / leg) * sp, d.z, 0.28)) { d.x += (dx / leg) * sp; ok = true; }
+      if (!blocked(d.x, d.z + (dz / leg) * sp, 0.28)) { d.z += (dz / leg) * sp; ok = true; }
       m.stuck = ok ? 0 : m.stuck + dt;
       m.heading = Math.atan2(dx, dz);
       return dist;
@@ -343,8 +358,22 @@ export function Dog() {
         say(null);
         setMode("wander");
       }
+    } else if (m.mode === "return" && runtime.x < 0.3) {
+      // you went into the gym: Pixel isn't allowed over there, so waits at the doorway, ball in mouth
+      speed = 3.2;
+      m.away = (m.away ?? 0) + dt;
+      const left = runTo(1.0, Math.max(-1.0, Math.min(1.0, runtime.z)), speed);
+      moving = left > 0.1;
+      if (!moving) m.heading = atPlayer;
+      if (m.away > 7) {
+        b.state = "rest";
+        b.y = BALL_Y;
+        say(null);
+        setMode("wander");
+      }
     } else if (m.mode === "return") {
       speed = 3.2;
+      m.away = 0;
       const back = 0.75 / Math.max(toPlayer, 0.01);
       const left = runTo(runtime.x - (runtime.x - d.x) * back, runtime.z - (runtime.z - d.z) * back, speed);
       moving = left > 0.06;
@@ -379,7 +408,7 @@ export function Dog() {
         m.stuck = 0;
         // dogs like company: often trot over if you're on this side of the wall
         const toYou = runtime.x > 0.5 && Math.random() < 0.55;
-        m.tx = toYou ? runtime.x - 0.9 : DOG_AREA[0] + Math.random() * (DOG_AREA[2] - DOG_AREA[0]);
+        m.tx = toYou ? Math.max(1.0, runtime.x - 0.9) : DOG_AREA[0] + Math.random() * (DOG_AREA[2] - DOG_AREA[0]);
         m.tz = toYou ? runtime.z + 0.7 : DOG_AREA[1] + Math.random() * (DOG_AREA[3] - DOG_AREA[1]);
       }
     }
@@ -559,7 +588,8 @@ function SquatRack() {
   );
 }
 
-// LED scoreboard of your own bests from the gym games; redraws when you set a new one.
+// LED scoreboard of your own bests from the gym games (south-west corner, clear of the lift);
+// redraws when you set a new one.
 function PRBoard() {
   const [v, setV] = useState(0);
   useEffect(() => {
@@ -603,7 +633,7 @@ function PRBoard() {
   }, [v]);
   useEffect(() => () => tex?.dispose(), [tex]);
   return (
-    <group position={[-9.0, 0, 0.7]}>
+    <group position={[-8.4, 0, 6.9]}>
       {[-0.6, 0.6].map((x) => (
         <group key={x}>
           <B p={[x, 0, 0]} s={[0.07, 1.2, 0.07]} c="#1f2937" />

@@ -198,7 +198,7 @@ export const GYM_FURNITURE = {
   stool: [10.8, -2.0, 0.45, 0.45],
   darkroom: [0.5, -4.6, 0.7, 1.9],
   directorChair: [8.0, -1.2, 0.6, 0.6],
-  prBoard: [-9.0, 0.7, 1.5, 0.35],
+  prBoard: [-8.4, 6.9, 1.5, 0.35],
   plantE: [1.0, -7.3, 0.6, 0.6],
   // dog lounge
   sofa: [5.6, 6.9, 2.8, 0.9],
@@ -215,7 +215,7 @@ const GYM_ITEMS = [
   { id: "learning", name: "Training plan", label: "Read my training plan", panel: "learning", pos: [-11.85, -4.4], stand: [-10.4, -4.4], h: 2.5,
     shot: [[-8.6, 2.0, -3.4], [-11.8, 1.6, -4.4]],
     surface: { c: [-11.76, 1.6, -4.4], n: [1, 0, 0], w: 1.8, h: 1.15 } },
-  { id: "lift", name: "Squat rack", label: "Squat day", panel: "lift", pos: [-8.6, -2.6], stand: [-8.6, -1.0], h: 2.5,
+  { id: "lift", name: "Squat rack", label: "Squat day", panel: "lift", pos: [-8.6, -2.6], stand: [-8.6, -1.0], h: 1.5,
     shot: [[-6.9, 2.0, 0.6], [-8.6, 1.2, -2.6]] },
   { id: "backdrop", name: "Backdrop", label: "Change the backdrop", action: "backdrop", pos: [11.5, -2.0], stand: [9.9, -2.0], h: 2.4 },
   { id: "photos", name: "Camera", label: "Look through the camera", panel: "photos", pos: [6.0, -5.2], stand: [6.0, -3.8], h: 1.6,
