@@ -106,7 +106,7 @@ All of these use the **owner key**: the `CHESS_OWNER_KEY` setting in `.env.local
 | `CHESS_OWNER_KEY` | Owner key: chess, guestbook moderation, `/stats` |
 | `GEMINI_API_KEY` | AI Nikshith's free-tier Gemini answers |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Upstash Redis (`studio-kv`, Sydney): chess, coffee count, guestbook, stats. **Only set on Vercel**; locally the site uses a temporary in-memory store, so local testing never touches real data |
-| `GITHUB_TOKEN` | GitHub screen, including the contribution graph (which needs a valid token). Replaced 17 Oct 2026 with a classic token; if the graph goes empty, the token has expired |
+| `GITHUB_TOKEN` | Optional. The GitHub screen uses it when it works; the token from 17 Oct had stopped working by 18 Oct. Without it, repos/stars load anonymously and the contribution graph is read from github.com/users/NIKSHITH-G/contributions, so an expired token no longer blanks the graph |
 
 ---
 

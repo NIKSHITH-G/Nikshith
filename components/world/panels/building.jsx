@@ -156,6 +156,8 @@ export function GitHubScreen({ portrait }) {
     };
   }, [data, nWeeks]);
   const [hover, setHover] = useState(null);
+  // the API sends commitMap: null when GitHub wouldn't give us the calendar at all
+  const graphDown = !!data && data.commitMap == null;
 
   const stats = [
     [cal.total, `contributions · ${portrait ? "5 mo" : "last year"}`],
@@ -186,7 +188,7 @@ export function GitHubScreen({ portrait }) {
             <div className={`mt-5 grid overflow-hidden rounded-lg border border-[#30363d] bg-[#30363d] gap-px ${portrait ? "grid-cols-2" : "grid-cols-[1.5fr_1fr_1fr_1fr_1fr]"}`}>
               {stats.map(([v, k], i) => (
                 <div key={k} className={`bg-[#0d1117]/95 px-4 py-2.5 ${portrait && i === 0 ? "col-span-2" : ""}`}>
-                  <div className={`font-mono text-[22px] font-semibold leading-tight ${i === 0 ? "text-[#3fb950]" : "text-white"}`}>{data ? v ?? "–" : "…"}</div>
+                  <div className={`font-mono text-[22px] font-semibold leading-tight ${i === 0 ? "text-[#3fb950]" : "text-white"}`}>{data ? (graphDown && i < 3 ? "–" : v ?? "–") : "…"}</div>
                   <div className="mt-0.5 font-mono text-[10.5px] uppercase tracking-wider text-[#7d8590]">{k}</div>
                 </div>
               ))}
@@ -201,7 +203,17 @@ export function GitHubScreen({ portrait }) {
                   ))}
                 </div>
               </div>
-              <div className="flex">
+              <div className="relative flex">
+                {graphDown && (
+                  <a
+                    href="https://github.com/NIKSHITH-G"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute inset-0 z-10 flex items-center justify-center bg-[#0d1117]/70 font-mono text-[12px] text-[#9198a1] hover:text-[#e6edf3]"
+                  >
+                    GitHub didn&apos;t send the contribution graph just now. See it on github.com ↗
+                  </a>
+                )}
                 <div className="grid w-8 shrink-0 grid-rows-7 gap-[3px] font-mono text-[10px] leading-none text-[#7d8590]">
                   {["", "Mon", "", "Wed", "", "Fri", ""].map((d, i) => (
                     <span key={i} className="flex items-center">{d}</span>

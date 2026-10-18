@@ -18,10 +18,15 @@ const CONTRIB_QUERY = `
   }
 `;
 
-// Pull the full contribution calendar in a single GraphQL call. This matches the
-// graph on github.com exactly, unlike scraping commits from a handful of repos.
+// The contribution calendar: GraphQL when there's a working token, otherwise GitHub's
+// public contributions page (no token needed), so an expired token never blanks the graph.
+// null means neither worked; {} means a genuinely empty year.
 async function fetchContributions(headers) {
-  if (!process.env.GITHUB_TOKEN) return {};
+  return (await fetchContributionsGraphQL(headers)) ?? (await fetchContributionsPublic());
+}
+
+async function fetchContributionsGraphQL(headers) {
+  if (!process.env.GITHUB_TOKEN) return null;
   try {
     const res = await fetch("https://api.github.com/graphql", {
       method: "POST",
@@ -32,11 +37,11 @@ async function fetchContributions(headers) {
       }),
       next: { revalidate: ONE_DAY },
     });
-    if (!res.ok) return {};
+    if (!res.ok) return null;
     const json = await res.json();
     const weeks =
       json?.data?.user?.contributionsCollection?.contributionCalendar?.weeks;
-    if (!Array.isArray(weeks)) return {};
+    if (!Array.isArray(weeks)) return null;
 
     const commitMap = {};
     for (const week of weeks) {
@@ -48,7 +53,34 @@ async function fetchContributions(headers) {
     }
     return commitMap;
   } catch {
-    return {};
+    return null;
+  }
+}
+
+// github.com/users/<name>/contributions: each day is a <td data-date id> and its count
+// is in a <tool-tip for="<that id>">"3 contributions on May 17th."</tool-tip>.
+async function fetchContributionsPublic() {
+  try {
+    const res = await fetch(`https://github.com/users/${USERNAME}/contributions`, {
+      headers: { "User-Agent": "nikshith.dev" },
+      next: { revalidate: 3 * 3600 },
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    const dateOf = {};
+    for (const [td] of html.matchAll(/<td\b[^>]*\bdata-date="[^"]+"[^>]*>/g)) {
+      const date = td.match(/data-date="(\d{4}-\d{2}-\d{2})"/)?.[1];
+      const id = td.match(/\bid="([^"]+)"/)?.[1];
+      if (date && id) dateOf[id] = date;
+    }
+    if (!Object.keys(dateOf).length) return null; // page layout changed
+    const commitMap = {};
+    for (const [, id, n] of html.matchAll(/<tool-tip\b[^>]*\bfor="([^"]+)"[^>]*>\s*([\d,]+) contributions? on/g)) {
+      if (dateOf[id]) commitMap[dateOf[id]] = Number(n.replace(/,/g, ""));
+    }
+    return commitMap;
+  } catch {
+    return null;
   }
 }
 
