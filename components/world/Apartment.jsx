@@ -45,6 +45,52 @@ export function B({ p: [x, y, z], s: [w, h, d], c, r = 0, rot, shadow = true, ro
   );
 }
 
+// Three legs that actually meet: each runs from its foot on the floor to a hub at `height`.
+const UP = new THREE.Vector3(0, 1, 0);
+export function Tripod({ height = 1.1, spread = 0.38, r = 0.018, color = "#18181b", metal = 0.3, angle = 0, hub = true, feet = true }) {
+  const legs = useMemo(
+    () =>
+      [0, 1, 2].map((i) => {
+        const a = angle + (i / 3) * Math.PI * 2;
+        const foot = new THREE.Vector3(Math.sin(a) * spread, 0, Math.cos(a) * spread);
+        const top = new THREE.Vector3(Math.sin(a) * 0.035, height, Math.cos(a) * 0.035);
+        const dir = top.clone().sub(foot);
+        const len = dir.length();
+        return {
+          mid: foot.clone().add(top).multiplyScalar(0.5).toArray(),
+          q: new THREE.Quaternion().setFromUnitVectors(UP, dir.normalize()).toArray(),
+          len,
+          foot: foot.toArray(),
+        };
+      }),
+    [height, spread, angle]
+  );
+  return (
+    <group>
+      {legs.map((l, i) => (
+        <group key={i}>
+          <mesh position={l.mid} quaternion={l.q} castShadow>
+            <cylinderGeometry args={[r * 0.75, r, l.len, 8]} />
+            <meshStandardMaterial color={color} metalness={metal} roughness={0.45} />
+          </mesh>
+          {feet && (
+            <mesh position={[l.foot[0], r * 1.2, l.foot[2]]}>
+              <sphereGeometry args={[r * 1.5, 8, 6]} />
+              <meshStandardMaterial color="#0a0a0a" roughness={0.8} />
+            </mesh>
+          )}
+        </group>
+      ))}
+      {hub && (
+        <mesh position={[0, height, 0]} castShadow>
+          <cylinderGeometry args={[0.05, 0.045, 0.07, 14]} />
+          <meshStandardMaterial color={color} metalness={metal + 0.2} roughness={0.4} />
+        </mesh>
+      )}
+    </group>
+  );
+}
+
 export function canvasTexture(w, h, draw) {
   if (typeof document === "undefined") return null;
   const cv = document.createElement("canvas");
@@ -1418,9 +1464,7 @@ function Globe() {
   });
   return (
     <group position={[-5.0, 0, -2.0]}>
-      {[0, 2.1, 4.2].map((a) => (
-        <B key={a} p={[Math.sin(a) * 0.15, 0, Math.cos(a) * 0.15]} s={[0.04, 0.7, 0.04]} c={C.woodDark} rot={[Math.cos(a) * 0.2, 0, -Math.sin(a) * 0.2]} />
-      ))}
+      <Tripod height={0.7} spread={0.2} r={0.022} color={C.woodDark} metal={0} feet={false} />
       <mesh ref={ref} position={[0, 0.95, 0]} rotation-z={0.4} castShadow>
         <sphereGeometry args={[0.25, 24, 16]} />
         <meshStandardMaterial color="#1e40af" roughness={0.5} />

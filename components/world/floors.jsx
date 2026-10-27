@@ -5,7 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import { Sparkles, Stars } from "@react-three/drei";
 import { P } from "./Avatar";
 import * as THREE from "three";
-import { B, C, MONO, Plant, Elevator, HungPhotos, useTex, usePhoto } from "./Apartment";
+import { B, C, MONO, Plant, Elevator, HungPhotos, useTex, usePhoto, Tripod } from "./Apartment";
 import { WALL_H, floorById, blocked } from "./layout";
 import { runtime, now, getState, setState, interact, toast, petDogLine, BACKDROPS } from "./store";
 import { best } from "./bests";
@@ -540,10 +540,8 @@ function PhotoBooth() {
 function Softbox({ x, z, rot, matRef }) {
   return (
     <group position={[x, 0, z]} rotation-y={rot}>
-      {[0, 2.1, 4.2].map((a) => (
-        <B key={a} p={[Math.sin(a) * 0.2, 0, Math.cos(a) * 0.2]} s={[0.03, 1.1, 0.03]} c="#111" rot={[Math.cos(a) * 0.3, 0, -Math.sin(a) * 0.3]} shadow={false} />
-      ))}
-      <B p={[0, 0.9, 0]} s={[0.04, 0.9, 0.04]} c="#111" shadow={false} />
+      <Tripod height={0.85} spread={0.42} r={0.02} color="#111" />
+      <B p={[0, 0.85, 0]} s={[0.035, 0.72, 0.035]} c="#1f1f23" shadow={false} metal={0.4} rough={0.4} />
       <B p={[0, 1.55, 0]} s={[0.7, 0.7, 0.35]} c="#111" r={0.03} shadow={false} />
       <mesh position={[0, 1.9, -0.18]}>
         <planeGeometry args={[0.62, 0.62]} />
@@ -962,17 +960,25 @@ export function GymFloor() {
       <HungPhotos where="gym" />
       <Neon text="DARKROOM" position={[4.7, 2.95, -7.85]} width={1.8} color="#f43f5e" />
       {/* camera on a tripod, aimed at the prints */}
-      <group position={[6.0, 0, -5.2]} rotation-y={Math.PI / 2}>
-        {[0, 2.1, 4.2].map((a) => (
-          <mesh key={a} position={[Math.sin(a) * 0.22, 0.6, Math.cos(a) * 0.22]} rotation={[Math.cos(a) * 0.35, 0, -Math.sin(a) * 0.35]} castShadow>
-            <cylinderGeometry args={[0.018, 0.025, 1.25, 6]} />
-            <meshStandardMaterial color="#222" />
-          </mesh>
-        ))}
-        <B p={[0, 1.17, 0]} s={[0.36, 0.22, 0.22]} c="#1d1d22" r={0.03} />
-        <mesh position={[0.26, 1.28, 0]} rotation-z={Math.PI / 2} castShadow>
-          <cylinderGeometry args={[0.08, 0.09, 0.2, 20]} />
+      <group position={[6.0, 0, -5.2]}>
+        <Tripod height={1.0} spread={0.36} angle={Math.PI / 6} />
+        {/* centre column, head, and the camera facing the prints (north) */}
+        <B p={[0, 1.0, 0]} s={[0.03, 0.2, 0.03]} c="#3f3f46" metal={0.6} rough={0.3} shadow={false} />
+        <B p={[0, 1.2, 0]} s={[0.12, 0.04, 0.12]} c="#27272a" metal={0.4} rough={0.4} />
+        <B p={[0, 1.24, 0]} s={[0.3, 0.19, 0.13]} c="#1d1d22" r={0.025} />
+        <B p={[0, 1.43, 0.015]} s={[0.1, 0.06, 0.08]} c="#1d1d22" r={0.015} shadow={false} />
+        <B p={[0.1, 1.36, 0.075]} s={[0.07, 0.07, 0.02]} c="#2a2a30" r={0.008} shadow={false} />
+        <mesh position={[0, 1.335, -0.15]} rotation-x={Math.PI / 2} castShadow>
+          <cylinderGeometry args={[0.07, 0.075, 0.17, 22]} />
           <meshStandardMaterial color="#111" metalness={0.5} roughness={0.35} />
+        </mesh>
+        <mesh position={[0, 1.335, -0.236]} rotation-x={Math.PI / 2}>
+          <cylinderGeometry args={[0.058, 0.058, 0.004, 22]} />
+          <meshStandardMaterial color="#0c1a3a" metalness={0.9} roughness={0.1} emissive="#1e3a8a" emissiveIntensity={0.25} />
+        </mesh>
+        <mesh position={[0, 1.335, -0.11]} rotation-x={Math.PI / 2}>
+          <torusGeometry args={[0.075, 0.006, 6, 22]} />
+          <meshStandardMaterial color="#dc2626" />
         </mesh>
       </group>
       <PhotoBooth />
@@ -2045,12 +2051,7 @@ function RoofLights() {
 function Telescope() {
   return (
     <group position={[7, 0, -5]}>
-      {[0, 2.1, 4.2].map((a) => (
-        <mesh key={a} position={[Math.sin(a) * 0.28, 0.6, Math.cos(a) * 0.28]} rotation={[Math.cos(a) * 0.4, 0, -Math.sin(a) * 0.4]} castShadow>
-          <cylinderGeometry args={[0.02, 0.028, 1.3, 6]} />
-          <meshStandardMaterial color="#b45309" metalness={0.5} roughness={0.4} />
-        </mesh>
-      ))}
+      <Tripod height={1.18} spread={0.45} r={0.026} color="#b45309" metal={0.5} />
       <group position={[0, 1.25, 0]} rotation={[0.75, 0.45, 0]}>
         <mesh castShadow>
           <cylinderGeometry args={[0.1, 0.08, 1.2, 20]} />
