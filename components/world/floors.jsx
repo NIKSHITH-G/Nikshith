@@ -5,7 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import { Sparkles, Stars } from "@react-three/drei";
 import { P } from "./Avatar";
 import * as THREE from "three";
-import { B, C, MONO, Plant, Elevator, HungPhotos, useTex, usePhoto, Tripod } from "./Apartment";
+import { B, C, MONO, Plant, Elevator, HungPhotos, useTex, usePhoto, Tripod, Strut } from "./Apartment";
 import { WALL_H, floorById, blocked } from "./layout";
 import { runtime, now, getState, setState, interact, toast, petDogLine, BACKDROPS } from "./store";
 import { best } from "./bests";
@@ -139,8 +139,9 @@ function PunchingBag({ x = -1.4, z = -2.8 }) {
       {/* free-standing A-frame */}
       {[-0.55, 0.55].map((dz) => (
         <group key={dz}>
-          <B p={[x - 0.45, 0, z + dz]} s={[0.07, 3.1, 0.07]} c="#222" rot={[0, 0, -0.14]} />
-          <B p={[x + 0.45, 0, z + dz]} s={[0.07, 3.1, 0.07]} c="#222" rot={[0, 0, 0.14]} />
+          <Strut from={[x - 0.5, 0, z + dz]} to={[x - 0.03, 3.05, z + dz]} r={0.035} color="#222" box />
+          <Strut from={[x + 0.5, 0, z + dz]} to={[x + 0.03, 3.05, z + dz]} r={0.035} color="#222" box />
+          <B p={[x, 0, z + dz]} s={[1.1, 0.05, 0.08]} c="#222" />
         </group>
       ))}
       <B p={[x, 3.0, z]} s={[0.1, 0.1, 1.3]} c="#222" />
@@ -884,9 +885,9 @@ export function GymFloor() {
           <cylinderGeometry args={[0.28, 0.28, 0.08, 24]} />
           <meshStandardMaterial color="#6b7280" metalness={0.7} roughness={0.3} />
         </mesh>
-        <B p={[0, 0.06, 0.1]} s={[0.07, 0.85, 0.07]} c="#dc2626" rot={[-0.25, 0, 0]} />
+        <Strut from={[0, 0.06, 0.05]} to={[0, 0.9, 0.22]} r={0.035} color="#dc2626" box />
         <B p={[0, 0.9, 0.22]} s={[0.22, 0.06, 0.32]} c="#111" r={0.02} />
-        <B p={[0, 0.06, -0.45]} s={[0.07, 1.0, 0.07]} c="#dc2626" rot={[0.2, 0, 0]} />
+        <Strut from={[0, 0.06, -0.4]} to={[0, 1.06, -0.62]} r={0.035} color="#dc2626" box />
         <B p={[0, 1.06, -0.62]} s={[0.5, 0.05, 0.08]} c="#111" />
       </group>
       <SquatRack />
@@ -1504,8 +1505,8 @@ function LibraryShelves() {
       {books.map((b, i) => (
         <B key={i} p={[11.47, b.y, b.z]} s={[0.28, b.h, b.t]} c={b.c} shadow={false} rough={0.7} />
       ))}
-      {/* a ladder leaning on the shelves */}
-      <group position={[11.1, 0, -3.4]} rotation-z={0.22}>
+      {/* a ladder: feet out on the floor, top resting against the front of the shelves */}
+      <group position={[10.6, 0, -3.6]} rotation-z={-0.28}>
         {[-0.2, 0.2].map((z) => (
           <B key={z} p={[0, 0, z]} s={[0.05, 2.5, 0.05]} c="#8b5a2b" />
         ))}
@@ -2305,10 +2306,12 @@ function StarChart() {
   });
   return (
     <group position={[5.0, 0, -6.9]}>
-      {[-0.3, 0.3].map((x) => (
-        <B key={x} p={[x, 0, 0.1]} s={[0.04, 1.5, 0.04]} c={C.wood} rot={[-0.15, 0, 0]} />
+      {/* easel: two front legs meeting the back leg at the top, a ledge for the chart */}
+      {[-1, 1].map((sd) => (
+        <Strut key={sd} from={[sd * 0.34, 0, 0.25]} to={[sd * 0.06, 1.66, -0.09]} r={0.022} color={C.wood} metal={0} box />
       ))}
-      <B p={[0, 0, -0.18]} s={[0.04, 1.4, 0.04]} c={C.wood} rot={[0.2, 0, 0]} />
+      <Strut from={[0, 0, -0.5]} to={[0, 1.64, -0.11]} r={0.022} color={C.wood} metal={0} box />
+      <B p={[0, 0.86, 0.11]} s={[0.95, 0.04, 0.09]} c={C.wood} />
       <mesh position={[0, 1.25, 0.05]} rotation-x={-0.15}>
         <planeGeometry args={[0.85, 0.64]} />
         <meshStandardMaterial map={tex} emissive="#ffffff" emissiveMap={tex} emissiveIntensity={0.4} />

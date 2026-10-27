@@ -45,8 +45,28 @@ export function B({ p: [x, y, z], s: [w, h, d], c, r = 0, rot, shadow = true, ro
   );
 }
 
-// Three legs that actually meet: each runs from its foot on the floor to a hub at `height`.
 const UP = new THREE.Vector3(0, 1, 0);
+
+// A bar running exactly from one point to another (frame tubes, A-frame legs, posts).
+export function Strut({ from, to, r = 0.02, color = "#18181b", metal = 0.3, box = false }) {
+  const key = [...from, ...to].join();
+  const { mid, q, len } = useMemo(() => {
+    const a = new THREE.Vector3(...from);
+    const b = new THREE.Vector3(...to);
+    const dir = b.clone().sub(a);
+    const len = dir.length();
+    return { mid: a.add(b).multiplyScalar(0.5).toArray(), q: new THREE.Quaternion().setFromUnitVectors(UP, dir.normalize()).toArray(), len };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  return (
+    <mesh position={mid} quaternion={q} castShadow>
+      {box ? <boxGeometry args={[r * 2, len, r * 2]} /> : <cylinderGeometry args={[r, r, len, 10]} />}
+      <meshStandardMaterial color={color} metalness={metal} roughness={0.45} />
+    </mesh>
+  );
+}
+
+// Three legs that actually meet: each runs from its foot on the floor to a hub at `height`.
 export function Tripod({ height = 1.1, spread = 0.38, r = 0.018, color = "#18181b", metal = 0.3, angle = 0, hub = true, feet = true }) {
   const legs = useMemo(
     () =>
@@ -753,7 +773,7 @@ function Music() {
         <B p={[-0.18, 0.12, 0.22]} s={[0.03, 0.03, 0.3]} c={C.metal} rot={[0, 0.5, 0]} shadow={false} />
       </group>
       {/* acoustic guitar */}
-      <group position={[5.15, 0, -7.45]} rotation={[0.18, 0.4, 0]}>
+      <group position={[5.15, 0, -7.5]} rotation={[-0.22, 0.4, 0]}>
         <mesh position={[0, 0.36, 0]} scale={[1, 1.2, 0.35]} castShadow>
           <sphereGeometry args={[0.3, 20, 14]} />
           <meshStandardMaterial color="#c88d4c" roughness={0.5} />
