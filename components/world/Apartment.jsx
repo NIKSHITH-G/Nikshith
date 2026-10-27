@@ -602,25 +602,57 @@ function PianoKeys() {
 }
 
 function Music() {
+  // single artwork: an ink clock striking eleven, hung on marionette strings, on watercolour paper
   const poster = useTex(300, 400, (g, w, h) => {
-    const grd = g.createLinearGradient(0, 0, w, h);
-    grd.addColorStop(0, "#1e1b4b");
-    grd.addColorStop(1, "#7c3aed");
-    g.fillStyle = grd;
+    g.fillStyle = "#f1e9d8";
     g.fillRect(0, 0, w, h);
-    g.strokeStyle = "rgba(255,255,255,0.25)";
-    g.setLineDash([6, 8]);
-    g.lineWidth = 2;
-    g.beginPath(); g.moveTo(30, 230); g.quadraticCurveTo(150, 120, 270, 150); g.stroke();
-    g.setLineDash([]);
-    g.fillStyle = "rgba(255,255,255,0.95)";
-    g.beginPath(); g.moveTo(205, 150); g.lineTo(255, 132); g.lineTo(222, 162); g.closePath(); g.fill();
-    g.font = `italic 46px ${SERIF}`;
+    [["rgba(67,56,202,0.16)", 90, 120, 110], ["rgba(190,75,45,0.13)", 220, 200, 90], ["rgba(67,56,202,0.1)", 170, 330, 120]].forEach(([c, x, y, r]) => {
+      const blot = g.createRadialGradient(x, y, 4, x, y, r);
+      blot.addColorStop(0, c);
+      blot.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = blot;
+      g.fillRect(0, 0, w, h);
+    });
+    const ink = "#1c1917";
+    const cx = 150;
+    const cy = 150;
+    g.strokeStyle = ink;
+    g.lineWidth = 1.2;
+    // marionette cross and strings
+    g.beginPath(); g.moveTo(110, 22); g.lineTo(190, 22); g.moveTo(150, 10); g.lineTo(150, 34); g.stroke();
+    [[112, 22, 92, 112], [188, 22, 208, 112], [150, 34, 150, 78]].forEach(([x1, y1, x2, y2]) => { g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); });
+    // clock face
+    g.lineWidth = 3;
+    g.beginPath(); g.arc(cx, cy, 72, 0, Math.PI * 2); g.stroke();
+    g.lineWidth = 1;
+    g.beginPath(); g.arc(cx, cy, 64, 0, Math.PI * 2); g.stroke();
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      g.lineWidth = i % 3 ? 1.5 : 3;
+      g.beginPath();
+      g.moveTo(cx + Math.sin(a) * 56, cy - Math.cos(a) * 56);
+      g.lineTo(cx + Math.sin(a) * 64, cy - Math.cos(a) * 64);
+      g.stroke();
+    }
+    // eleven o'clock
+    g.lineCap = "round";
+    g.lineWidth = 4;
+    const hr = (11 / 12) * Math.PI * 2;
+    g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.sin(hr) * 34, cy - Math.cos(hr) * 34); g.stroke();
+    g.lineWidth = 2.5;
+    g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx, cy - 52); g.stroke();
+    g.fillStyle = ink;
+    g.beginPath(); g.arc(cx, cy, 4, 0, Math.PI * 2); g.fill();
+    // title
     g.textAlign = "center";
-    g.fillText(music.latest.title, w / 2, 300);
-    g.font = `15px ${MONO}`;
-    g.fillStyle = "rgba(255,255,255,0.7)";
-    g.fillText(`NEW SINGLE · ${music.latest.released.toUpperCase()}`, w / 2, 338);
+    g.font = `italic 44px ${SERIF}`;
+    g.fillText(music.latest.title, w / 2, 288, w - 24);
+    g.font = `italic 19px ${SERIF}`;
+    g.fillStyle = "rgba(28,25,23,0.7)";
+    if (music.latest.subtitle) g.fillText(music.latest.subtitle, w / 2, 314);
+    g.font = `14px ${MONO}`;
+    g.fillStyle = "rgba(28,25,23,0.6)";
+    g.fillText(`NEW SINGLE · ${music.latest.released.toUpperCase()}`, w / 2, 352);
   });
   const vinyl = useRef();
   useFrame((_, dt) => {

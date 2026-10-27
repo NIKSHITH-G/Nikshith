@@ -73,7 +73,7 @@ export default function CommandPalette() {
       { group: "Navigate", label: "Education", icon: GraduationCap, keywords: "study monash degree", run: () => travel("education") },
       { group: "Navigate", label: "Projects", icon: FolderGit2, keywords: "work built portfolio shipped modo", run: () => travel("projects") },
       { group: "Navigate", label: "Skills & certifications", icon: Terminal, keywords: "stack tech tools languages", run: () => travel("skills") },
-      { group: "Navigate", label: "Music", icon: Music, keywords: "song piano airplane mode", run: () => travel("music") },
+      { group: "Navigate", label: "Music", icon: Music, keywords: "song piano tick tock leo airplane mode video", run: () => travel("music") },
       { group: "Navigate", label: "Contact", icon: Mail, keywords: "hire talk reach message", run: () => travel("contact") },
       { group: "Floors", label: "Play chess — The World vs Nikshith", icon: Swords, keywords: "chess game board move games room floor 3", run: () => travel("chess") },
       { group: "Floors", label: "Snooker", icon: Circle, keywords: "pool billiards cue games room", run: () => travel("snooker") },

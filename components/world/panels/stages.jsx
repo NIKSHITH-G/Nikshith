@@ -469,7 +469,7 @@ export function PianoStage({ portrait }) {
         <div className="relative overflow-hidden rounded-sm bg-[#f7f1e3] px-7 py-6 text-[#2a2118] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8)]">
           <div aria-hidden className="staff pointer-events-none absolute inset-x-6 top-[88px] h-[42px]" />
           <div className="flex items-baseline justify-between font-mono text-[10px] text-[#8a6d3b]">
-            <span>♩ = 84 · in C</span>
+            <span>♩ {music.latest.subtitle ?? "now playing"}</span>
             <span>new single</span>
           </div>
           <h2 className="mt-1 font-hand text-[44px] leading-none">{music.latest.title}</h2>
@@ -479,7 +479,7 @@ export function PianoStage({ portrait }) {
           </div>
           <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 font-hand text-2xl">
             <a href={music.studio} target="_blank" rel="noopener noreferrer" className="text-[#6d28d9] underline decoration-wavy decoration-[#6d28d9]/40 underline-offset-4 hover:decoration-[#6d28d9]">listen on my studio ↗</a>
-            <a href={music.youtube} target="_blank" rel="noopener noreferrer" className="text-[#b91c1c] underline decoration-wavy decoration-[#b91c1c]/40 underline-offset-4 hover:decoration-[#b91c1c]">youtube ↗</a>
+            <a href={music.latest.video ?? music.youtube} target="_blank" rel="noopener noreferrer" className="text-[#b91c1c] underline decoration-wavy decoration-[#b91c1c]/40 underline-offset-4 hover:decoration-[#b91c1c]">watch the video ↗</a>
           </div>
         </div>
       </motion.div>

@@ -274,10 +274,12 @@ export default function About() {
                 <div className="h-full rounded-2xl border border-white/10 bg-gradient-to-br from-violet-500/15 to-transparent p-6">
                   <div className="font-mono text-[11px] uppercase tracking-widest text-white/45">Latest single</div>
                   <div className="mt-3 font-display text-4xl italic">{music.latest.title}</div>
+                  {music.latest.subtitle && <div className="font-display text-lg italic text-white/60">{music.latest.subtitle}</div>}
                   <div className="mt-1 font-mono text-xs text-white/50">released {music.latest.released} · {music.latest.length}</div>
+                  {music.latest.about && <p className="mt-3 text-sm leading-relaxed text-white/65">{music.latest.about}</p>}
                   <div className="mt-5 flex gap-3 text-sm">
                     <a href={music.studio} target="_blank" rel="noopener noreferrer" className="rounded-full bg-white px-4 py-2 font-medium text-black hover:bg-violet-100">Listen ↗</a>
-                    <a href={music.youtube} target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/20 px-4 py-2 text-white/85 hover:bg-white/10">YouTube ↗</a>
+                    <a href={music.latest.video ?? music.youtube} target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/20 px-4 py-2 text-white/85 hover:bg-white/10">Watch the video ↗</a>
                   </div>
                 </div>
               </Reveal>
